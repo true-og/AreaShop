@@ -13,7 +13,6 @@ import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.managers.Manager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
-import me.wiefferink.areashop.tools.Analytics;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
@@ -171,17 +170,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			}
 
 			// Get correct WorldEditInterface (handles things that changed version to version)
-			if(worldEdit.getDescription().getVersion().startsWith("5.")) {
-				weVersion = "5";
-			} else if(worldEdit.getDescription().getVersion().startsWith("6.")) {
-				weVersion = "6";
-			} else if ("beta-01".equalsIgnoreCase(weBeta)) {
-				weVersion = "7_beta_1";
+			if(worldEdit.getDescription().getVersion().startsWith("7.")) {
+				weVersion = "7";
 			} else {
-				// beta-02 and beta-03 also have the new vector system already
-				weVersion = "7_beta_4";
+				throw new IllegalStateException("Unknown WE Version: " + worldEdit.getDescription().getVersion());
 			}
-
 			weVersion = "WorldEditHandler" + weVersion;
 		}
 
@@ -237,29 +230,12 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 				}
 
 				// Determine correct implementation to use
-				if(rawWgVersion.startsWith("5.")) {
-					wgVersion = "5";
-				} else if(major == 6 && minor == 1 && fixes < 3) {
-					wgVersion = "6";
-				} else if(major == 6) {
-					if(build != null && build == 1672) {
-						error = true;
-						error("Build 1672 of WorldGuard is broken, update to a later build or a stable version!");
-					} else if(build != null && build < 1672) {
-						wgVersion = "6";
-					} else {
-						wgVersion = "6_1_3";
-					}
-				} else if ("beta-01".equalsIgnoreCase(weBeta)) {
-					// When using WorldEdit beta-01, we need to use the WorldGuard variant with the old vector system
-					wgVersion = "7_beta_1";
-				} else {
-					// Even though the WorldGuard file is called beta-02, the reported version is still beta-01!
-					wgVersion = "7_beta_2";
+				if(rawWgVersion.startsWith("7.")) {
+					wgVersion = "7";
 				}
 			} catch(Exception e) { // If version detection fails, at least try to load the latest version
-				warn("Parsing the WorldGuard version failed, assuming version 7_beta_2:", rawWgVersion);
-				wgVersion = "7_beta_2";
+				warn("Parsing the WorldGuard version failed, assuming version 7:", rawWgVersion);
+				wgVersion = "7";
 			}
 
 			wgVersion = "WorldGuardHandler" + wgVersion;
@@ -268,7 +244,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		// Check if FastAsyncWorldEdit is installed
 		boolean fawe;
 		try {
-			Class.forName("com.boydti.fawe.Fawe" );
+			Class.forName("com.fastasyncworldedit.core.FaweAPI" );
 			fawe = true;
 		} catch (ClassNotFoundException ignore) {
 			fawe = false;
@@ -276,7 +252,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 
 		if (fawe) {
 			boolean useNewIntegration = true;
-			List<String> standardIntegrationVersions = Arrays.asList("1.7", "1.8", "1.9", "1.10", "1.11", "1.12");
+			List<String> standardIntegrationVersions = Arrays.asList("1.7", "1.8", "1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17");
 			for(String standardIntegrationVersion : standardIntegrationVersions) {
 				String version = Bukkit.getBukkitVersion();
 				// Detects '1.8', '1.8.3', '1.8-pre1' style versions
@@ -290,7 +266,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 
 			if (useNewIntegration) {
 				weVersion = "FastAsyncWorldEditHandler";
-				wgVersion = "FastAsyncWorldEditWorldGuardHandler";
 			}
 		}
 
@@ -381,11 +356,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			// Create a signLinkerManager
 			signLinkerManager = new SignLinkerManager();
 			managers.add(signLinkerManager);
-
-			// Enable Metrics if config allows it
-			if(getConfig().getBoolean("sendStats")) {
-				Analytics.start();
-			}
 
 			// Register dynamic permission (things declared in config)
 			registerDynamicPermissions();

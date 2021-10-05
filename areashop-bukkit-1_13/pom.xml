@@ -14,19 +14,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>craftbukkit</artifactId>
-            <version>1.13-R0.1-SNAPSHOT</version>
-            <type>jar</type>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.17.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>me.wiefferink</groupId>
             <artifactId>areashop-interface</artifactId>
             <version>latest</version>
-            <type>jar</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -23,14 +23,7 @@ public class BukkitHandler1_13 extends BukkitInterface {
 		}
 
 		BlockState blockState = block.getState();
-		if (blockState == null) {
-			return null;
-		}
-
 		BlockData blockData = blockState.getBlockData();
-		if (blockData == null) {
-			return null;
-		}
 
 		if(blockData instanceof WallSign) {
 			return ((WallSign) blockData).getFacing();
@@ -49,14 +42,7 @@ public class BukkitHandler1_13 extends BukkitInterface {
 		}
 
 		BlockState blockState = block.getState();
-		if (blockState == null) {
-			return false;
-		}
-
 		BlockData blockData = blockState.getBlockData();
-		if (blockData == null) {
-			return false;
-		}
 
 		if(blockData instanceof WallSign) {
 			((WallSign) blockData).setFacing(facing);
@@ -76,14 +62,8 @@ public class BukkitHandler1_13 extends BukkitInterface {
 		}
 
 		BlockState blockState = block.getState();
-		if (blockState == null) {
-			return null;
-		}
 
-		org.bukkit.block.data.BlockData blockData = blockState.getBlockData();
-		if (blockData == null) {
-			return null;
-		}
+		BlockData blockData = blockState.getBlockData();
 
 		if(blockData instanceof WallSign) {
 			return block.getRelative(((WallSign) blockData).getFacing().getOppositeFace());

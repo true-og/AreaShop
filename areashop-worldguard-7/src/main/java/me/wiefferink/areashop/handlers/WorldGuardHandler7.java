@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class FastAsyncWorldEditWorldGuardHandler extends WorldGuardInterface {
+public class WorldGuardHandler7 extends WorldGuardInterface {
 
-	public FastAsyncWorldEditWorldGuardHandler(AreaShopInterface pluginInterface) {
+	public WorldGuardHandler7(AreaShopInterface pluginInterface) {
 		super(pluginInterface);
 	}
 

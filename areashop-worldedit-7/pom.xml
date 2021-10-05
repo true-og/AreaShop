@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>areashop-fastasyncworldedit</artifactId>
+    <artifactId>areashop-worldedit-7</artifactId>
     <packaging>jar</packaging>
-    <name>AreaShop FastAsyncWorldEdit</name>
+    <name>AreaShop WorldEdit 7</name>
     <version>latest</version>
 
     <parent>
@@ -12,13 +12,6 @@
         <version>parent</version>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>is-repo</id>
-            <url>https://mvn.intellectualsites.com/content/repositories/releases/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
@@ -26,11 +19,10 @@
             <version>1.17.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
-            <groupId>com.fastasyncworldedit</groupId>
-            <artifactId>FAWE-Bukkit</artifactId>
-            <version>1.17-138</version>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>7.2.5</version>
             <scope>provided</scope>
         </dependency>
 
