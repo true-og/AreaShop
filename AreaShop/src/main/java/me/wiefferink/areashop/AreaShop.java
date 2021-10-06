@@ -12,6 +12,7 @@ import me.wiefferink.areashop.managers.CommandManager;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.managers.Manager;
+import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.NMS;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
@@ -35,11 +36,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.sql.Ref;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +66,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	private CommandManager commandManager = null;
 	private SignLinkerManager signLinkerManager = null;
 	private FeatureManager featureManager = null;
+	private SignErrorLogger signErrorLogger;
 	private Set<Manager> managers = null;
 	private boolean debug = false;
 	private List<String> chatprefix = null;
@@ -77,6 +81,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	public static final String defaultFile = "default.yml";
 	public static final String configFile = "config.yml";
 	public static final String configFileHidden = "hiddenConfig.yml";
+	public static final String signLogFile = "sign-errors.yml";
 	public static final String versionFile = "versions";
 
 	// Euro tag for in the config
@@ -153,6 +158,9 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		managers = new HashSet<>();
 		boolean error = false;
 
+		signErrorLogger = new SignErrorLogger(new File(getDataFolder(), signLogFile));
+
+		// Setup NMS Impl
 		String rawServerVersion = Bukkit.getServer().getClass().getPackageName();
 		String[] split = rawServerVersion.split("\\.");
 		String serverVersion = split[3];
@@ -427,6 +435,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		for(Manager manager : managers) {
 			manager.shutdown();
 		}
+		signErrorLogger.saveIfDirty();
 		managers = null;
 		fileManager = null;
 		languageManager = null;
@@ -495,6 +504,10 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 
 	public NMS getNms() {
 		return nms;
+	}
+
+	public SignErrorLogger getSignErrorLogger() {
+		return signErrorLogger;
 	}
 
 	/**
@@ -664,6 +677,13 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 * Register all required tasks.
 	 */
 	private void setupTasks() {
+
+		long signLogTicks = Utils.millisToTicks(TimeUnit.MINUTES.toMillis(5));
+		Bukkit.getScheduler().runTaskTimerAsynchronously(this,
+				() -> signErrorLogger.saveIfDirty(),
+				signLogTicks,
+				signLogTicks);
+
 		// Rent expiration timer
 		long expirationCheck = Utils.millisToTicks(Utils.getDurationFromSecondsOrString("expiration.delay"));
 		final AreaShop finalPlugin = this;

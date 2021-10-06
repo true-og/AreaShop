@@ -9,6 +9,7 @@ version = "2.7.0-SNAPSHOT"
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
     implementation 'com.github.NLthijs48:BukkitDo:819d51ec2b'
+    implementation 'io.papermc:paperlib:1.0.6'
     implementation project(':areashop-interface')
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-nms')
@@ -44,6 +45,7 @@ shadowJar {
     String base = "me.wiefferink.areashop.libraries"
     relocate('me.wiefferink.interactivemessenger', "${base}.interactivemessenger")
     relocate('me.wiefferink.bukkitdo', "${base}.bukkitdo")
+    relocate('io.papermc.lib', "${base}.paperlib")
 }
 
 description = 'AreaShop'
