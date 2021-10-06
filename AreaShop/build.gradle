@@ -6,7 +6,6 @@ dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
     implementation 'com.github.NLthijs48:BukkitDo:819d51ec2b'
     implementation project(':areashop-interface')
-    implementation project(':areashop-bukkit-1_12')
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-worldedit-7')
     implementation project(':areashop-worldguard-7')
