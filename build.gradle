@@ -12,6 +12,10 @@ subprojects {
     repositories {
         mavenCentral()
         maven {
+            name = 'oss-sonatype'
+           url = uri("https://oss.sonatype.org/content/groups/public/")
+        }
+        maven {
             name = 'paper-repo'
             url = uri('https://papermc.io/repo/repository/maven-public/')
         }

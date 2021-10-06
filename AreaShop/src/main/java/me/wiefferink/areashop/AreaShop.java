@@ -13,6 +13,7 @@ import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.managers.Manager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
+import me.wiefferink.areashop.nms.NMS;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
@@ -34,6 +35,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.Ref;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +56,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	private WorldGuardInterface worldGuardInterface = null;
 	private WorldEditPlugin worldEdit = null;
 	private WorldEditInterface worldEditInterface = null;
+	private NMS nms;
 	private BukkitInterface bukkitInterface = null;
 	private FileManager fileManager = null;
 	private LanguageManager languageManager = null;
@@ -149,6 +152,19 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		Do.init(this);
 		managers = new HashSet<>();
 		boolean error = false;
+
+		String rawServerVersion = Bukkit.getServer().getClass().getPackageName();
+		String[] split = rawServerVersion.split("\\.");
+		String serverVersion = split[3];
+		try {
+			Class<?> nmsImpl = Class.forName("me.wiefferink.areashop.nms." + serverVersion + ".NMSImpl");
+			this.nms = nmsImpl.asSubclass(NMS.class).getConstructor().newInstance();
+		} catch (ReflectiveOperationException ex) {
+			ex.printStackTrace();
+			getLogger().severe("Failed to initialize NMS implementation!");
+			getServer().getPluginManager().disablePlugin(this);
+			return;
+		}
 
 		// Find WorldEdit integration version to load
 		String weVersion = null;
@@ -251,22 +267,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		}
 
 		if (fawe) {
-			boolean useNewIntegration = true;
-			List<String> standardIntegrationVersions = Arrays.asList("1.7", "1.8", "1.9", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15", "1.16", "1.17");
-			for(String standardIntegrationVersion : standardIntegrationVersions) {
-				String version = Bukkit.getBukkitVersion();
-				// Detects '1.8', '1.8.3', '1.8-pre1' style versions
-				if(version.equals(standardIntegrationVersion)
-						|| version.startsWith(standardIntegrationVersion + ".")
-						|| version.startsWith(standardIntegrationVersion + "-")) {
-					useNewIntegration = false;
-					break;
-				}
-			}
-
-			if (useNewIntegration) {
-				weVersion = "FastAsyncWorldEditHandler";
-			}
+			weVersion = "FastAsyncWorldEditHandler";
 		}
 
 		// Load WorldEdit
@@ -490,6 +491,10 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 */
 	public void setChatprefix(List<String> chatprefix) {
 		this.chatprefix = chatprefix;
+	}
+
+	public NMS getNms() {
+		return nms;
 	}
 
 	/**

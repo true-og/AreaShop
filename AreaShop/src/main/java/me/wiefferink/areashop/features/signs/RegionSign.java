@@ -2,6 +2,8 @@ package me.wiefferink.areashop.features.signs;
 
 import com.google.common.base.Objects;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.interfaces.BukkitInterface;
+import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Materials;
 import me.wiefferink.areashop.tools.Utils;
@@ -23,6 +25,11 @@ import java.util.List;
  * Sign that is connected to a region to display information and interact with the region.
  */
 public class RegionSign {
+
+	private static final BlockBehaviourHelper blockHelper = AreaShop.getInstance().getNms()
+			.blockBehaviourHelper();
+	private static final BukkitInterface bukkitInterface = AreaShop.getInstance()
+			.getBukkitHandler();
 
 	private final SignsFeature signsFeature;
 	private final String key;
@@ -147,18 +154,16 @@ public class RegionSign {
 		// Place the sign back (with proper rotation and type) after it has been hidden or (indirectly) destroyed
 		if(!Materials.isSign(block.getType())) {
 			Material signType = getMaterial();
+			if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
+				AreaShop.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
+				return false;
+			}
 			// Don't do physics here, we first need to update the direction
 			block.setType(signType, false);
 
 			// This triggers a physics update, which pops the sign if not attached properly
-			if (!AreaShop.getInstance().getBukkitHandler().setSignFacing(block, getFacing())) {
+			if (!bukkitInterface.setSignFacing(block, getFacing())) {
 				AreaShop.warn("Failed to update the facing direction of the sign at", getStringLocation(), "to ", getFacing(), ", region:", getRegion().getName());
-			}
-
-			// Check if the sign has popped
-			if(!Materials.isSign(block.getType())) {
-				AreaShop.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
-				return false;
 			}
 		}
 
