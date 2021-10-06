@@ -219,12 +219,8 @@ public class SignsFeature extends RegionFeature {
 						} else {
 							if(pr.getPriority() > candidate.getPriority()) {
 								candidate = pr;
-							} else if(pr.getPriority() < candidate.getPriority()) {
-								// Already got the correct one
 							} else if(pr.getParent() != null && pr.getParent().equals(candidate)) {
 								candidate = pr;
-							} else if(candidate.getParent() != null && candidate.getParent().equals(pr)) {
-								// Already got the correct one
 							} else {
 								plugin.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
 								return;
@@ -330,12 +326,8 @@ public class SignsFeature extends RegionFeature {
 						} else {
 							if(pr.getPriority() > candidate.getPriority()) {
 								candidate = pr;
-							} else if(pr.getPriority() < candidate.getPriority()) {
-								// Already got the correct one
 							} else if(pr.getParent() != null && pr.getParent().equals(candidate)) {
 								candidate = pr;
-							} else if(candidate.getParent() != null && candidate.getParent().equals(pr)) {
-								// Already got the correct one
 							} else {
 								plugin.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
 								return;
@@ -549,7 +541,7 @@ public class SignsFeature extends RegionFeature {
 	 * @return List of signs
 	 */
 	public List<RegionSign> getSigns() {
-		return Collections.unmodifiableList(new ArrayList<>(signs.values()));
+		return List.copyOf(signs.values());
 	}
 
 	/**
