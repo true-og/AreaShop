@@ -1,6 +1,10 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
+
+version = "2.7.0-SNAPSHOT"
 
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
@@ -16,10 +20,28 @@ dependencies {
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
 }
 
+processResources {
+
+    from (sourceSets.main.resources) {
+        filter ReplaceTokens, tokens: [version: project.version]
+        duplicatesStrategy(DuplicatesStrategy.INCLUDE)
+    }
+}
+
+assemble {
+    dependsOn(shadowJar)
+}
+
+jar {
+    archiveClassifier.set('original')
+}
+
 shadowJar {
+    archiveClassifier.set('')
+    setArchivesBaseName('AreaShop')
     String base = "me.wiefferink.areashop.libraries"
     relocate('me.wiefferink.interactivemessenger', "${base}.interactivemessenger")
-    relocate('e.wiefferink.bukkitdo', "${base}.bukkitdo")
+    relocate('me.wiefferink.bukkitdo', "${base}.bukkitdo")
 }
 
 description = 'AreaShop'
