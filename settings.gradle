@@ -1,0 +1,12 @@
+rootProject.name = 'areashop-parent'
+include(':areashop-bukkit-1_13')
+include(':areashop-bukkit-1_12')
+include(':areashop-worldguard-7')
+include(':areashop-interface')
+include(':areashop-worldedit-7')
+include(':areashop-fastasyncworldedit')
+include(':areashop')
+project(":areashop").projectDir = file('AreaShop')
+project(':areashop-worldedit-7').projectDir = file('hooks/areashop-worldedit-7')
+project(':areashop-worldguard-7').projectDir = file('hooks/areashop-worldguard-7')
+project(':areashop-fastasyncworldedit').projectDir = file('hooks/areashop-fastasyncworldedit')

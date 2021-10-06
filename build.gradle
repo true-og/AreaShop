@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+}
+
+group = 'me.wiefferink.areashop'
+version = '2.7.0-SNAPSHOT'
+
+subprojects {
+
+    plugins.apply('java')
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'paper-repo'
+            url = uri('https://papermc.io/repo/repository/maven-public/')
+        }
+        maven {
+            name = 'spigot-repo'
+            url = uri('https://hub.spigotmc.org/nexus/content/repositories/snapshots/')
+        }
+        maven {
+            name = 'jitpack'
+            url = uri('https://jitpack.io')
+            content {
+                includeGroupByRegex("com\\.github.*")
+            }
+        }
+        maven {
+            name = 'aikar-repo'
+            url = uri('https://repo.aikar.co/content/groups/aikar/')
+        }
+        maven {
+            name = 'enginehub-repo'
+            url = uri('https://maven.enginehub.org/repo/')
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile) {
+            javaToolchains.compilerFor {
+                JavaLanguageVersion.of(16)
+            }
+            options.release.set(16)
+            options.encoding = 'UTF-8'
+            options.fork = true
+            options.deprecation = true
+        }
+    }
+}
