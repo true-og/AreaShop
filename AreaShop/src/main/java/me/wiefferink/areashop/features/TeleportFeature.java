@@ -8,11 +8,13 @@ import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.areashop.tools.Value;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -414,7 +416,7 @@ public class TeleportFeature extends RegionFeature {
 		}
 
 		// Get all blocks around the player (below foot level, foot level, head level and above head level)
-		Set<Material> around = new HashSet<>();
+		Set<Material> around = EnumSet.noneOf(Material.class);
 		for(int y = 0; y <= 3; y++) {
 			for(int x = -1; x <= 1; x++) {
 				for(int z = -1; z <= 1; z++) {
@@ -443,11 +445,10 @@ public class TeleportFeature extends RegionFeature {
 	 * @return true when it is safe to spawn inside, otherwise false
 	 */
 	private static boolean canSpawnIn(Material material) {
-		String name = material.name();
-		return name.contains("DOOR")
-				|| name.contains("SIGN")
-				|| name.contains("PLATE") // Redstone plates
-				|| name.equals("DRAGON_EGG");
+		return material == Material.DRAGON_EGG
+				|| Tag.DOORS.isTagged(material)
+				|| Tag.SIGNS.isTagged(material)
+				|| Tag.PRESSURE_PLATES.isTagged(material);
 	}
 
 	/**
@@ -456,17 +457,18 @@ public class TeleportFeature extends RegionFeature {
 	 * @return true when it is safe to spawn on top of, otherwise false
 	 */
 	private static boolean cannotSpawnOn(Material material) {
-		String name = material.name();
-		return name.equals("CACTUS")
-				|| name.contains("PISTON")
-				|| name.contains("SIGN")
-				|| name.contains("DOOR")
-				|| name.contains("PLATE")
-				|| name.contains("REDSTONE_LAMP")
-				|| name.contains("FENCE")
-				|| name.contains("GLASS_PANE") || name.contains("THIN_GLASS")
-				|| name.equals("DRAGON_EGG")
-				|| name.contains("MAGMA");
+		return material == Material.CACTUS
+				|| material == Material.PISTON
+				|| material == Material.PISTON_HEAD
+				|| material == Material.MOVING_PISTON
+				|| material == Material.DRAGON_EGG
+				|| material == Material.MAGMA_BLOCK
+				|| material == Material.REDSTONE_LAMP
+				|| Tag.SIGNS.isTagged(material)
+				|| Tag.DOORS.isTagged(material)
+				|| Tag.FENCE_GATES.isTagged(material)
+				|| Tag.FENCES.isTagged(material)
+				|| material.name().contains("GLASS_PANE");
 	}
 
 	/**
@@ -475,11 +477,9 @@ public class TeleportFeature extends RegionFeature {
 	 * @return true when it is safe to spawn next to, otherwise false
 	 */
 	private static boolean cannotSpawnBeside(Material material) {
-		String name = material.name();
-		return name.contains("LAVA")
-				|| name.contains("CACTUS")
-				|| name.equals("FIRE")
-				|| name.contains("MAGMA");
+		return material == Material.LAVA
+				|| material == Material.FIRE
+				|| material == Material.MAGMA_BLOCK;
 	}
 
 	/**
