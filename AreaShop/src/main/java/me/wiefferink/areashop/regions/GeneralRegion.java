@@ -32,9 +32,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -322,7 +324,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return The region name in lowercase
 	 */
 	public String getLowerCaseName() {
-		return getName().toLowerCase();
+		return getName().toLowerCase(Locale.ENGLISH);
 	}
 
 	/**
@@ -1368,7 +1370,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param exclude    Exclude this region from the count
 	 * @return The number of regions that the player has bought or rented matching the limit group (worlds and groups filters)
 	 */
-	public int hasRegionsInLimitGroup(OfflinePlayer player, String limitGroup, List<? extends GeneralRegion> regions, GeneralRegion exclude) {
+	public int hasRegionsInLimitGroup(OfflinePlayer player, String limitGroup, Collection<? extends GeneralRegion> regions, GeneralRegion exclude) {
 		int result = 0;
 		for(GeneralRegion region : regions) {
 			if(region.getBooleanSetting("general.countForLimits")

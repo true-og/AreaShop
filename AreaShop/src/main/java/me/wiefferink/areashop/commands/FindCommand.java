@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -70,8 +72,8 @@ public class FindCommand extends CommandAreaShop {
 
 		// Find buy regions
 		if(args[1].equalsIgnoreCase("buy")) {
-			List<BuyRegion> regions = plugin.getFileManager().getBuys();
-			List<BuyRegion> results = new ArrayList<>();
+			Collection<BuyRegion> regions = plugin.getFileManager().getBuys();
+			List<BuyRegion> results = new LinkedList<>();
 			for(BuyRegion region : regions) {
 				if(!region.isSold()
 						&& ((region.getPrice() <= balance && !maxPriceSet) || (region.getPrice() <= maxPrice && maxPriceSet))
@@ -110,8 +112,8 @@ public class FindCommand extends CommandAreaShop {
 
 		// Find rental regions
 		else {
-			List<RentRegion> regions = plugin.getFileManager().getRents();
-			List<RentRegion> results = new ArrayList<>();
+			Collection<RentRegion> regions = plugin.getFileManager().getRents();
+			List<RentRegion> results = new LinkedList<>();
 			for(RentRegion region : regions) {
 				if(!region.isRented()
 						&& ((region.getPrice() <= balance && !maxPriceSet) || (region.getPrice() <= maxPrice && maxPriceSet))
