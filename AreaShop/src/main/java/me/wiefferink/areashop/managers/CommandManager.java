@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.managers;
 
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.commands.AddCommand;
 import me.wiefferink.areashop.commands.AddfriendCommand;
 import me.wiefferink.areashop.commands.AddsignCommand;
@@ -38,19 +39,26 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.plugin.Plugin;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+@Singleton
 public class CommandManager extends Manager implements CommandExecutor, TabCompleter {
 	private final ArrayList<CommandAreaShop> commands;
+
+	@Inject
+	private AreaShop plugin;
 
 	/**
 	 * Constructor.
 	 */
-	public CommandManager() {
+	CommandManager() {
 		commands = new ArrayList<>();
 		commands.add(new HelpCommand());
 		commands.add(new RentCommand());

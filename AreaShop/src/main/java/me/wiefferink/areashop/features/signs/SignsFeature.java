@@ -1,40 +1,41 @@
 package me.wiefferink.areashop.features.signs;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
+
+import javax.annotation.Nonnull;
 
 public class SignsFeature extends RegionFeature {
 
-	private static final SignListener signListener = new SignListener(AreaShop.getInstance()
-			.getSignManager());
 	private final SignManager signManager = new SignManager();
-
-	@Deprecated
-	public SignsFeature() {
-		Bukkit.getServer().getPluginManager().registerEvents(signListener, AreaShop.getInstance());
-	}
-
+	private final SignFactory signFactory;
 	/**
 	 * Constructor.
 	 * @param region The region to bind to
 	 */
-	public SignsFeature(GeneralRegion region) {
+	@AssistedInject
+	public SignsFeature(@Nonnull AreaShop plugin,
+						@Nonnull SignFactory signFactory,
+						@Assisted @Nonnull GeneralRegion region
+	) {
+		super(plugin);
+		this.signFactory = signFactory;
 		setRegion(region);
 		// Setup current signs
 		ConfigurationSection signSection = region.getConfig().getConfigurationSection("general.signs");
 		if(signSection != null) {
 			for(String signKey : signSection.getKeys(false)) {
-				RegionSign sign = new RegionSign(this, signKey);
+				RegionSign sign = signFactory.createRegionSign(this, signKey);
 				Location location = sign.getLocation();
 				if(location == null) {
 					AreaShop.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
@@ -44,11 +45,6 @@ public class SignsFeature extends RegionFeature {
 				this.signManager.addSign(sign);
 			}
 		}
-	}
-
-
-	public static void shutdownGlobalState() {
-		HandlerList.unregisterAll(signListener);
 	}
 
 	/**
@@ -115,7 +111,7 @@ public class SignsFeature extends RegionFeature {
 			getRegion().setSetting(signPath + "profile", profile);
 		}
 		// Add to the map
-		RegionSign regionSign = new RegionSign(this, String.valueOf(i));
+		RegionSign regionSign = this.signFactory.createRegionSign(this, String.valueOf(i));
 		plugin.getSignManager().addSign(regionSign);
 		this.signManager.addSign(regionSign);
 	}

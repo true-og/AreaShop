@@ -1,5 +1,8 @@
 package me.wiefferink.areashop.features;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.askandnotify.AddedFriendEvent;
 import me.wiefferink.areashop.events.askandnotify.DeletedFriendEvent;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -7,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +19,9 @@ import java.util.UUID;
 
 public class FriendsFeature extends RegionFeature {
 
-	public FriendsFeature(GeneralRegion region) {
+	@AssistedInject
+	public FriendsFeature(@Nonnull AreaShop plugin, @Assisted @Nonnull GeneralRegion region) {
+		super(plugin);
 		setRegion(region);
 	}
 

@@ -1,7 +1,7 @@
 package me.wiefferink.areashop.managers;
 
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.signs.RegionSign;
-import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Materials;
 import me.wiefferink.areashop.tools.Utils;
@@ -20,6 +20,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.BlockIterator;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,11 +30,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+@Singleton
 public class SignLinkerManager extends Manager implements Listener {
 	private final Map<UUID, SignLinker> signLinkers;
 	private boolean eventsRegistered;
 
-	public SignLinkerManager() {
+	@Inject
+	private AreaShop plugin;
+
+	SignLinkerManager() {
 		signLinkers = new HashMap<>();
 		eventsRegistered = false;
 	}

@@ -6,6 +6,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
+import javax.annotation.Nonnull;
+import java.awt.geom.Area;
+
 /*
 Possible future feature classes:
 - RestrictedToRegion feature
@@ -28,10 +31,15 @@ Possible future feature classes:
  */
 
 public abstract class RegionFeature implements Listener {
-	public static final AreaShop plugin = AreaShop.getInstance();
 
-	public YamlConfiguration config = plugin.getConfig();
+	protected final AreaShop plugin;
+	public YamlConfiguration config;
 	private GeneralRegion region;
+
+	protected RegionFeature(@Nonnull AreaShop plugin) {
+		this.plugin = plugin;
+		this.config = plugin.getConfig();
+	}
 
 	/**
 	 * Set the region for this feature.

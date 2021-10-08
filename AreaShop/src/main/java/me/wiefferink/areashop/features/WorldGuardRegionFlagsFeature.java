@@ -13,12 +13,20 @@ import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+@Singleton
 public class WorldGuardRegionFlagsFeature extends RegionFeature {
 
+	@Inject
+	WorldGuardRegionFlagsFeature(@Nonnull AreaShop plugin) {
+		super(plugin);
+	}
 
 	@EventHandler
 	public void regionUpdate(UpdateRegionEvent event) {

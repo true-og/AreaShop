@@ -26,7 +26,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,8 +51,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Singleton
 public class FileManager extends Manager {
 
+	private final AreaShop plugin;
 	private final Map<String, GeneralRegion> regions;
 	private final Map<String, BuyRegion> buys;
 	private final Map<String, RentRegion> rents;
@@ -66,8 +71,8 @@ public class FileManager extends Manager {
 	private final Set<String> worldRegionsRequireSaving;
 
 	private HashMap<String, Integer> versions = null;
-	private String versionPath = null;
-	private String schemFolder = null;
+	private final String versionPath;
+	private final String schemFolder;
 
 	// Enum for region types
 	public enum AddResult {
@@ -91,7 +96,9 @@ public class FileManager extends Manager {
 	/**
 	 * Constructor, initialize variabeles.
 	 */
-	public FileManager() {
+	@Inject
+	FileManager(AreaShop plugin) {
+		this.plugin = plugin;
 		regions = new HashMap<>();
 		buys = new HashMap<>();
 		rents = new HashMap<>();

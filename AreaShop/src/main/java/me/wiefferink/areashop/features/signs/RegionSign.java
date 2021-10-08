@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.features.signs;
 
 import com.google.common.base.Objects;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import io.papermc.lib.PaperLib;
 import me.wiefferink.areashop.AreaShop;
@@ -23,6 +25,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +34,20 @@ import java.util.List;
  */
 public class RegionSign {
 
-	private static final BlockBehaviourHelper blockHelper = AreaShop.getInstance().getNms()
-			.blockBehaviourHelper();
-	private static final SignErrorLogger errorLogger = AreaShop.getInstance()
-			.getSignErrorLogger();
+	private final BlockBehaviourHelper blockHelper;
+	private final SignErrorLogger errorLogger;
 
 	private final SignsFeature signsFeature;
 	private final String key;
 
-	public RegionSign(SignsFeature signsFeature, String key) {
+
+	@AssistedInject
+	RegionSign(BlockBehaviourHelper blockBehaviourHelper,
+					  SignErrorLogger signErrorLogger,
+					  @Assisted @Nonnull SignsFeature signsFeature,
+					  @Assisted @Nonnull String key) {
+		this.blockHelper = blockBehaviourHelper;
+		this.errorLogger = signErrorLogger;
 		this.signsFeature = signsFeature;
 		this.key = key;
 	}

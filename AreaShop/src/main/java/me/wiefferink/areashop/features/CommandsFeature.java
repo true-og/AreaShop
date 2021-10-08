@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.features;
 
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
@@ -20,9 +21,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 
+@Singleton
 public class CommandsFeature extends RegionFeature {
+
+	@Inject
+	CommandsFeature(AreaShop plugin) {
+		super(plugin);
+	}
 
 	/**
 	 * Run command for a certain event.
@@ -36,7 +45,7 @@ public class CommandsFeature extends RegionFeature {
 			return;
 		}
 		List<String> commands = eventCommandProfileSection.getStringList(event.getValue() + "." + (before ? "before" : "after"));
-		if(commands == null || commands.isEmpty()) {
+		if(commands.isEmpty()) {
 			return;
 		}
 		region.runCommands(Bukkit.getConsoleSender(), commands);

@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.managers;
 
+import com.google.inject.Injector;
+import com.google.inject.ProvisionException;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.CommandsFeature;
 import me.wiefferink.areashop.features.DebugFeature;
@@ -7,18 +9,21 @@ import me.wiefferink.areashop.features.FriendsFeature;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.features.TeleportFeature;
 import me.wiefferink.areashop.features.WorldGuardRegionFlagsFeature;
-import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@Singleton
 public class FeatureManager extends Manager {
 
 	// List of defined features
@@ -30,6 +35,12 @@ public class FeatureManager extends Manager {
 			TeleportFeature.class,
 			CommandsFeature.class
 	));
+
+	private static final Collection<Class<? extends RegionFeature>> globalFeatureClasses = Arrays.asList(
+			CommandsFeature.class,
+			TeleportFeature.class,
+			CommandsFeature.class
+	);
 	// One instance of each feature, registered for event handling
 	private final Set<RegionFeature> globalFeatures;
 	private final Map<Class<? extends RegionFeature>, Constructor<? extends RegionFeature>> regionFeatureConstructors;
@@ -37,19 +48,17 @@ public class FeatureManager extends Manager {
 	/**
 	 * Constructor.
 	 */
-	public FeatureManager() {
+	@Inject
+	FeatureManager(Injector injector) {
 		// Instantiate and register global features (one per type, for event handling)
 		globalFeatures = new HashSet<>();
-		for(Class<? extends RegionFeature> clazz : featureClasses) {
+		for(Class<? extends RegionFeature> clazz : globalFeatureClasses) {
 			try {
-				Constructor<? extends RegionFeature> constructor = clazz.getConstructor();
-				RegionFeature feature = constructor.newInstance();
+				RegionFeature feature = injector.getInstance(clazz);
 				feature.listen();
 				globalFeatures.add(feature);
-			} catch(InstantiationException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+			} catch(ProvisionException e) {
 				AreaShop.error("Failed to instantiate global feature:", clazz, e);
-			} catch(NoSuchMethodException e) {
-				// Feature does not have a global part
 			}
 		}
 

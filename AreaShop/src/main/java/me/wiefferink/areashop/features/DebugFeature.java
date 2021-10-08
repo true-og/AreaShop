@@ -19,7 +19,17 @@ import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.event.EventHandler;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class DebugFeature extends RegionFeature {
+
+	@Inject
+	DebugFeature(@Nonnull AreaShop plugin) {
+		super(plugin);
+	}
 
 	@EventHandler
 	public void buyingRegion(BuyingRegionEvent event) {

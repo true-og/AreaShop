@@ -1,5 +1,6 @@
 package me.wiefferink.areashop;
 
+import com.google.inject.Injector;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -56,6 +57,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	private static AreaShop instance = null;
 
 	// General variables
+	private Injector injector;
 	private WorldGuardPlugin worldGuard = null;
 	private WorldGuardInterface worldGuardInterface = null;
 	private WorldEditPlugin worldEdit = null;
@@ -331,7 +333,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		}
 
 		// Load all data from files and check versions
-		fileManager = new FileManager();
+		fileManager = injector.getInstance(FileManager.class);
 		managers.add(fileManager);
 		boolean loadFilesResult = fileManager.loadFiles(false);
 		error = error || !loadFilesResult;
@@ -353,7 +355,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			error("The plugin has not started, fix the errors listed above");
 			return;
 		}
-		featureManager = new FeatureManager();
+		featureManager = injector.getInstance(featureManager.getClass());
 		managers.add(featureManager);
 		signManager = new SignManager();
 		managers.add(signManager);
@@ -364,11 +366,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		setupTasks();
 
 		// Startup the CommandManager (registers itself for the command)
-		commandManager = new CommandManager();
+		commandManager = injector.getInstance(CommandManager.class);
 		managers.add(commandManager);
 
 		// Create a signLinkerManager
-		signLinkerManager = new SignLinkerManager();
+		signLinkerManager = injector.getInstance(SignLinkerManager.class);
 		managers.add(signLinkerManager);
 
 		// Register dynamic permission (things declared in config)
@@ -377,7 +379,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		// Don't initialize the updatechecker if disabled in the config
 		if(getConfig().getBoolean("checkForUpdates")) {
 			githubUpdateCheck = new GithubUpdateCheck(
-					AreaShop.getInstance(),
+					this,
 					"NLThijs48",
 					"AreaShop"
 			).withVersionComparator((latestVersion, currentVersion) ->
@@ -440,24 +442,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			manager.shutdown();
 		}
 		signErrorLogger.saveIfDirty();
-		managers = null;
-		fileManager = null;
-		languageManager = null;
-		commandManager = null;
-		signLinkerManager = null;
-		featureManager = null;
-
-		// Cleanup plugins
-		worldGuard = null;
-		worldGuardInterface = null;
-		worldEdit = null;
-		worldEditInterface = null;
-
-		// Cleanup other stuff
-		chatprefix = null;
-		debug = false;
-		ready = false;
-
 		HandlerList.unregisterAll(this);
 	}
 

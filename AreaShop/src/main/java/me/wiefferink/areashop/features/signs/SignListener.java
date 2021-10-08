@@ -27,6 +27,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -34,13 +35,14 @@ import java.util.Set;
 
 public class SignListener implements Listener {
 
-    private static final BlockBehaviourHelper behaviourHelper = AreaShop.getInstance().getNms()
-            .blockBehaviourHelper();
-    private static final AreaShop plugin = AreaShop.getInstance();
+    private final BlockBehaviourHelper behaviourHelper;
+    private final AreaShop plugin;
     private final SignManager signManager;
 
-    public SignListener(SignManager signManager) {
+    public SignListener(@Nonnull BlockBehaviourHelper behaviourHelper, @Nonnull AreaShop plugin, SignManager signManager) {
         this.signManager = signManager;
+        this.behaviourHelper = behaviourHelper;
+        this.plugin = plugin;
     }
 
 

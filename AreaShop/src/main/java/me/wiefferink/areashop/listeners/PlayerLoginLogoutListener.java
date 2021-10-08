@@ -62,13 +62,13 @@ public final class PlayerLoginLogoutListener implements Listener {
 					long warningTime = Utils.durationStringToLong(warningSetting);
 					if(region.getTimeLeft() < warningTime) {
 						// Send the warning message later to let it appear after general MOTD messages
-						AreaShop.getInstance().message(player, "rent-expireWarning", region);
+						 this.plugin.message(player, "rent-expireWarning", region);
 					}
 				}
 			}
 
 			// Notify admins for plugin updates
-			AreaShop.getInstance().notifyUpdate(player);
+			this.plugin.notifyUpdate(player);
 			return false;
 		});
 
