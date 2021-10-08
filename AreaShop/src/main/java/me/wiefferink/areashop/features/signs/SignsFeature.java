@@ -5,6 +5,7 @@ import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -20,7 +21,7 @@ public class SignsFeature extends RegionFeature {
 
 	@Deprecated
 	public SignsFeature() {
-
+		Bukkit.getServer().getPluginManager().registerEvents(signListener, AreaShop.getInstance());
 	}
 
 	/**
