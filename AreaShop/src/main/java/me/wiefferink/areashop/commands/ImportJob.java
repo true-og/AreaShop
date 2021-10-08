@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ImportJob {
@@ -399,8 +400,9 @@ public class ImportJob {
 				}
 
 				// Check if this location is already added to a region
-				RegionSign regionSign = SignsFeature.getSignByLocation(location);
-				if(regionSign != null) {
+				Optional<RegionSign> optionalRegionSign = plugin.getSignManager().signFromLocation(location);
+				if(optionalRegionSign.isPresent()) {
+					RegionSign regionSign = optionalRegionSign.get();
 					if(!regionSign.getRegion().equals(region)) {
 						message("import-signAlreadyAdded", region.getName(), signLocation, regionSign.getRegion().getName());
 					}

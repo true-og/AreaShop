@@ -10,6 +10,7 @@ dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
     implementation 'com.github.NLthijs48:BukkitDo:819d51ec2b'
     implementation 'io.papermc:paperlib:1.0.6'
+    implementation 'io.github.baked-libs:dough-data:1.0.3'
     implementation project(':areashop-interface')
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-nms')
@@ -46,6 +47,7 @@ shadowJar {
     relocate('me.wiefferink.interactivemessenger', "${base}.interactivemessenger")
     relocate('me.wiefferink.bukkitdo', "${base}.bukkitdo")
     relocate('io.papermc.lib', "${base}.paperlib")
+    relocate('io.github.bakedlibs.dough', "${base}.dough")
 }
 
 description = 'AreaShop'

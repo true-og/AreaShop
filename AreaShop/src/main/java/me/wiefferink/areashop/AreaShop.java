@@ -3,6 +3,7 @@ package me.wiefferink.areashop;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -66,6 +67,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	private CommandManager commandManager = null;
 	private SignLinkerManager signLinkerManager = null;
 	private FeatureManager featureManager = null;
+	private SignManager signManager;
 	private SignErrorLogger signErrorLogger;
 	private Set<Manager> managers = null;
 	private boolean debug = false;
@@ -349,46 +351,48 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 
 		if(error) {
 			error("The plugin has not started, fix the errors listed above");
-		} else {
-			featureManager = new FeatureManager();
-			managers.add(featureManager);
+			return;
+		}
+		featureManager = new FeatureManager();
+		managers.add(featureManager);
+		signManager = new SignManager();
+		managers.add(signManager);
 
-			// Register the event listeners
-			getServer().getPluginManager().registerEvents(new PlayerLoginLogoutListener(this), this);
+		// Register the event listeners
+		getServer().getPluginManager().registerEvents(new PlayerLoginLogoutListener(this), this);
 
-			setupTasks();
+		setupTasks();
 
-			// Startup the CommandManager (registers itself for the command)
-			commandManager = new CommandManager();
-			managers.add(commandManager);
+		// Startup the CommandManager (registers itself for the command)
+		commandManager = new CommandManager();
+		managers.add(commandManager);
 
-			// Create a signLinkerManager
-			signLinkerManager = new SignLinkerManager();
-			managers.add(signLinkerManager);
+		// Create a signLinkerManager
+		signLinkerManager = new SignLinkerManager();
+		managers.add(signLinkerManager);
 
-			// Register dynamic permission (things declared in config)
-			registerDynamicPermissions();
+		// Register dynamic permission (things declared in config)
+		registerDynamicPermissions();
 
-			// Don't initialize the updatechecker if disabled in the config
-			if(getConfig().getBoolean("checkForUpdates")) {
-				githubUpdateCheck = new GithubUpdateCheck(
-						AreaShop.getInstance(),
-						"NLThijs48",
-						"AreaShop"
-				).withVersionComparator((latestVersion, currentVersion) ->
-						!cleanVersion(latestVersion).equals(cleanVersion(currentVersion))
-				).checkUpdate(result -> {
-					AreaShop.debug("Update check result:", result);
-					if(!result.hasUpdate()) {
-						return;
-					}
+		// Don't initialize the updatechecker if disabled in the config
+		if(getConfig().getBoolean("checkForUpdates")) {
+			githubUpdateCheck = new GithubUpdateCheck(
+					AreaShop.getInstance(),
+					"NLThijs48",
+					"AreaShop"
+			).withVersionComparator((latestVersion, currentVersion) ->
+					!cleanVersion(latestVersion).equals(cleanVersion(currentVersion))
+			).checkUpdate(result -> {
+				AreaShop.debug("Update check result:", result);
+				if(!result.hasUpdate()) {
+					return;
+				}
 
-					AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://www.spigotmc.org/resources/areashop.2991/");
-					for(Player player : Utils.getOnlinePlayers()) {
-						notifyUpdate(player);
-					}
-				});
-			}
+				AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://www.spigotmc.org/resources/areashop.2991/");
+				for(Player player : Utils.getOnlinePlayers()) {
+					notifyUpdate(player);
+				}
+			});
 		}
 	}
 
@@ -525,6 +529,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 */
 	public WorldGuardInterface getWorldGuardHandler() {
 		return this.worldGuardInterface;
+	}
+
+
+	public SignManager getSignManager() {
+		return signManager;
 	}
 
 	/**

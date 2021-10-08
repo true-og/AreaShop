@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.commands;
 
+import io.github.bakedlibs.dough.blocks.BlockPosition;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
@@ -326,8 +327,8 @@ public class InfoCommand extends CommandAreaShop {
 						}
 						// Signs
 						List<String> signLocations = new ArrayList<>();
-						for(Location location : rent.getSignsFeature().getSignLocations()) {
-							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ()).getPlain());
+						for(BlockPosition location : rent.getSignsFeature().signManager().allSignLocations()) {
+							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()).getPlain());
 						}
 						if(!signLocations.isEmpty()) {
 							plugin.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));
@@ -403,8 +404,8 @@ public class InfoCommand extends CommandAreaShop {
 						}
 						// Signs
 						List<String> signLocations = new ArrayList<>();
-						for(Location location : buy.getSignsFeature().getSignLocations()) {
-							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ()).getPlain());
+						for(BlockPosition location : buy.getSignsFeature().signManager().allSignLocations()) {
+							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()).getPlain());
 						}
 						if(!signLocations.isEmpty()) {
 							plugin.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));

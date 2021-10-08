@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import io.github.bakedlibs.dough.blocks.BlockPosition;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
@@ -420,7 +421,7 @@ public class FileManager extends Manager {
 
 		// Delete the signs
 		if(region.getWorld() != null) {
-			for(Location sign : region.getSignsFeature().getSignLocations()) {
+			for(BlockPosition sign : region.getSignsFeature().signManager().allSignLocations()) {
 				sign.getBlock().setType(Material.AIR);
 			}
 		}

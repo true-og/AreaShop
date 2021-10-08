@@ -1,9 +1,9 @@
 package me.wiefferink.areashop.features.signs;
 
 import com.google.common.base.Objects;
+import io.github.bakedlibs.dough.blocks.BlockPosition;
 import io.papermc.lib.PaperLib;
 import me.wiefferink.areashop.AreaShop;
-import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -13,7 +13,6 @@ import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -43,6 +42,10 @@ public class RegionSign {
 	public RegionSign(SignsFeature signsFeature, String key) {
 		this.signsFeature = signsFeature;
 		this.key = key;
+	}
+
+	public BlockPosition getPosition() {
+		return new BlockPosition(getLocation());
 	}
 
 	/**
@@ -82,10 +85,9 @@ public class RegionSign {
 	 */
 	public void remove() {
 		getLocation().getBlock().setType(Material.AIR);
-		signsFeature.getSignsRef().remove(getStringLocation());
-		SignsFeature.getAllSigns().remove(getStringLocation());
-		SignsFeature.getSignsByChunk().get(getStringChunk()).remove(this);
 		getRegion().setSetting("general.signs." + key, null);
+		// Remove the sign from the region's sign manager
+		this.signsFeature.signManager().removeSign(this);
 	}
 
 	/**
@@ -157,7 +159,7 @@ public class RegionSign {
 			return true;
 		}
 
-		final BlockState blockState = PaperLib.getBlockState(block, false).getState();
+		BlockState blockState = PaperLib.getBlockState(block, false).getState();
 		final BlockData blockData = blockState.getBlockData();
 		Material signType = getMaterial();
 
@@ -171,6 +173,7 @@ public class RegionSign {
 			}
 			// Don't do physics here, we first need to update the direction
 			blockState.setType(signType);
+			blockState = PaperLib.getBlockState(block, false).getState();
 			if (blockData instanceof WallSign) {
 				((WallSign) blockData).setFacing(getFacing());
 			} else if (blockData instanceof Sign) {

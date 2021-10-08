@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -125,8 +126,9 @@ public class SignLinkerManager extends Manager implements Listener {
 					return;
 				}
 
-				RegionSign regionSign = SignsFeature.getSignByLocation(block.getLocation());
-				if(regionSign != null) {
+				Optional<RegionSign> optional = plugin.getSignManager().signFromLocation(block.getLocation());
+				if(optional.isPresent()) {
+					RegionSign regionSign = optional.get();
 					plugin.message(player, "linksigns-alreadyRegistered", regionSign.getRegion());
 					return;
 				}

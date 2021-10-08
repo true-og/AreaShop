@@ -11,6 +11,7 @@ import org.bukkit.util.BlockIterator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DelsignCommand extends CommandAreaShop {
 
@@ -52,12 +53,14 @@ public class DelsignCommand extends CommandAreaShop {
 			plugin.message(sender, "delsign-noSign");
 			return;
 		}
-		RegionSign regionSign = SignsFeature.getSignByLocation(block.getLocation());
-		if(regionSign == null) {
+		Optional<RegionSign> optionalSign = plugin.getSignManager().removeSign(block.getLocation());
+		if(optionalSign.isEmpty()) {
 			plugin.message(sender, "delsign-noRegion");
 			return;
 		}
+		RegionSign regionSign = optionalSign.get();
 		plugin.message(sender, "delsign-success", regionSign.getRegion());
+		plugin.getSignManager().removeSign(regionSign);
 		regionSign.remove();
 	}
 

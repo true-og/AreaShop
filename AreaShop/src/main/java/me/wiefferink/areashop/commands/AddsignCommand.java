@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -13,6 +14,7 @@ import org.bukkit.util.BlockIterator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class AddsignCommand extends CommandAreaShop {
@@ -85,8 +87,9 @@ public class AddsignCommand extends CommandAreaShop {
 				return;
 			}
 		}
-		RegionSign regionSign = SignsFeature.getSignByLocation(block.getLocation());
-		if(regionSign != null) {
+		Optional<RegionSign> optionalRegionSign = plugin.getSignManager().signFromLocation(block.getLocation());
+		if(optionalRegionSign.isPresent()) {
+			RegionSign regionSign = optionalRegionSign.get();
 			plugin.message(sender, "addsign-alreadyRegistered", regionSign.getRegion());
 			return;
 		}
