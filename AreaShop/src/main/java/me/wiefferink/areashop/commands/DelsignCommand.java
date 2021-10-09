@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.signs.RegionSign;
+import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.tools.Materials;
 import org.bukkit.Material;
@@ -9,12 +11,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockIterator;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Singleton
 public class DelsignCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private SignManager signManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop delsign";
@@ -31,11 +41,11 @@ public class DelsignCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.delsign")) {
-			plugin.message(sender, "delsign-noPermission");
+			messageBridge.message(sender, "delsign-noPermission");
 			return;
 		}
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "cmd-onlyByPlayer");
+			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 		Player player = (Player)sender;
@@ -50,17 +60,17 @@ public class DelsignCommand extends CommandAreaShop {
 			}
 		}
 		if(block == null || !Materials.isSign(block.getType())) {
-			plugin.message(sender, "delsign-noSign");
+			messageBridge.message(sender, "delsign-noSign");
 			return;
 		}
-		Optional<RegionSign> optionalSign = plugin.getSignManager().removeSign(block.getLocation());
+		Optional<RegionSign> optionalSign = signManager.removeSign(block.getLocation());
 		if(optionalSign.isEmpty()) {
-			plugin.message(sender, "delsign-noRegion");
+			messageBridge.message(sender, "delsign-noRegion");
 			return;
 		}
 		RegionSign regionSign = optionalSign.get();
-		plugin.message(sender, "delsign-success", regionSign.getRegion());
-		plugin.getSignManager().removeSign(regionSign);
+		messageBridge.message(sender, "delsign-success", regionSign.getRegion());
+		signManager.removeSign(regionSign);
 		regionSign.remove();
 	}
 

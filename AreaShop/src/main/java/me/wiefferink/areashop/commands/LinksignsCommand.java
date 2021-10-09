@@ -1,5 +1,10 @@
 package me.wiefferink.areashop.commands;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -9,7 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Singleton
 public class LinksignsCommand extends CommandAreaShop {
+
+	@Inject
+	private SignLinkerManager signLinkerManager;
+	@Inject
+	private AreaShop plugin;
+	@Inject
+	private MessageBridge messageBridge;
 
 	@Override
 	public String getCommandStart() {
@@ -27,17 +40,17 @@ public class LinksignsCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.linksigns")) {
-			plugin.message(sender, "linksigns-noPermission");
+			messageBridge.message(sender, "linksigns-noPermission");
 			return;
 		}
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "cmd-onlyByPlayer");
+			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 
 		Player player = (Player)sender;
-		if(plugin.getSignlinkerManager().isInSignLinkMode(player)) {
-			plugin.getSignlinkerManager().exitSignLinkMode(player);
+		if(signLinkerManager.isInSignLinkMode(player)) {
+			signLinkerManager.exitSignLinkMode(player);
 		} else {
 			// Get the profile
 			String profile = null;
@@ -54,12 +67,12 @@ public class LinksignsCommand extends CommandAreaShop {
 							}
 							message.addAll(Message.fromKey("addsign-profile").replacements(p).get());
 						}
-						plugin.message(sender, "addsign-wrongProfile", Message.fromList(message));
+						messageBridge.message(sender, "addsign-wrongProfile", Message.fromList(message));
 						return;
 					}
 				}
 			}
-			plugin.getSignlinkerManager().enterSignLinkMode(player, profile);
+			signLinkerManager.enterSignLinkMode(player, profile);
 		}
 	}
 

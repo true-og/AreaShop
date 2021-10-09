@@ -1,9 +1,14 @@
 package me.wiefferink.areashop.regions;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.managers.FileManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +16,8 @@ import java.util.Set;
 // TODO consider switching to saving lowercase regions
 public class RegionGroup {
 
-	private final AreaShop plugin;
+	private final Plugin plugin;
+	private final FileManager fileManager;
 	private final String name;
 	private final Set<String> regions;
 	private Set<String> autoRegions;
@@ -23,8 +29,10 @@ public class RegionGroup {
 	 * @param plugin The AreaShop plugin
 	 * @param name   Name of the group, has to be unique
 	 */
-	public RegionGroup(AreaShop plugin, String name) {
+	@AssistedInject
+	RegionGroup(@Nonnull Plugin plugin, @Nonnull FileManager fileManager, @Assisted String name) {
 		this.plugin = plugin;
+		this.fileManager = fileManager;
 		this.name = name;
 		this.autoDirty = true;
 		setSetting("name", name);
@@ -41,7 +49,7 @@ public class RegionGroup {
 	public Set<String> getAutoRegions() {
 		if(autoDirty) {
 			autoRegions = new HashSet<>();
-			for(GeneralRegion region : plugin.getFileManager().getRegions()) {
+			for(GeneralRegion region : fileManager.getRegions()) {
 				if(worlds.contains(region.getWorldName())) {
 					autoRegions.add(region.getName());
 				}
@@ -149,7 +157,7 @@ public class RegionGroup {
 	public Set<GeneralRegion> getMemberRegions() {
 		Set<GeneralRegion> result = new HashSet<>();
 		for(String playerName : getMembers()) {
-			result.add(plugin.getFileManager().getRegion(playerName));
+			result.add(fileManager.getRegion(playerName));
 		}
 		return result;
 	}
@@ -192,7 +200,7 @@ public class RegionGroup {
 	 * @return The ConfigurationSection with the settings of the group
 	 */
 	public ConfigurationSection getSettings() {
-		ConfigurationSection result =  plugin.getFileManager().getGroupSettings(name);
+		ConfigurationSection result =  fileManager.getGroupSettings(name);
 		if(result != null) {
 			return result;
 		} else {
@@ -206,20 +214,20 @@ public class RegionGroup {
 	 * @param setting The value to set
 	 */
 	public void setSetting(String path, Object setting) {
-		plugin.getFileManager().setGroupSetting(this, path, setting);
+		fileManager.setGroupSetting(this, path, setting);
 	}
 
 	/**
 	 * Indicates this file needs to be saved, will actually get saved later by a task.
 	 */
 	public void saveRequired() {
-		plugin.getFileManager().saveGroupsIsRequired();
+		fileManager.saveGroupsIsRequired();
 	}
 
 	/**
 	 * Save the groups to disk now, normally saveRequired() is preferred because of performance.
 	 */
 	public void saveNow() {
-		plugin.getFileManager().saveGroupsNow();
+		fileManager.saveGroupsNow();
 	}
 }

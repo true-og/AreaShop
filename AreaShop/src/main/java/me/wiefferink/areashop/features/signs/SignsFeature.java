@@ -17,7 +17,8 @@ import javax.annotation.Nonnull;
 
 public class SignsFeature extends RegionFeature {
 
-	private final SignManager signManager = new SignManager();
+	private final SignManager internalSignManager = new SignManager();
+	private final SignManager globalSignManager;
 	private final SignFactory signFactory;
 	/**
 	 * Constructor.
@@ -25,10 +26,12 @@ public class SignsFeature extends RegionFeature {
 	 */
 	@AssistedInject
 	public SignsFeature(@Nonnull AreaShop plugin,
+						@Nonnull SignManager signManager,
 						@Nonnull SignFactory signFactory,
 						@Assisted @Nonnull GeneralRegion region
 	) {
 		super(plugin);
+		this.globalSignManager = signManager;
 		this.signFactory = signFactory;
 		setRegion(region);
 		// Setup current signs
@@ -41,8 +44,8 @@ public class SignsFeature extends RegionFeature {
 					AreaShop.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
 					continue;
 				}
-				plugin.getSignManager().cacheForWorld(location.getWorld()).addSign(sign);
-				this.signManager.addSign(sign);
+				this.globalSignManager.cacheForWorld(location.getWorld()).addSign(sign);
+				this.internalSignManager.addSign(sign);
 			}
 		}
 	}
@@ -71,23 +74,23 @@ public class SignsFeature extends RegionFeature {
 	}
 
 	public SignManager signManager() {
-		return this.signManager;
+		return this.internalSignManager;
 	}
 
 	@Deprecated
 	public boolean needsPeriodicUpdate() {
-		return this.signManager.needsPeriodicUpdate();
+		return this.internalSignManager.needsPeriodicUpdate();
 	}
 
 	@Deprecated
 	public boolean update() {
-		return this.signManager.update();
+		return this.internalSignManager.update();
 	}
 
 	@EventHandler
 	public void regionUpdate(UpdateRegionEvent event) {
 		if (event.getRegion() == this.getRegion()) {
-			this.signManager.update();
+			this.internalSignManager.update();
 		}
 	}
 
@@ -112,8 +115,8 @@ public class SignsFeature extends RegionFeature {
 		}
 		// Add to the map
 		RegionSign regionSign = this.signFactory.createRegionSign(this, String.valueOf(i));
-		plugin.getSignManager().addSign(regionSign);
-		this.signManager.addSign(regionSign);
+		this.globalSignManager.addSign(regionSign);
+		this.internalSignManager.addSign(regionSign);
 	}
 
 }

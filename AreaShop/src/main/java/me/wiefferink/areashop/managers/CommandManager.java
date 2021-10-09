@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.managers;
 
+import com.google.inject.Injector;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.AddCommand;
 import me.wiefferink.areashop.commands.AddfriendCommand;
 import me.wiefferink.areashop.commands.AddsignCommand;
@@ -39,8 +41,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -50,49 +52,52 @@ import java.util.TreeSet;
 
 @Singleton
 public class CommandManager extends Manager implements CommandExecutor, TabCompleter {
-	private final ArrayList<CommandAreaShop> commands;
-
-	@Inject
-	private AreaShop plugin;
+	private final List<CommandAreaShop> commands;
+	private final AreaShop plugin;
+	private final MessageBridge messageBridge;
 
 	/**
 	 * Constructor.
 	 */
-	CommandManager() {
-		commands = new ArrayList<>();
-		commands.add(new HelpCommand());
-		commands.add(new RentCommand());
-		commands.add(new UnrentCommand());
-		commands.add(new BuyCommand());
-		commands.add(new SellCommand());
-		commands.add(new MeCommand());
-		commands.add(new InfoCommand());
-		commands.add(new TeleportCommand());
-		commands.add(new SetteleportCommand());
-		commands.add(new AddfriendCommand());
-		commands.add(new DelfriendCommand());
-		commands.add(new FindCommand());
-		commands.add(new ResellCommand());
-		commands.add(new StopresellCommand());
-		commands.add(new SetrestoreCommand());
-		commands.add(new SetpriceCommand());
-		commands.add(new SetownerCommand());
-		commands.add(new SetdurationCommand());
-		commands.add(new ReloadCommand());
-		commands.add(new GroupaddCommand());
-		commands.add(new GroupdelCommand());
-		commands.add(new GrouplistCommand());
-		commands.add(new GroupinfoCommand());
-		commands.add(new SchematiceventCommand());
-		commands.add(new AddCommand());
-		commands.add(new DelCommand());
-		commands.add(new AddsignCommand());
-		commands.add(new DelsignCommand());
-		commands.add(new LinksignsCommand());
-		commands.add(new StackCommand());
-		commands.add(new SetlandlordCommand());
-		commands.add(new MessageCommand());
-		commands.add(new ImportCommand());
+	@Inject
+	CommandManager(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge, @Nonnull
+				   Injector injector) {
+		this.plugin = plugin;
+		this.messageBridge = messageBridge;
+		commands = new ArrayList<>(34);
+		commands.add(new HelpCommand(this));
+		commands.add(injector.getInstance(RentCommand.class));
+		commands.add(injector.getInstance(UnrentCommand.class));
+		commands.add(injector.getInstance(BuyCommand.class));
+		commands.add(injector.getInstance(SellCommand.class));
+		commands.add(injector.getInstance(MeCommand.class));
+		commands.add(injector.getInstance(InfoCommand.class));
+		commands.add(injector.getInstance(TeleportCommand.class));
+		commands.add(injector.getInstance(SetteleportCommand.class));
+		commands.add(injector.getInstance(AddfriendCommand.class));
+		commands.add(injector.getInstance(DelfriendCommand.class));
+		commands.add(injector.getInstance(FindCommand.class));
+		commands.add(injector.getInstance(ResellCommand.class));
+		commands.add(injector.getInstance(StopresellCommand.class));
+		commands.add(injector.getInstance(SetrestoreCommand.class));
+		commands.add(injector.getInstance(SetpriceCommand.class));
+		commands.add(injector.getInstance(SetownerCommand.class));
+		commands.add(injector.getInstance(SetdurationCommand.class));
+		commands.add(injector.getInstance(ReloadCommand.class));
+		commands.add(injector.getInstance(GroupaddCommand.class));
+		commands.add(injector.getInstance(GroupdelCommand.class));
+		commands.add(injector.getInstance(GrouplistCommand.class));
+		commands.add(injector.getInstance(GroupinfoCommand.class));
+		commands.add(injector.getInstance(SchematiceventCommand.class));
+		commands.add(injector.getInstance(AddCommand.class));
+		commands.add(injector.getInstance(DelCommand.class));
+		commands.add(injector.getInstance(AddsignCommand.class));
+		commands.add(injector.getInstance(DelsignCommand.class));
+		commands.add(injector.getInstance(LinksignsCommand.class));
+		commands.add(injector.getInstance(StackCommand.class));
+		commands.add(injector.getInstance(SetlandlordCommand.class));
+		commands.add(injector.getInstance(MessageCommand.class));
+		commands.add(injector.getInstance(ImportCommand.class));
 
 		// Register commands in bukkit
 		plugin.getCommand("AreaShop").setExecutor(this);
@@ -113,13 +118,13 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 	 */
 	public void showHelp(CommandSender target) {
 		if(!target.hasPermission("areashop.help")) {
-			plugin.message(target, "help-noPermission");
+			messageBridge.message(target, "help-noPermission");
 			return;
 		}
 		// Add all messages to a list
 		ArrayList<String> messages = new ArrayList<>();
-		plugin.message(target, "help-header");
-		plugin.message(target, "help-alias");
+		messageBridge.message(target, "help-header");
+		messageBridge.message(target, "help-alias");
 		for(CommandAreaShop command : commands) {
 			String help = command.getHelp(target);
 			if(help != null && !help.isEmpty()) {
@@ -128,14 +133,14 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 		}
 		// Send the messages to the target
 		for(String message : messages) {
-			plugin.messageNoPrefix(target, message);
+			messageBridge.messageNoPrefix(target, message);
 		}
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
 		if(!plugin.isReady()) {
-			plugin.message(sender, "general-notReady");
+			messageBridge.message(sender, "general-notReady");
 			return true;
 		}
 
@@ -161,9 +166,9 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 			} else {
 				// Indicate that the '/as updaterents' and '/as updatebuys' commands are removed
 				if("updaterents".equalsIgnoreCase(args[0]) || "updatebuys".equalsIgnoreCase(args[0])) {
-					plugin.message(sender, "reload-updateCommandChanged");
+					messageBridge.message(sender, "reload-updateCommandChanged");
 				} else {
-					plugin.message(sender, "cmd-notValid");
+					messageBridge.message(sender, "cmd-notValid");
 				}
 			}
 		}

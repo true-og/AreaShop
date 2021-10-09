@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -8,11 +10,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class AddfriendCommand extends CommandAreaShop {
+
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	@Inject
+	private Plugin plugin;
 
 	@Override
 	public String getCommandStart() {
@@ -31,12 +44,12 @@ public class AddfriendCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.addfriend") && !sender.hasPermission("areashop.addfriendall")) {
-			plugin.message(sender, "addfriend-noPermission");
+			messageBridge.message(sender, "addfriend-noPermission");
 			return;
 		}
 
 		if(args.length < 2) {
-			plugin.message(sender, "addfriend-help");
+			messageBridge.message(sender, "addfriend-help");
 			return;
 		}
 
@@ -46,74 +59,74 @@ public class AddfriendCommand extends CommandAreaShop {
 				// get the region by location
 				List<GeneralRegion> regions = Utils.getImportantRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					region = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			region = plugin.getFileManager().getRegion(args[2]);
+			region = fileManager.getRegion(args[2]);
 			if(region == null) {
-				plugin.message(sender, "cmd-notRegistered", args[2]);
+				messageBridge.message(sender, "cmd-notRegistered", args[2]);
 				return;
 			}
 		}
 		if(sender.hasPermission("areashop.addfriendall")) {
 			if((region instanceof RentRegion && !((RentRegion)region).isRented())
 					|| (region instanceof BuyRegion && !((BuyRegion)region).isSold())) {
-				plugin.message(sender, "addfriend-noOwner", region);
+				messageBridge.message(sender, "addfriend-noOwner", region);
 				return;
 			}
 			OfflinePlayer friend = Bukkit.getOfflinePlayer(args[1]);
 			if(friend.getLastPlayed() == 0 && !friend.isOnline() && !plugin.getConfig().getBoolean("addFriendNotExistingPlayers")) {
-				plugin.message(sender, "addfriend-notVisited", args[1], region);
+				messageBridge.message(sender, "addfriend-notVisited", args[1], region);
 				return;
 			}
 			if(region.getFriendsFeature().getFriends().contains(friend.getUniqueId())) {
-				plugin.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
+				messageBridge.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
 				return;
 			}
 			if(region.isOwner(friend.getUniqueId())) {
-				plugin.message(sender, "addfriend-self", friend.getName(), region);
+				messageBridge.message(sender, "addfriend-self", friend.getName(), region);
 				return;
 			}
 			if(region.getFriendsFeature().addFriend(friend.getUniqueId(), sender)) {
 				region.update();
-				plugin.message(sender, "addfriend-successOther", friend.getName(), region);
+				messageBridge.message(sender, "addfriend-successOther", friend.getName(), region);
 			}
 		} else {
 			if(sender.hasPermission("areashop.addfriend") && sender instanceof Player) {
 				if(region.isOwner((Player)sender)) {
 					OfflinePlayer friend = Bukkit.getOfflinePlayer(args[1]);
 					if(friend.getLastPlayed() == 0 && !friend.isOnline() && !plugin.getConfig().getBoolean("addFriendNotExistingPlayers")) {
-						plugin.message(sender, "addfriend-notVisited", args[1], region);
+						messageBridge.message(sender, "addfriend-notVisited", args[1], region);
 						return;
 					}
 					if(region.getFriendsFeature().getFriends().contains(friend.getUniqueId())) {
-						plugin.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
+						messageBridge.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
 						return;
 					}
 					if(region.isOwner(friend.getUniqueId())) {
-						plugin.message(sender, "addfriend-self", friend.getName(), region);
+						messageBridge.message(sender, "addfriend-self", friend.getName(), region);
 						return;
 					}
 
 					if(region.getFriendsFeature().addFriend(friend.getUniqueId(), sender)) {
 						region.update();
-						plugin.message(sender, "addfriend-success", friend.getName(), region);
+						messageBridge.message(sender, "addfriend-success", friend.getName(), region);
 					}
 				} else {
-					plugin.message(sender, "addfriend-noPermissionOther", region);
+					messageBridge.message(sender, "addfriend-noPermissionOther", region);
 				}
 			} else {
-				plugin.message(sender, "addfriend-noPermission", region);
+				messageBridge.message(sender, "addfriend-noPermission", region);
 			}
 		}
 	}
@@ -126,7 +139,7 @@ public class AddfriendCommand extends CommandAreaShop {
 				result.add(player.getName());
 			}
 		} else if(toComplete == 3) {
-			result.addAll(plugin.getFileManager().getRegionNames());
+			result.addAll(fileManager.getRegionNames());
 		}
 		return result;
 	}

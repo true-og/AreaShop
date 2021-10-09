@@ -6,14 +6,17 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
 import me.wiefferink.areashop.events.notify.AddedRegionEvent;
 import me.wiefferink.areashop.events.notify.DeletedRegionEvent;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.GeneralRegion.RegionEvent;
 import me.wiefferink.areashop.regions.GeneralRegion.RegionType;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
@@ -26,8 +29,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
@@ -73,6 +77,9 @@ public class FileManager extends Manager {
 	private HashMap<String, Integer> versions = null;
 	private final String versionPath;
 	private final String schemFolder;
+	private final WorldGuardInterface worldGuardInterface;
+	private final MessageBridge messageBridge;
+	private final RegionFactory regionFactory;
 
 	// Enum for region types
 	public enum AddResult {
@@ -97,8 +104,16 @@ public class FileManager extends Manager {
 	 * Constructor, initialize variabeles.
 	 */
 	@Inject
-	FileManager(AreaShop plugin) {
+	FileManager(
+			@Nonnull AreaShop plugin,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull RegionFactory regionFactory
+	) {
 		this.plugin = plugin;
+		this.worldGuardInterface = worldGuardInterface;
+		this.messageBridge = messageBridge;
+		this.regionFactory = regionFactory;
 		regions = new HashMap<>();
 		buys = new HashMap<>();
 		rents = new HashMap<>();
@@ -189,7 +204,7 @@ public class FileManager extends Manager {
 	 * @param name The name of the region to get (will be normalized)
 	 * @return The region if found, otherwise null
 	 */
-	public GeneralRegion getRegion(String name) {
+	public @Nullable GeneralRegion getRegion(String name) {
 		return regions.get(name.toLowerCase());
 	}
 
@@ -198,7 +213,7 @@ public class FileManager extends Manager {
 	 * @param name The name of the rental region (will be normalized)
 	 * @return RentRegion if it could be found, otherwise null
 	 */
-	public RentRegion getRent(String name) {
+	public @Nullable RentRegion getRent(String name) {
 		return rents.get(name.toLowerCase(Locale.ENGLISH));
 	}
 
@@ -207,7 +222,7 @@ public class FileManager extends Manager {
 	 * @param name The name of the buy region (will be normalized)
 	 * @return BuyRegion if it could be found, otherwise null
 	 */
-	public BuyRegion getBuy(String name) {
+	public @Nullable BuyRegion getBuy(String name) {
 		return buys.get(name.toLowerCase(Locale.ENGLISH));
 	}
 
@@ -360,8 +375,8 @@ public class FileManager extends Manager {
 			player = (Player)sender;
 		}
 		// Determine if the player is an owner or member of the region
-		boolean isMember = player != null && plugin.getWorldGuardHandler().containsMember(region, player.getUniqueId());
-		boolean isOwner = player != null && plugin.getWorldGuardHandler().containsOwner(region, player.getUniqueId());
+		boolean isMember = player != null && worldGuardInterface.containsMember(region, player.getUniqueId());
+		boolean isOwner = player != null && worldGuardInterface.containsOwner(region, player.getUniqueId());
 		AreaShop.debug("checkRegionAdd: isOwner=" + isOwner + ", isMember=" + isMember);
 		String typeString;
 		if(type == RegionType.RENT) {
@@ -500,7 +515,7 @@ public class FileManager extends Manager {
 	public void updateRegions(final Collection<GeneralRegion> regions, final CommandSender confirmationReceiver) {
 		final int regionsPerTick = plugin.getConfig().getInt("update.regionsPerTick");
 		if(confirmationReceiver != null) {
-			plugin.message(confirmationReceiver, "reload-updateStart", regions.size(), regionsPerTick * 20);
+			messageBridge.message(confirmationReceiver, "reload-updateStart", regions.size(), regionsPerTick * 20);
 		}
 		Do.forAll(
 			regionsPerTick,
@@ -508,7 +523,7 @@ public class FileManager extends Manager {
 			GeneralRegion::update,
 			() -> {
 				if(confirmationReceiver != null) {
-					plugin.message(confirmationReceiver, "reload-updateComplete");
+					messageBridge.message(confirmationReceiver, "reload-updateComplete");
 				}
 			}
 		);
@@ -858,7 +873,7 @@ public class FileManager extends Manager {
 			groupsConfig = new YamlConfiguration();
 		}
 		for(String groupName : groupsConfig.getKeys(false)) {
-			RegionGroup group = new RegionGroup(plugin, groupName);
+			RegionGroup group = regionFactory.createRegionGroup(groupName);
 			groups.put(groupName, group);
 		}
 		return result;
@@ -915,9 +930,9 @@ public class FileManager extends Manager {
 				String type = regionConfig.getString("general.type");
 				GeneralRegion region;
 				if(RegionType.RENT.getValue().equals(type)) {
-					region = new RentRegion(regionConfig);
+					region = regionFactory.createRentRegion(regionConfig);
 				} else if(RegionType.BUY.getValue().equals(type)) {
-					region = new BuyRegion(regionConfig);
+					region = regionFactory.createBuyRegion(regionConfig);
 				} else {
 					noRegionType.add(regionFile.getPath());
 					continue;

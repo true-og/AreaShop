@@ -3,10 +3,15 @@ package me.wiefferink.areashop.commands;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
@@ -15,14 +20,31 @@ import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class StackCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	@Inject
+	private WorldEditInterface worldEditInterface;
+	@Inject
+	private WorldGuardInterface worldGuardInterface;
+	@Inject
+	private RegionFactory regionFactory;
+	@Inject
+	private Plugin plugin;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop stack";
@@ -40,18 +62,18 @@ public class StackCommand extends CommandAreaShop {
 	public void execute(CommandSender sender, String[] args) {
 		// Check permission
 		if(!sender.hasPermission("areashop.stack")) {
-			plugin.message(sender, "stack-noPermission");
+			messageBridge.message(sender, "stack-noPermission");
 			return;
 		}
 		// Only from ingame
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "cmd-onlyByPlayer");
+			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 		final Player player = (Player)sender;
 		// Specify enough arguments
 		if(args.length < 5) {
-			plugin.message(sender, "stack-help");
+			messageBridge.message(sender, "stack-help");
 			return;
 		}
 		// Check amount
@@ -62,7 +84,7 @@ public class StackCommand extends CommandAreaShop {
 			// Incorrect number
 		}
 		if(tempAmount <= 0) {
-			plugin.message(player, "stack-wrongAmount", args[1]);
+			messageBridge.message(player, "stack-wrongAmount", args[1]);
 			return;
 		}
 		// Check gap
@@ -70,27 +92,27 @@ public class StackCommand extends CommandAreaShop {
 		try {
 			gap = Integer.parseInt(args[2]);
 		} catch(NumberFormatException e) {
-			plugin.message(player, "stack-wrongGap", args[2]);
+			messageBridge.message(player, "stack-wrongGap", args[2]);
 			return;
 		}
 		// Check region type
 		if(!"rent".equalsIgnoreCase(args[4]) && !"buy".equalsIgnoreCase(args[4])) {
-			plugin.message(sender, "stack-help");
+			messageBridge.message(sender, "stack-help");
 			return;
 		}
 		// Get WorldEdit selection
-		final WorldEditSelection selection = plugin.getWorldEditHandler().getPlayerSelection(player);
+		final WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
 		if(selection == null) {
-			plugin.message(player, "stack-noSelection");
+			messageBridge.message(player, "stack-noSelection");
 			return;
 		}
 		// Get or create group
 		RegionGroup group = null;
 		if(args.length > 5) {
-			group = plugin.getFileManager().getGroup(args[5]);
+			group = fileManager.getGroup(args[5]);
 			if(group == null) {
-				group = new RegionGroup(plugin, args[5]);
-				plugin.getFileManager().addGroup(group);
+				group = regionFactory.createRegionGroup(args[5]);
+				fileManager.addGroup(group);
 			}
 		}
 		// Get facing of the player (must be clearly one of the four directions to make sure it is no mistake)
@@ -101,7 +123,7 @@ public class StackCommand extends CommandAreaShop {
 			facing = BlockFace.UP;
 		}
 		if(!(facing == BlockFace.NORTH || facing == BlockFace.EAST || facing == BlockFace.SOUTH || facing == BlockFace.WEST || facing == BlockFace.UP || facing == BlockFace.DOWN)) {
-			plugin.message(player, "stack-unclearDirection", facing.toString().toLowerCase().replace('_', '-'));
+			messageBridge.message(player, "stack-unclearDirection", facing.toString().toLowerCase().replace('_', '-'));
 			return;
 		}
 		Vector shift = new Vector(0, 0, 0);
@@ -138,8 +160,8 @@ public class StackCommand extends CommandAreaShop {
 		if(group != null) {
 			groupsMessage = Message.fromKey("stack-addToGroup").replacements(group.getName());
 		}
-		plugin.message(player, "stack-accepted", amount, type, gap, nameTemplate, groupsMessage);
-		plugin.message(player, "stack-addStart", amount, regionsPerTick * 20);
+		messageBridge.message(player, "stack-accepted", amount, type, gap, nameTemplate, groupsMessage);
+		messageBridge.message(player, "stack-addStart", amount, regionsPerTick * 20);
 
 		Location minimumLocation = selection.getMinimumLocation();
 		Vector minimumVector = new Vector(minimumLocation.getX(), minimumLocation.getY(), minimumLocation.getZ());
@@ -176,24 +198,24 @@ public class StackCommand extends CommandAreaShop {
 							tooHigh++;
 							continue;
 						}
-						ProtectedCuboidRegion region = plugin.getWorldGuardHandler().createCuboidRegion(regionName, minimum,maximum);
+						ProtectedCuboidRegion region = worldGuardInterface.createCuboidRegion(regionName, minimum,maximum);
 						manager.addRegion(region);
 
 						// Add the region to AreaShop
 						GeneralRegion newRegion;
 						if(rentRegions) {
-							newRegion = new RentRegion(regionName, selection.getWorld());
+							newRegion = regionFactory.createRentRegion(regionName, selection.getWorld());
 
 						} else {
-							newRegion = new BuyRegion(regionName, selection.getWorld());
+							newRegion = regionFactory.createBuyRegion(regionName, selection.getWorld());
 						}
 
 						if(finalGroup != null) {
 							finalGroup.addMember(newRegion);
 						}
-						AddingRegionEvent event = plugin.getFileManager().addRegion(newRegion);
+						AddingRegionEvent event = fileManager.addRegion(newRegion);
 						if (event.isCancelled()) {
-							plugin.message(player, "general-cancelled", event.getReason());
+							messageBridge.message(player, "general-cancelled", event.getReason());
 							continue;
 						}
 						newRegion.handleSchematicEvent(GeneralRegion.RegionEvent.CREATED);
@@ -210,7 +232,7 @@ public class StackCommand extends CommandAreaShop {
 						if(tooLow > 0) {
 							wrong.append(Message.fromKey("stack-tooLow").replacements(tooLow));
 						}
-						plugin.message(player, "stack-addComplete", added, wrong);
+						messageBridge.message(player, "stack-addComplete", added, wrong);
 					}
 					this.cancel();
 				}
@@ -245,7 +267,7 @@ public class StackCommand extends CommandAreaShop {
 			result.add("rent");
 			result.add("buy");
 		} else if(toComplete == 6) {
-			result.addAll(plugin.getFileManager().getGroupNames());
+			result.addAll(fileManager.getGroupNames());
 		}
 		return result;
 	}

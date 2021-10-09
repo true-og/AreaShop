@@ -1,13 +1,26 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class SetrestoreCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	@Inject
+	private Plugin plugin;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop setrestore";
@@ -24,16 +37,16 @@ public class SetrestoreCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.setrestore")) {
-			plugin.message(sender, "setrestore-noPermission");
+			messageBridge.message(sender, "setrestore-noPermission");
 			return;
 		}
 		if(args.length <= 2 || args[1] == null || args[2] == null) {
-			plugin.message(sender, "setrestore-help");
+			messageBridge.message(sender, "setrestore-help");
 			return;
 		}
-		GeneralRegion region = plugin.getFileManager().getRegion(args[1]);
+		GeneralRegion region = fileManager.getRegion(args[1]);
 		if(region == null) {
-			plugin.message(sender, "setrestore-notRegistered", args[1]);
+			messageBridge.message(sender, "setrestore-notRegistered", args[1]);
 			return;
 		}
 		Boolean value = null;
@@ -49,9 +62,9 @@ public class SetrestoreCommand extends CommandAreaShop {
 		}
 		if(args.length > 3) {
 			region.setSchematicProfile(args[3]);
-			plugin.message(sender, "setrestore-successProfile", valueString, args[3], region);
+			messageBridge.message(sender, "setrestore-successProfile", valueString, args[3], region);
 		} else {
-			plugin.message(sender, "setrestore-success", valueString, region);
+			messageBridge.message(sender, "setrestore-success", valueString, region);
 		}
 		region.update();
 	}
@@ -60,7 +73,7 @@ public class SetrestoreCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		List<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			result = plugin.getFileManager().getRegionNames();
+			result = fileManager.getRegionNames();
 		} else if(toComplete == 3) {
 			result.add("true");
 			result.add("false");

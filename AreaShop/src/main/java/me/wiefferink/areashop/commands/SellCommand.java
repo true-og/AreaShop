@@ -1,16 +1,26 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class SellCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop sell";
@@ -44,7 +54,7 @@ public class SellCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.sell") && !sender.hasPermission("areashop.sellown")) {
-			plugin.message(sender, "sell-noPermission");
+			messageBridge.message(sender, "sell-noPermission");
 			return;
 		}
 		BuyRegion buy;
@@ -53,27 +63,27 @@ public class SellCommand extends CommandAreaShop {
 				// get the region by location
 				List<BuyRegion> regions = Utils.getImportantBuyRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					buy = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			buy = plugin.getFileManager().getBuy(args[1]);
+			buy = fileManager.getBuy(args[1]);
 		}
 		if(buy == null) {
-			plugin.message(sender, "sell-notRegistered");
+			messageBridge.message(sender, "sell-notRegistered");
 			return;
 		}
 		if(!buy.isSold()) {
-			plugin.message(sender, "sell-notBought", buy);
+			messageBridge.message(sender, "sell-notBought", buy);
 			return;
 		}
 		buy.sell(true, sender);
@@ -83,7 +93,7 @@ public class SellCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			for(BuyRegion region : plugin.getFileManager().getBuys()) {
+			for(BuyRegion region : fileManager.getBuys()) {
 				if(region.isSold()) {
 					result.add(region.getName());
 				}

@@ -1,7 +1,10 @@
 package me.wiefferink.areashop.managers;
 
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.signs.RegionSign;
+import me.wiefferink.areashop.features.signs.SignManager;
+import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Materials;
 import me.wiefferink.areashop.tools.Utils;
@@ -37,6 +40,12 @@ public class SignLinkerManager extends Manager implements Listener {
 
 	@Inject
 	private AreaShop plugin;
+	@Inject
+	private BukkitInterface bukkitInterface;
+	@Inject
+	private SignManager signManager;
+	@Inject
+	private MessageBridge messageBridge;
 
 	SignLinkerManager() {
 		signLinkers = new HashMap<>();
@@ -57,8 +66,8 @@ public class SignLinkerManager extends Manager implements Listener {
 	 */
 	public void enterSignLinkMode(Player player, String profile) {
 		signLinkers.put(player.getUniqueId(), new SignLinker(player, profile));
-		plugin.message(player, "linksigns-first");
-		plugin.message(player, "linksigns-next");
+		messageBridge.message(player, "linksigns-first");
+		messageBridge.message(player, "linksigns-next");
 		if(!eventsRegistered) {
 			eventsRegistered = true;
 			plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -75,7 +84,7 @@ public class SignLinkerManager extends Manager implements Listener {
 			eventsRegistered = false;
 			HandlerList.unregisterAll(this);
 		}
-		plugin.message(player, "linksigns-stopped");
+		messageBridge.message(player, "linksigns-stopped");
 	}
 
 	/**
@@ -111,13 +120,13 @@ public class SignLinkerManager extends Manager implements Listener {
 						for(GeneralRegion region : regions) {
 							names.add(region.getName());
 						}
-						plugin.message(player, "linksigns-multipleRegions", Utils.createCommaSeparatedList(names));
-						plugin.message(player, "linksigns-multipleRegionsAdvice");
+						messageBridge.message(player, "linksigns-multipleRegions", Utils.createCommaSeparatedList(names));
+						messageBridge.message(player, "linksigns-multipleRegionsAdvice");
 						return;
 					}
 				}
 				// No regions found within the maximum range
-				plugin.message(player, "linksigns-noRegions");
+				messageBridge.message(player, "linksigns-noRegions");
 			} else if(event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				Block block = null;
 				BlockIterator blockIterator = new BlockIterator(player, 100);
@@ -128,17 +137,17 @@ public class SignLinkerManager extends Manager implements Listener {
 					}
 				}
 				if(block == null || !Materials.isSign(block.getType())) {
-					plugin.message(player, "linksigns-noSign");
+					messageBridge.message(player, "linksigns-noSign");
 					return;
 				}
 
-				Optional<RegionSign> optional = plugin.getSignManager().signFromLocation(block.getLocation());
+				Optional<RegionSign> optional = signManager.signFromLocation(block.getLocation());
 				if(optional.isPresent()) {
 					RegionSign regionSign = optional.get();
-					plugin.message(player, "linksigns-alreadyRegistered", regionSign.getRegion());
+					messageBridge.message(player, "linksigns-alreadyRegistered", regionSign.getRegion());
 					return;
 				}
-				linker.setSign(block.getLocation(), block.getType(), plugin.getBukkitHandler().getSignFacing(block));
+				linker.setSign(block.getLocation(), block.getType(), bukkitInterface.getSignFacing(block));
 			}
 		}
 	}
@@ -177,7 +186,7 @@ public class SignLinkerManager extends Manager implements Listener {
 			this.region = region;
 			hasRegion = true;
 			if(!isComplete()) {
-				plugin.message(linker, "linksigns-regionFound", region);
+				messageBridge.message(linker, "linksigns-regionFound", region);
 			}
 			finish();
 		}
@@ -188,7 +197,7 @@ public class SignLinkerManager extends Manager implements Listener {
 			this.facing = facing;
 			hasSign = true;
 			if(!isComplete()) {
-				plugin.message(linker, "linksigns-signFound", location.getBlockX(), location.getBlockY(), location.getBlockZ());
+				messageBridge.message(linker, "linksigns-signFound", location.getBlockX(), location.getBlockY(), location.getBlockZ());
 			}
 			finish();
 		}
@@ -197,14 +206,14 @@ public class SignLinkerManager extends Manager implements Listener {
 			if(isComplete()) {
 				region.getSignsFeature().addSign(location, type, facing, profile);
 				if(profile == null) {
-					plugin.message(linker, "addsign-success", region);
+					messageBridge.message(linker, "addsign-success", region);
 				} else {
-					plugin.message(linker, "addsign-successProfile", region, profile);
+					messageBridge.message(linker, "addsign-successProfile", region, profile);
 				}
 				region.update();
 				reset();
 
-				plugin.message(linker, "linksigns-next");
+				messageBridge.message(linker, "linksigns-next");
 			}
 		}
 

@@ -1,16 +1,26 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class UnrentCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop unrent";
@@ -44,7 +54,7 @@ public class UnrentCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.unrent") && !sender.hasPermission("areashop.unrentown")) {
-			plugin.message(sender, "unrent-noPermission");
+			messageBridge.message(sender, "unrent-noPermission");
 			return;
 		}
 		RentRegion rent;
@@ -53,27 +63,27 @@ public class UnrentCommand extends CommandAreaShop {
 				// get the region by location
 				List<RentRegion> regions = Utils.getImportantRentRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					rent = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			rent = plugin.getFileManager().getRent(args[1]);
+			rent = fileManager.getRent(args[1]);
 		}
 		if(rent == null) {
-			plugin.message(sender, "unrent-notRegistered");
+			messageBridge.message(sender, "unrent-notRegistered");
 			return;
 		}
 		if(!rent.isRented()) {
-			plugin.message(sender, "unrent-notRented", rent);
+			messageBridge.message(sender, "unrent-notRented", rent);
 			return;
 		}
 		rent.unRent(true, sender);
@@ -83,7 +93,7 @@ public class UnrentCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			for(RentRegion region : plugin.getFileManager().getRents()) {
+			for(RentRegion region : fileManager.getRents()) {
 				if(region.isRented()) {
 					result.add(region.getName());
 				}

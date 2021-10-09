@@ -4,6 +4,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -22,6 +23,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import javax.inject.Inject;
+import java.awt.geom.Area;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -41,6 +44,11 @@ public class Utils {
 	// Not used
 	private Utils() {
 	}
+
+	@Inject
+	private static AreaShop plugin;
+	@Inject
+	private static WorldGuardInterface worldGuardInterface;
 
 	private static YamlConfiguration config;
 	private static Set<String> identifiers;
@@ -317,7 +325,7 @@ public class Utils {
 	public static List<GeneralRegion> getRegionsInSelection(WorldEditSelection selection) {
 		ArrayList<GeneralRegion> result = new ArrayList<>();
 		for(ProtectedRegion region : getWorldEditRegionsInSelection(selection)) {
-			GeneralRegion asRegion = AreaShop.getInstance().getFileManager().getRegion(region.getId());
+			GeneralRegion asRegion = plugin.getFileManager().getRegion(region.getId());
 			if(asRegion != null) {
 				result.add(asRegion);
 			}
@@ -342,13 +350,13 @@ public class Utils {
 	public static List<ProtectedRegion> getWorldEditRegionsInSelection(WorldEditSelection selection) {
 		// Get all regions inside or intersecting with the WorldEdit selection of the player
 		World world = selection.getWorld();
-		RegionManager regionManager = AreaShop.getInstance().getRegionManager(world);
+		RegionManager regionManager = plugin.getRegionManager(world);
 		ArrayList<ProtectedRegion> result = new ArrayList<>();
 		Location selectionMin = selection.getMinimumLocation();
 		Location selectionMax = selection.getMaximumLocation();
 		for(ProtectedRegion region : regionManager.getRegions().values()) {
-			Vector regionMin = AreaShop.getInstance().getWorldGuardHandler().getMinimumPoint(region);
-			Vector regionMax = AreaShop.getInstance().getWorldGuardHandler().getMaximumPoint(region);
+			Vector regionMin = worldGuardInterface.getMinimumPoint(region);
+			Vector regionMax = worldGuardInterface.getMaximumPoint(region);
 			if(
 					(      // x part, resolves to true if the selection and region overlap anywhere on the x-axis
 							(regionMin.getBlockX() <= selectionMax.getBlockX() && regionMin.getBlockX() >= selectionMin.getBlockX())
@@ -381,7 +389,7 @@ public class Utils {
 	 */
 	public static List<ProtectedRegion> getImportantWorldEditRegions(Location location) {
 		List<ProtectedRegion> result = new ArrayList<>();
-		Set<ProtectedRegion> regions = AreaShop.getInstance().getWorldGuardHandler().getApplicableRegionsSet(location);
+		Set<ProtectedRegion> regions = worldGuardInterface.getApplicableRegionsSet(location);
 		if(regions != null) {
 			boolean first = true;
 			for(ProtectedRegion pr : regions) {
@@ -451,11 +459,11 @@ public class Utils {
 	 */
 	public static List<GeneralRegion> getImportantRegions(Location location, GeneralRegion.RegionType type) {
 		List<GeneralRegion> result = new ArrayList<>();
-		Set<ProtectedRegion> regions = AreaShop.getInstance().getWorldGuardHandler().getApplicableRegionsSet(location);
+		Set<ProtectedRegion> regions = worldGuardInterface.getApplicableRegionsSet(location);
 		if(regions != null) {
 			List<GeneralRegion> candidates = new ArrayList<>();
 			for(ProtectedRegion pr : regions) {
-				GeneralRegion region = AreaShop.getInstance().getFileManager().getRegion(pr.getId());
+				GeneralRegion region = plugin.getFileManager().getRegion(pr.getId());
 				if(region != null && (
 						(type == GeneralRegion.RegionType.RENT && region instanceof RentRegion)
 								|| (type == GeneralRegion.RegionType.BUY && region instanceof BuyRegion)

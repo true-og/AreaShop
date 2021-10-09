@@ -2,15 +2,19 @@ package me.wiefferink.areashop.commands;
 
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.RentingRegionEvent;
 import me.wiefferink.areashop.events.notify.BoughtRegionEvent;
 import me.wiefferink.areashop.events.notify.RentedRegionEvent;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
@@ -19,7 +23,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -29,8 +36,20 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Singleton
 public class AddCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private AreaShop plugin;
+	@Inject
+	private WorldEditInterface worldEditInterface;
+	@Inject
+	private WorldGuardInterface worldGuardInterface;
+	@Inject
+	private RegionFactory regionFactory;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop add";
@@ -59,12 +78,12 @@ public class AddCommand extends CommandAreaShop {
 				&& !sender.hasPermission("areashop.createbuy")
 				&& !sender.hasPermission("areashop.createbuy.member")
 				&& !sender.hasPermission("areashop.createbuy.owner")) {
-			plugin.message(sender, "add-noPermission");
+			messageBridge.message(sender, "add-noPermission");
 			return;
 		}
 
 		if(args.length < 2 || args[1] == null || (!"rent".equalsIgnoreCase(args[1]) && !"buy".equalsIgnoreCase(args[1]))) {
-			plugin.message(sender, "add-help");
+			messageBridge.message(sender, "add-help");
 			return;
 		}
 		Map<String, ProtectedRegion> regions = new HashMap<>();
@@ -75,18 +94,18 @@ public class AddCommand extends CommandAreaShop {
 		}
 		if(args.length == 2) {
 			if(player == null) {
-				plugin.message(sender, "cmd-weOnlyByPlayer");
+				messageBridge.message(sender, "cmd-weOnlyByPlayer");
 				return;
 			}
-			WorldEditSelection selection = plugin.getWorldEditHandler().getPlayerSelection(player);
+			WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
 			if(selection == null) {
-				plugin.message(player, "cmd-noSelection");
+				messageBridge.message(player, "cmd-noSelection");
 				return;
 			}
 			world = selection.getWorld();
 			regions = Utils.getWorldEditRegionsInSelection(selection).stream().collect(Collectors.toMap(ProtectedRegion::getId, region -> region));
 			if(regions.isEmpty()) {
-				plugin.message(player, "cmd-noWERegionsFound");
+				messageBridge.message(player, "cmd-noWERegionsFound");
 				return;
 			}
 		} else {
@@ -94,7 +113,7 @@ public class AddCommand extends CommandAreaShop {
 				if(args.length == 4) {
 					world = Bukkit.getWorld(args[3]);
 					if(world == null) {
-						plugin.message(sender, "add-incorrectWorld", args[3]);
+						messageBridge.message(sender, "add-incorrectWorld", args[3]);
 						return;
 					}
 				} else {
@@ -102,19 +121,19 @@ public class AddCommand extends CommandAreaShop {
 				}
 			} else {
 				if(args.length < 4) {
-					plugin.message(sender, "add-specifyWorld");
+					messageBridge.message(sender, "add-specifyWorld");
 					return;
 				} else {
 					world = Bukkit.getWorld(args[3]);
 					if(world == null) {
-						plugin.message(sender, "add-incorrectWorld", args[3]);
+						messageBridge.message(sender, "add-incorrectWorld", args[3]);
 						return;
 					}
 				}
 			}
 			ProtectedRegion region = plugin.getRegionManager(world).getRegion(args[2]);
 			if(region == null) {
-				plugin.message(sender, "cmd-noRegion", args[2]);
+				messageBridge.message(sender, "cmd-noRegion", args[2]);
 				return;
 			}
 			regions.put(args[2], region);
@@ -138,8 +157,8 @@ public class AddCommand extends CommandAreaShop {
 				String regionName = regionEntry.getKey();
 				ProtectedRegion region = regionEntry.getValue();
 				// Determine if the player is an owner or member of the region
-				boolean isMember = finalPlayer != null && plugin.getWorldGuardHandler().containsMember(region, finalPlayer.getUniqueId());
-				boolean isOwner = finalPlayer != null && plugin.getWorldGuardHandler().containsOwner(region, finalPlayer.getUniqueId());
+				boolean isMember = finalPlayer != null && worldGuardInterface.containsMember(region, finalPlayer.getUniqueId());
+				boolean isOwner = finalPlayer != null && worldGuardInterface.containsOwner(region, finalPlayer.getUniqueId());
 				String type;
 				if(isRent) {
 					type = "rent";
@@ -161,8 +180,8 @@ public class AddCommand extends CommandAreaShop {
 							&& ((sender.hasPermission("areashop.create" + type + ".owner") && isOwner)
 							|| (sender.hasPermission("areashop.create" + type + ".member") && isMember)));
 					List<UUID> existing = new ArrayList<>();
-					existing.addAll(plugin.getWorldGuardHandler().getOwners(region).asUniqueIdList());
-					existing.addAll(plugin.getWorldGuardHandler().getMembers(region).asUniqueIdList());
+					existing.addAll(worldGuardInterface.getOwners(region).asUniqueIdList());
+					existing.addAll(worldGuardInterface.getMembers(region).asUniqueIdList());
 
 					AreaShop.debug("regionAddLandlordStatus:", regionName,
 							"landlord:", landlord,
@@ -174,7 +193,7 @@ public class AddCommand extends CommandAreaShop {
 							"memberPermission:", sender.hasPermission("areashop.create" + type + ".member"));
 
 					if(isRent) {
-						RentRegion rent = new RentRegion(regionName, world);
+						RentRegion rent = regionFactory.createRentRegion(regionName, world);
 						// Set landlord
 						if(landlord) {
 							rent.setLandlord(finalPlayer.getUniqueId(), finalPlayer.getName());
@@ -217,7 +236,7 @@ public class AddCommand extends CommandAreaShop {
 
 						regionsSuccess.add(rent);
 					} else {
-						BuyRegion buy = new BuyRegion(regionName, world);
+						BuyRegion buy = regionFactory.createBuyRegion(regionName, world);
 						// Set landlord
 						if(landlord) {
 							buy.setLandlord(finalPlayer.getUniqueId(), finalPlayer.getName());
@@ -264,29 +283,29 @@ public class AddCommand extends CommandAreaShop {
 			},
 			() -> {
 				if(!regionsSuccess.isEmpty()) {
-					plugin.message(sender, "add-success", args[1], Utils.combinedMessage(regionsSuccess, "region"));
+					messageBridge.message(sender, "add-success", args[1], Utils.combinedMessage(regionsSuccess, "region"));
 				}
 				if(!regionsAlready.isEmpty()) {
-					plugin.message(sender, "add-failed", Utils.combinedMessage(regionsAlready, "region"));
+					messageBridge.message(sender, "add-failed", Utils.combinedMessage(regionsAlready, "region"));
 				}
 				if(!regionsAlreadyOtherWorld.isEmpty()) {
-					plugin.message(sender, "add-failedOtherWorld", Utils.combinedMessage(regionsAlreadyOtherWorld, "region"));
+					messageBridge.message(sender, "add-failedOtherWorld", Utils.combinedMessage(regionsAlreadyOtherWorld, "region"));
 				}
 				if(!regionsRentCancelled.isEmpty()) {
-					plugin.message(sender, "add-rentCancelled", Utils.combinedMessage(regionsRentCancelled, "region"));
+					messageBridge.message(sender, "add-rentCancelled", Utils.combinedMessage(regionsRentCancelled, "region"));
 				}
 				if(!regionsBuyCancelled.isEmpty()) {
-					plugin.message(sender, "add-buyCancelled", Utils.combinedMessage(regionsBuyCancelled, "region"));
+					messageBridge.message(sender, "add-buyCancelled", Utils.combinedMessage(regionsBuyCancelled, "region"));
 				}
 				if(!namesBlacklisted.isEmpty()) {
-					plugin.message(sender, "add-blacklisted", Utils.createCommaSeparatedList(namesBlacklisted));
+					messageBridge.message(sender, "add-blacklisted", Utils.createCommaSeparatedList(namesBlacklisted));
 				}
 				if(!namesNoPermission.isEmpty()) {
-					plugin.message(sender, "add-noPermissionRegions", Utils.createCommaSeparatedList(namesNoPermission));
-					plugin.message(sender, "add-noPermissionOwnerMember");
+					messageBridge.message(sender, "add-noPermissionRegions", Utils.createCommaSeparatedList(namesNoPermission));
+					messageBridge.message(sender, "add-noPermissionOwnerMember");
 				}
 				if(!namesAddCancelled.isEmpty()) {
-					plugin.message(sender, "add-rentCancelled", Utils.createCommaSeparatedList(namesAddCancelled));
+					messageBridge.message(sender, "add-rentCancelled", Utils.createCommaSeparatedList(namesAddCancelled));
 				}
 			}
 		);

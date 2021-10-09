@@ -1,20 +1,33 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+@Singleton
 public class FindCommand extends CommandAreaShop {
+
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private Economy economy;
+	@Inject
+	private FileManager fileManager;
 
 	@Override
 	public String getCommandStart() {
@@ -32,21 +45,21 @@ public class FindCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.find")) {
-			plugin.message(sender, "find-noPermission");
+			messageBridge.message(sender, "find-noPermission");
 			return;
 		}
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "cmd-onlyByPlayer");
+			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 		if(args.length <= 1 || args[1] == null || (!args[1].equalsIgnoreCase("buy") && !args[1].equalsIgnoreCase("rent"))) {
-			plugin.message(sender, "find-help");
+			messageBridge.message(sender, "find-help");
 			return;
 		}
 		Player player = (Player)sender;
 		double balance = 0.0;
-		if(plugin.getEconomy() != null) {
-			balance = plugin.getEconomy().getBalance(player);
+		if(economy != null) {
+			balance = economy.getBalance(player);
 		}
 		double maxPrice = 0;
 		boolean maxPriceSet = false;
@@ -57,22 +70,22 @@ public class FindCommand extends CommandAreaShop {
 				maxPrice = Double.parseDouble(args[2]);
 				maxPriceSet = true;
 			} catch(NumberFormatException e) {
-				plugin.message(sender, "find-wrongMaxPrice", args[2]);
+				messageBridge.message(sender, "find-wrongMaxPrice", args[2]);
 				return;
 			}
 		}
 		// Parse optional group argument
 		if(args.length >= 4) {
-			group = plugin.getFileManager().getGroup(args[3]);
+			group = fileManager.getGroup(args[3]);
 			if(group == null) {
-				plugin.message(sender, "find-wrongGroup", args[3]);
+				messageBridge.message(sender, "find-wrongGroup", args[3]);
 				return;
 			}
 		}
 
 		// Find buy regions
 		if(args[1].equalsIgnoreCase("buy")) {
-			Collection<BuyRegion> regions = plugin.getFileManager().getBuys();
+			Collection<BuyRegion> regions = fileManager.getBuys();
 			List<BuyRegion> results = new LinkedList<>();
 			for(BuyRegion region : regions) {
 				if(!region.isSold()
@@ -92,9 +105,9 @@ public class FindCommand extends CommandAreaShop {
 
 				// Teleport
 				if(maxPriceSet) {
-					plugin.message(player, "find-successMax", "buy", Utils.formatCurrency(maxPrice), onlyInGroup, region);
+					messageBridge.message(player, "find-successMax", "buy", Utils.formatCurrency(maxPrice), onlyInGroup, region);
 				} else {
-					plugin.message(player, "find-success", "buy", Utils.formatCurrency(balance), onlyInGroup, region);
+					messageBridge.message(player, "find-success", "buy", Utils.formatCurrency(balance), onlyInGroup, region);
 				}
 				region.getTeleportFeature().teleportPlayer(player, region.getBooleanSetting("general.findTeleportToSign"), false);
 			} else {
@@ -103,16 +116,16 @@ public class FindCommand extends CommandAreaShop {
 					onlyInGroup = Message.fromKey("find-onlyInGroup").replacements(args[3]);
 				}
 				if(maxPriceSet) {
-					plugin.message(player, "find-noneFoundMax", "buy", Utils.formatCurrency(maxPrice), onlyInGroup);
+					messageBridge.message(player, "find-noneFoundMax", "buy", Utils.formatCurrency(maxPrice), onlyInGroup);
 				} else {
-					plugin.message(player, "find-noneFound", "buy", Utils.formatCurrency(balance), onlyInGroup);
+					messageBridge.message(player, "find-noneFound", "buy", Utils.formatCurrency(balance), onlyInGroup);
 				}
 			}
 		}
 
 		// Find rental regions
 		else {
-			Collection<RentRegion> regions = plugin.getFileManager().getRents();
+			Collection<RentRegion> regions = fileManager.getRents();
 			List<RentRegion> results = new LinkedList<>();
 			for(RentRegion region : regions) {
 				if(!region.isRented()
@@ -132,9 +145,9 @@ public class FindCommand extends CommandAreaShop {
 
 				// Teleport
 				if(maxPriceSet) {
-					plugin.message(player, "find-successMax", "rent", Utils.formatCurrency(maxPrice), onlyInGroup, region);
+					messageBridge.message(player, "find-successMax", "rent", Utils.formatCurrency(maxPrice), onlyInGroup, region);
 				} else {
-					plugin.message(player, "find-success", "rent", Utils.formatCurrency(balance), onlyInGroup, region);
+					messageBridge.message(player, "find-success", "rent", Utils.formatCurrency(balance), onlyInGroup, region);
 				}
 				region.getTeleportFeature().teleportPlayer(player, region.getBooleanSetting("general.findTeleportToSign"), false);
 			} else {
@@ -143,9 +156,9 @@ public class FindCommand extends CommandAreaShop {
 					onlyInGroup = Message.fromKey("find-onlyInGroup").replacements(args[3]);
 				}
 				if(maxPriceSet) {
-					plugin.message(player, "find-noneFoundMax", "rent", Utils.formatCurrency(maxPrice), onlyInGroup);
+					messageBridge.message(player, "find-noneFoundMax", "rent", Utils.formatCurrency(maxPrice), onlyInGroup);
 				} else {
-					plugin.message(player, "find-noneFound", "rent", Utils.formatCurrency(balance), onlyInGroup);
+					messageBridge.message(player, "find-noneFound", "rent", Utils.formatCurrency(balance), onlyInGroup);
 				}
 			}
 		}

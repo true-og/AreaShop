@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -7,11 +9,19 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class SetpriceCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop setprice";
@@ -28,11 +38,11 @@ public class SetpriceCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.setprice") && (!sender.hasPermission("areashop.setprice.landlord") && sender instanceof Player)) {
-			plugin.message(sender, "setprice-noPermission");
+			messageBridge.message(sender, "setprice-noPermission");
 			return;
 		}
 		if(args.length < 2 || args[1] == null) {
-			plugin.message(sender, "setprice-help");
+			messageBridge.message(sender, "setprice-help");
 			return;
 		}
 		GeneralRegion region;
@@ -41,27 +51,27 @@ public class SetpriceCommand extends CommandAreaShop {
 				// get the region by location
 				List<GeneralRegion> regions = Utils.getImportantRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					region = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			region = plugin.getFileManager().getRegion(args[2]);
+			region = fileManager.getRegion(args[2]);
 		}
 		if(region == null) {
-			plugin.message(sender, "setprice-notRegistered", args[2]);
+			messageBridge.message(sender, "setprice-notRegistered", args[2]);
 			return;
 		}
 		if(!sender.hasPermission("areashop.setprice") && !(sender instanceof Player && region.isLandlord(((Player)sender).getUniqueId()))) {
-			plugin.message(sender, "setprice-noLandlord", region);
+			messageBridge.message(sender, "setprice-noLandlord", region);
 			return;
 		}
 		if("default".equalsIgnoreCase(args[1]) || "reset".equalsIgnoreCase(args[1])) {
@@ -71,22 +81,22 @@ public class SetpriceCommand extends CommandAreaShop {
 				((BuyRegion)region).setPrice(null);
 			}
 			region.update();
-			plugin.message(sender, "setprice-successRemoved", region);
+			messageBridge.message(sender, "setprice-successRemoved", region);
 			return;
 		}
 		double price;
 		try {
 			price = Double.parseDouble(args[1]);
 		} catch(NumberFormatException e) {
-			plugin.message(sender, "setprice-wrongPrice", args[1], region);
+			messageBridge.message(sender, "setprice-wrongPrice", args[1], region);
 			return;
 		}
 		if(region instanceof RentRegion) {
 			((RentRegion)region).setPrice(price);
-			plugin.message(sender, "setprice-successRent", region);
+			messageBridge.message(sender, "setprice-successRent", region);
 		} else if(region instanceof BuyRegion) {
 			((BuyRegion)region).setPrice(price);
-			plugin.message(sender, "setprice-successBuy", region);
+			messageBridge.message(sender, "setprice-successBuy", region);
 		}
 		region.update();
 	}
@@ -95,7 +105,7 @@ public class SetpriceCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		List<String> result = new ArrayList<>();
 		if(toComplete == 3) {
-			result = plugin.getFileManager().getRegionNames();
+			result = fileManager.getRegionNames();
 		}
 		return result;
 	}

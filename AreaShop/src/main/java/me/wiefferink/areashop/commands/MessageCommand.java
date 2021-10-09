@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.apache.commons.lang.StringUtils;
@@ -7,11 +8,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class MessageCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop message";
@@ -26,18 +33,18 @@ public class MessageCommand extends CommandAreaShop {
 	@Override
 	public void execute(final CommandSender sender, final String[] args) {
 		if(!sender.hasPermission("areashop.message")) {
-			plugin.message(sender, "message-noPermission");
+			messageBridge.message(sender, "message-noPermission");
 			return;
 		}
 
 		if(args.length < 3) {
-			plugin.message(sender, "message-help");
+			messageBridge.message(sender, "message-help");
 			return;
 		}
 
 		Player player = Bukkit.getPlayer(args[1]);
 		if(player == null) {
-			plugin.message(sender, "message-notOnline", args[1]);
+			messageBridge.message(sender, "message-notOnline", args[1]);
 			return;
 		}
 

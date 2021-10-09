@@ -1,6 +1,7 @@
 package me.wiefferink.areashop.listeners;
 
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -15,6 +16,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,14 +24,17 @@ import java.util.List;
  * Notify region expiry and track activity time.
  */
 public final class PlayerLoginLogoutListener implements Listener {
+
 	private final AreaShop plugin;
+	private final MessageBridge messageBridge;
 
 	/**
 	 * Constructor.
 	 * @param plugin The AreaShop plugin
 	 */
-	public PlayerLoginLogoutListener(AreaShop plugin) {
+	public PlayerLoginLogoutListener(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge) {
 		this.plugin = plugin;
+		this.messageBridge = messageBridge;
 	}
 
 	/**
@@ -62,7 +67,7 @@ public final class PlayerLoginLogoutListener implements Listener {
 					long warningTime = Utils.durationStringToLong(warningSetting);
 					if(region.getTimeLeft() < warningTime) {
 						// Send the warning message later to let it appear after general MOTD messages
-						 this.plugin.message(player, "rent-expireWarning", region);
+						 messageBridge.message(player, "rent-expireWarning", region);
 					}
 				}
 			}

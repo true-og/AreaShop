@@ -1,6 +1,8 @@
 package me.wiefferink.areashop;
 
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Stage;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -16,8 +18,12 @@ import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.managers.Manager;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.managers.SignLinkerManager;
+import me.wiefferink.areashop.modules.AreaShopModule;
+import me.wiefferink.areashop.modules.BukkitModule;
+import me.wiefferink.areashop.modules.DependencyModule;
 import me.wiefferink.areashop.nms.NMS;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
+import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.processing.Message;
@@ -64,6 +70,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	private WorldEditInterface worldEditInterface = null;
 	private NMS nms;
 	private BukkitInterface bukkitInterface = null;
+	private MessageBridge messageBridge;
 	private FileManager fileManager = null;
 	private LanguageManager languageManager = null;
 	private CommandManager commandManager = null;
@@ -161,7 +168,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		Do.init(this);
 		managers = new HashSet<>();
 		boolean error = false;
-
+		messageBridge = new SimpleMessageBridge();
 		signErrorLogger = new SignErrorLogger(new File(getDataFolder(), signLogFile));
 
 		// Setup NMS Impl
@@ -269,6 +276,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			wgVersion = "WorldGuardHandler" + wgVersion;
 		}
 
+		DependencyModule dependencyModule = new DependencyModule(worldEdit, worldGuard, getEconomy(), getPermissionProvider());
+
 		// Check if FastAsyncWorldEdit is installed
 		boolean fawe;
 		try {
@@ -332,6 +341,9 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			error = true;
 		}
 
+		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, bukkitInterface, worldEditInterface, worldGuardInterface, signErrorLogger, dependencyModule);
+		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
+
 		// Load all data from files and check versions
 		fileManager = injector.getInstance(FileManager.class);
 		managers.add(fileManager);
@@ -355,13 +367,14 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 			error("The plugin has not started, fix the errors listed above");
 			return;
 		}
-		featureManager = injector.getInstance(featureManager.getClass());
+		featureManager = injector.getInstance(FeatureManager.class);
+		featureManager.initializeFeatures(injector);
 		managers.add(featureManager);
 		signManager = new SignManager();
 		managers.add(signManager);
 
 		// Register the event listeners
-		getServer().getPluginManager().registerEvents(new PlayerLoginLogoutListener(this), this);
+		getServer().getPluginManager().registerEvents(new PlayerLoginLogoutListener(this, messageBridge), this);
 
 		setupTasks();
 
@@ -404,7 +417,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 */
 	public void notifyUpdate(CommandSender sender) {
 		if(githubUpdateCheck != null && githubUpdateCheck.hasUpdate() && sender.hasPermission("areashop.notifyupdate")) {
-			AreaShop.getInstance().message(sender, "update-playerNotify", cleanVersion(githubUpdateCheck.getCurrentVersion()), cleanVersion(githubUpdateCheck.getLatestVersion()));
+			messageBridge.message(sender, "update-playerNotify", cleanVersion(githubUpdateCheck.getCurrentVersion()), cleanVersion(githubUpdateCheck.getLatestVersion()));
 		}
 	}
 
@@ -594,7 +607,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 */
 	public Economy getEconomy() {
 		RegisteredServiceProvider<Economy> economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-		if(economy == null || economy.getProvider() == null) {
+		if(economy == null) {
 			error("There is no economy provider to support Vault, make sure you installed an economy plugin");
 			return null;
 		}
@@ -607,7 +620,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 	 */
 	public net.milkbowl.vault.permission.Permission getPermissionProvider() {
 		RegisteredServiceProvider<net.milkbowl.vault.permission.Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
-		if (permissionProvider == null || permissionProvider.getProvider() == null) {
+		if (permissionProvider == null) {
 			return null;
 		}
 		return permissionProvider.getProvider();
@@ -752,26 +765,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		}
 	}
 
-	/**
-	 * Send a message to a target without a prefix.
-	 * @param target       The target to send the message to
-	 * @param key          The key of the language string
-	 * @param replacements The replacements to insert in the message
-	 */
-	public void messageNoPrefix(Object target, String key, Object... replacements) {
-		Message.fromKey(key).replacements(replacements).send(target);
-	}
-
-	/**
-	 * Send a message to a target, prefixed by the default chat prefix.
-	 * @param target       The target to send the message to
-	 * @param key          The key of the language string
-	 * @param replacements The replacements to insert in the message
-	 */
-	public void message(Object target, String key, Object... replacements) {
-		Message.fromKey(key).prefix().replacements(replacements).send(target);
-	}
-
 
 	/**
 	 * Return the config.
@@ -843,7 +836,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopInterface {
 		fileManager.saveRequiredFilesAtOnce();
 		fileManager.loadFiles(true);
 		setupLanguageManager();
-		message(confirmationReceiver, "reload-reloading");
+		messageBridge.message(confirmationReceiver, "reload-reloading");
 		fileManager.checkRents();
 		fileManager.updateAllRegions(confirmationReceiver);
 	}

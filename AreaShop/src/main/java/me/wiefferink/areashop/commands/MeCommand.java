@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -9,12 +11,20 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Singleton
 public class MeCommand extends CommandAreaShop {
+
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
 
 	@Override
 	public String getCommandStart() {
@@ -32,13 +42,13 @@ public class MeCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.me")) {
-			plugin.message(sender, "me-noPermission");
+			messageBridge.message(sender, "me-noPermission");
 			return;
 		}
 		OfflinePlayer player = null;
 		if(!(sender instanceof Player)) {
 			if(args.length <= 1) {
-				plugin.message(sender, "me-notAPlayer");
+				messageBridge.message(sender, "me-notAPlayer");
 				return;
 			}
 		} else {
@@ -46,31 +56,31 @@ public class MeCommand extends CommandAreaShop {
 		}
 		if(args.length > 1) {
 			player = Bukkit.getOfflinePlayer(args[1]);
-			if(player == null) {
-				plugin.message(sender, "me-noPlayer", args[1]);
+			if(!player.hasPlayedBefore()) {
+				messageBridge.message(sender, "me-noPlayer", args[1]);
 				return;
 			}
 		}
-		if(player == null) {
+		if(!player.hasPlayedBefore()) {
 			return;
 		}
 
 		// Get the regions owned by the player
 		Set<RentRegion> rentRegions = new HashSet<>();
-		for(RentRegion region : plugin.getFileManager().getRents()) {
+		for(RentRegion region : fileManager.getRents()) {
 			if(region.isOwner(player)) {
 				rentRegions.add(region);
 			}
 		}
 		Set<BuyRegion> buyRegions = new HashSet<>();
-		for(BuyRegion region : plugin.getFileManager().getBuys()) {
+		for(BuyRegion region : fileManager.getBuys()) {
 			if(region.isOwner(player)) {
 				buyRegions.add(region);
 			}
 		}
 		// Get the regions the player is added as friend
 		Set<GeneralRegion> friendRegions = new HashSet<>();
-		for(GeneralRegion region : plugin.getFileManager().getRegions()) {
+		for(GeneralRegion region : fileManager.getRegions()) {
 			if(region.getFriendsFeature().getFriends().contains(player.getUniqueId())) {
 				friendRegions.add(region);
 			}
@@ -79,28 +89,28 @@ public class MeCommand extends CommandAreaShop {
 		// Send messages
 		boolean foundSome = !rentRegions.isEmpty() || !buyRegions.isEmpty() || !friendRegions.isEmpty();
 		if(foundSome) {
-			plugin.message(sender, "me-header", player.getName());
+			messageBridge.message(sender, "me-header", player.getName());
 		}
 		if(!rentRegions.isEmpty()) {
 			for(RentRegion region : rentRegions) {
-				plugin.messageNoPrefix(sender, "me-rentLine", region);
+				messageBridge.messageNoPrefix(sender, "me-rentLine", region);
 			}
 		}
 		if(!buyRegions.isEmpty()) {
 			for(BuyRegion region : buyRegions) {
-				plugin.messageNoPrefix(sender, "me-buyLine", region);
+				messageBridge.messageNoPrefix(sender, "me-buyLine", region);
 			}
 		}
 		if(!friendRegions.isEmpty()) {
 			for(GeneralRegion region : friendRegions) {
-				plugin.messageNoPrefix(sender, "me-friendLine", region);
+				messageBridge.messageNoPrefix(sender, "me-friendLine", region);
 			}
 		}
 
 		if(!foundSome) {
-			plugin.message(sender, "me-nothing", player.getName());
+			messageBridge.message(sender, "me-nothing", player.getName());
 		} else {
-			plugin.messageNoPrefix(sender, "me-clickHint");
+			messageBridge.messageNoPrefix(sender, "me-clickHint");
 		}
 	}
 

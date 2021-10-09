@@ -1,9 +1,20 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import org.bukkit.command.CommandSender;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class ReloadCommand extends CommandAreaShop {
 
+	@Inject
+	private AreaShop plugin;
+	@Inject
+	private MessageBridge messageBridge;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop reload";
@@ -23,7 +34,7 @@ public class ReloadCommand extends CommandAreaShop {
 			// Reload the configuration files and update all region flags/signs
 			plugin.reload(sender);
 		} else {
-			plugin.message(sender, "reload-noPermission");
+			messageBridge.message(sender, "reload-noPermission");
 		}
 	}
 }

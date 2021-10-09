@@ -1,6 +1,5 @@
 package me.wiefferink.areashop.commands;
 
-import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
@@ -16,11 +15,9 @@ import java.util.Map;
  */
 public abstract class CommandAreaShop {
 
-	final AreaShop plugin = AreaShop.getInstance();
-
 	private final Map<String, CommandTime> lastUsed;
 
-	public CommandAreaShop() {
+	protected CommandAreaShop() {
 		lastUsed = new HashMap<>();
 	}
 
@@ -89,7 +86,7 @@ public abstract class CommandAreaShop {
 		return false;
 	}
 
-	private class CommandTime {
+	private static class CommandTime {
 		public final String command;
 		public final long time;
 

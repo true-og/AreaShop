@@ -1,8 +1,10 @@
 package me.wiefferink.areashop.features;
 
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.askandnotify.AddedFriendEvent;
 import me.wiefferink.areashop.events.askandnotify.DeletedFriendEvent;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -19,6 +21,9 @@ import java.util.UUID;
 
 public class FriendsFeature extends RegionFeature {
 
+	@Inject
+	private MessageBridge messageBridge;
+	
 	@AssistedInject
 	public FriendsFeature(@Nonnull AreaShop plugin, @Assisted @Nonnull GeneralRegion region) {
 		super(plugin);
@@ -36,7 +41,7 @@ public class FriendsFeature extends RegionFeature {
 		AddedFriendEvent event = new AddedFriendEvent(getRegion(), Bukkit.getOfflinePlayer(player), by);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
-			plugin.message(by, "general-cancelled", event.getReason(), this);
+			messageBridge.message(by, "general-cancelled", event.getReason(), this);
 			return false;
 		}
 
@@ -58,7 +63,7 @@ public class FriendsFeature extends RegionFeature {
 		DeletedFriendEvent event = new DeletedFriendEvent(getRegion(), Bukkit.getOfflinePlayer(player), by);
 		Bukkit.getPluginManager().callEvent(event);
 		if(event.isCancelled()) {
-			plugin.message(by, "general-cancelled", event.getReason(), this);
+			messageBridge.message(by, "general-cancelled", event.getReason(), this);
 			return false;
 		}
 

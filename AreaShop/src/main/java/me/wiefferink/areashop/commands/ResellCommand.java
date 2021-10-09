@@ -1,15 +1,25 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class ResellCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop resell";
@@ -26,24 +36,24 @@ public class ResellCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.resell") && !sender.hasPermission("areashop.resellall")) {
-			plugin.message(sender, "resell-noPermissionOther");
+			messageBridge.message(sender, "resell-noPermissionOther");
 			return;
 		}
 
 		if(args.length <= 1) {
-			plugin.message(sender, "resell-help");
+			messageBridge.message(sender, "resell-help");
 			return;
 		}
 		double price;
 		try {
 			price = Double.parseDouble(args[1]);
 		} catch(NumberFormatException e) {
-			plugin.message(sender, "resell-wrongPrice", args[1]);
+			messageBridge.message(sender, "resell-wrongPrice", args[1]);
 			return;
 		}
 
 		if(price < 0) {
-			plugin.message(sender, "resell-wrongPrice", args[1]);
+			messageBridge.message(sender, "resell-wrongPrice", args[1]);
 			return;
 		}
 
@@ -53,53 +63,53 @@ public class ResellCommand extends CommandAreaShop {
 				// get the region by location
 				List<BuyRegion> regions = Utils.getImportantBuyRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					buy = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			buy = plugin.getFileManager().getBuy(args[2]);
+			buy = fileManager.getBuy(args[2]);
 			if(buy == null) {
-				plugin.message(sender, "resell-notRegistered", args[2]);
+				messageBridge.message(sender, "resell-notRegistered", args[2]);
 				return;
 			}
 		}
 		if(buy == null) {
-			plugin.message(sender, "cmd-noRegionsAtLocation");
+			messageBridge.message(sender, "cmd-noRegionsAtLocation");
 			return;
 		}
 		if(!buy.isSold()) {
-			plugin.message(sender, "resell-notBought", buy);
+			messageBridge.message(sender, "resell-notBought", buy);
 			return;
 		}
 		if(sender.hasPermission("areashop.resellall")) {
 			buy.enableReselling(price);
 			buy.update();
-			plugin.message(sender, "resell-success", buy);
+			messageBridge.message(sender, "resell-success", buy);
 		} else if(sender.hasPermission("areashop.resell") && sender instanceof Player) {
 			if(!buy.isOwner((Player)sender)) {
-				plugin.message(sender, "resell-noPermissionOther", buy);
+				messageBridge.message(sender, "resell-noPermissionOther", buy);
 				return;
 			}
 
 			if(buy.getBooleanSetting("buy.resellDisabled")) {
-				plugin.message(sender, "resell-disabled", buy);
+				messageBridge.message(sender, "resell-disabled", buy);
 				return;
 			}
 
 			buy.enableReselling(price);
 			buy.update();
-			plugin.message(sender, "resell-success", buy);
+			messageBridge.message(sender, "resell-success", buy);
 		} else {
-			plugin.message(sender, "resell-noPermission", buy);
+			messageBridge.message(sender, "resell-noPermission", buy);
 		}
 	}
 
@@ -107,7 +117,7 @@ public class ResellCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 3) {
-			for(BuyRegion region : plugin.getFileManager().getBuys()) {
+			for(BuyRegion region : fileManager.getBuys()) {
 				if(region.isSold() && !region.isInResellingMode()) {
 					result.add(region.getName());
 				}

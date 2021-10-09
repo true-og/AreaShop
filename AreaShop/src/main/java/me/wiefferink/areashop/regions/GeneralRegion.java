@@ -10,6 +10,9 @@ import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.features.TeleportFeature;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
@@ -27,6 +30,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -42,9 +46,13 @@ import java.util.Set;
 import java.util.UUID;
 
 public abstract class GeneralRegion implements GeneralRegionInterface, Comparable<GeneralRegion>, ReplacementProvider {
-	static final AreaShop plugin = AreaShop.getInstance();
 
-	final YamlConfiguration config;
+	protected final AreaShop plugin;
+	protected final FeatureManager featureManager;
+	protected final WorldEditInterface worldEditInterface;
+	protected final WorldGuardInterface worldGuardInterface;
+
+	protected final YamlConfiguration config;
 	private boolean saveRequired = false;
 	private boolean deleted = false;
 	private long volume = -1;
@@ -148,7 +156,17 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * Constructor, used to restore regions from disk at startup.
 	 * @param config The configuration of the region
 	 */
-	public GeneralRegion(YamlConfiguration config) {
+	protected GeneralRegion(
+			@Nonnull AreaShop plugin,
+			@Nonnull FeatureManager featureManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull YamlConfiguration config
+	) {
+		this.plugin = plugin;
+		this.featureManager = featureManager;
+		this.worldEditInterface = worldEditInterface;
+		this.worldGuardInterface = worldGuardInterface;
 		this.config = config;
 		setup();
 	}
@@ -158,8 +176,17 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param name  Name of the WorldGuard region that this region is attached to
 	 * @param world The world of the WorldGuard region
 	 */
-	public GeneralRegion(String name, World world) {
-		config = new YamlConfiguration();
+	protected GeneralRegion(@Nonnull AreaShop plugin,
+							@Nonnull FeatureManager featureManager,
+							@Nonnull WorldEditInterface worldEditInterface,
+							@Nonnull WorldGuardInterface worldGuardInterface,
+							@Nonnull String name,
+							@Nonnull World world) {
+		this.config = new YamlConfiguration();
+		this.plugin = plugin;
+		this.featureManager = featureManager;
+		this.worldGuardInterface = worldGuardInterface;
+		this.worldEditInterface = worldEditInterface;
 		setSetting("general.name", name);
 		setSetting("general.world", world.getName());
 		setSetting("general.type", getType().getValue().toLowerCase());
@@ -191,7 +218,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	public <T extends RegionFeature> T getFeature(Class<T> clazz) {
 		RegionFeature result = features.get(clazz);
 		if(result == null) {
-			result = plugin.getFeatureManager().getRegionFeature(this, clazz);
+			result = featureManager.getRegionFeature(this, clazz);
 			features.put(clazz, result);
 		}
 		return clazz.cast(result);
@@ -525,7 +552,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return Vector
 	 */
 	public Vector getMinimumPoint() {
-		return plugin.getWorldGuardHandler().getMinimumPoint(getRegion());
+		return worldGuardInterface.getMinimumPoint(getRegion());
 	}
 
 	/**
@@ -533,7 +560,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return Vector
 	 */
 	public Vector getMaximumPoint() {
-		return plugin.getWorldGuardHandler().getMaximumPoint(getRegion());
+		return worldGuardInterface.getMaximumPoint(getRegion());
 	}
 
 	/**
@@ -774,7 +801,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 				return false;
 			}
 		}
-		boolean result = plugin.getWorldEditHandler().saveRegionBlocks(saveFile, this);
+		boolean result = worldEditInterface.saveRegionBlocks(saveFile, this);
 		if(result) {
 			AreaShop.debug("Saved schematic for region " + getName());
 		}
@@ -793,7 +820,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		}
 		// The path to save the schematic
 		File restoreFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
-		boolean result = plugin.getWorldEditHandler().restoreRegionBlocks(restoreFile, this);
+		boolean result = worldEditInterface.restoreRegionBlocks(restoreFile, this);
 		if(result) {
 			AreaShop.debug("Restored schematic for region " + getName());
 
@@ -809,8 +836,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	public void resetRegionFlags() {
 		ProtectedRegion region = getRegion();
 		if(region != null) {
-			region.setFlag(plugin.getWorldGuardHandler().fuzzyMatchFlag("greeting"), null);
-			region.setFlag(plugin.getWorldGuardHandler().fuzzyMatchFlag("farewell"), null);
+			region.setFlag(worldGuardInterface.fuzzyMatchFlag("greeting"), null);
+			region.setFlag(worldGuardInterface.fuzzyMatchFlag("farewell"), null);
 		}
 	}
 
@@ -1520,7 +1547,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			}
 			// Estimate, but quick algorithm
 			else {
-				List<Vector> points = plugin.getWorldGuardHandler().getRegionPoints(region);
+				List<Vector> points = worldGuardInterface.getRegionPoints(region);
 				int numPoints = points.size();
 				if(numPoints < 3) {
 					return 0;

@@ -8,6 +8,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.interfaces.RegionAccessSet;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.configuration.ConfigurationSection;
@@ -23,6 +24,11 @@ import java.util.UUID;
 @Singleton
 public class WorldGuardRegionFlagsFeature extends RegionFeature {
 
+	@Inject
+	private WorldGuardInterface worldGuardInterface;
+	@Inject
+	private WorldGuardPlugin worldGuard;
+	
 	@Inject
 	WorldGuardRegionFlagsFeature(@Nonnull AreaShop plugin) {
 		super(plugin);
@@ -77,7 +83,6 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 		boolean result = true;
 
 		Set<String> flagNames = flags.getKeys(false);
-		WorldGuardPlugin worldGuard = plugin.getWorldGuard();
 
 		// Get the region
 		ProtectedRegion worldguardRegion = region.getRegion();
@@ -89,14 +94,14 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 		for(String flagName : flagNames) {
 			String value = Message.fromString(flags.getString(flagName)).replacements(region).getPlain();
 			// In the config normal Bukkit color codes are used, those only need to be translated on 5.X WorldGuard versions
-			if(plugin.getWorldGuard().getDescription().getVersion().startsWith("5.")) {
+			if(worldGuard.getDescription().getVersion().startsWith("5.")) {
 				value = translateBukkitToWorldGuardColors(value);
 			}
 			if(flagName.equalsIgnoreCase("members")) {
-				plugin.getWorldGuardHandler().setMembers(worldguardRegion, parseAccessSet(value));
+				worldGuardInterface.setMembers(worldguardRegion, parseAccessSet(value));
 				//AreaShop.debug("  Flag " + flagName + " set: " + members.toUserFriendlyString());
 			} else if(flagName.equalsIgnoreCase("owners")) {
-				plugin.getWorldGuardHandler().setOwners(worldguardRegion, parseAccessSet(value));
+				worldGuardInterface.setOwners(worldguardRegion, parseAccessSet(value));
 				//AreaShop.debug("  Flag " + flagName + " set: " + owners.toUserFriendlyString());
 			} else if(flagName.equalsIgnoreCase("priority")) {
 				try {
@@ -131,7 +136,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 				String flagSetting = null;
 				com.sk89q.worldguard.protection.flags.RegionGroup groupValue = null;
 
-				Flag<?> foundFlag = plugin.getWorldGuardHandler().fuzzyMatchFlag(flagName);
+				Flag<?> foundFlag = worldGuardInterface.fuzzyMatchFlag(flagName);
 				if(foundFlag == null) {
 					AreaShop.warn("Found wrong flag in flagProfiles section: " + flagName + ", check if that is the correct WorldGuard flag");
 					continue;
@@ -153,7 +158,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 							if(part.startsWith("g:")) {
 								if(part.length() > 2) {
 									try {
-										groupValue = plugin.getWorldGuardHandler().parseFlagGroupInput(groupFlag, part.substring(2));
+										groupValue = worldGuardInterface.parseFlagGroupInput(groupFlag, part.substring(2));
 									} catch(InvalidFlagFormat e) {
 										AreaShop.warn("Found wrong group value for flag " + flagName);
 									}
@@ -237,7 +242,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 	 */
 	private <V> void setFlag(ProtectedRegion region, Flag<V> flag, String value) throws InvalidFlagFormat {
 		V current = region.getFlag(flag);
-		V next = plugin.getWorldGuardHandler().parseFlagInput(flag, value);
+		V next = worldGuardInterface.parseFlagInput(flag, value);
 
 		if(!Objects.equals(current, next)) {
 			region.setFlag(flag, next);

@@ -33,12 +33,10 @@ Possible future feature classes:
 public abstract class RegionFeature implements Listener {
 
 	protected final AreaShop plugin;
-	public YamlConfiguration config;
 	private GeneralRegion region;
 
 	protected RegionFeature(@Nonnull AreaShop plugin) {
 		this.plugin = plugin;
-		this.config = plugin.getConfig();
 	}
 
 	/**

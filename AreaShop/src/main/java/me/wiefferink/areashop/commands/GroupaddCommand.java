@@ -1,18 +1,35 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+@Singleton
 public class GroupaddCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	@Inject
+	private RegionFactory regionFactory;
+	@Inject
+	private WorldEditInterface worldEditInterface;
+	
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop groupadd";
@@ -29,32 +46,32 @@ public class GroupaddCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.groupadd")) {
-			plugin.message(sender, "groupadd-noPermission");
+			messageBridge.message(sender, "groupadd-noPermission");
 			return;
 		}
 		if(args.length < 2 || args[1] == null) {
-			plugin.message(sender, "groupadd-help");
+			messageBridge.message(sender, "groupadd-help");
 			return;
 		}
-		RegionGroup group = plugin.getFileManager().getGroup(args[1]);
+		RegionGroup group = fileManager.getGroup(args[1]);
 		if(group == null) {
-			group = new RegionGroup(plugin, args[1]);
-			plugin.getFileManager().addGroup(group);
+			group = regionFactory.createRegionGroup(args[1]);
+			fileManager.addGroup(group);
 		}
 		if(args.length == 2) {
 			if(!(sender instanceof Player)) {
-				plugin.message(sender, "cmd-weOnlyByPlayer");
+				messageBridge.message(sender, "cmd-weOnlyByPlayer");
 				return;
 			}
 			Player player = (Player)sender;
-			WorldEditSelection selection = plugin.getWorldEditHandler().getPlayerSelection(player);
+			WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
 			if(selection == null) {
-				plugin.message(player, "cmd-noSelection");
+				messageBridge.message(player, "cmd-noSelection");
 				return;
 			}
 			List<GeneralRegion> regions = Utils.getRegionsInSelection(selection);
 			if(regions.isEmpty()) {
-				plugin.message(player, "cmd-noRegionsFound");
+				messageBridge.message(player, "cmd-noRegionsFound");
 				return;
 			}
 			TreeSet<GeneralRegion> regionsSuccess = new TreeSet<>();
@@ -67,24 +84,24 @@ public class GroupaddCommand extends CommandAreaShop {
 				}
 			}
 			if(!regionsSuccess.isEmpty()) {
-				plugin.message(player, "groupadd-weSuccess", group.getName(), Utils.combinedMessage(regionsSuccess, "region"));
+				messageBridge.message(player, "groupadd-weSuccess", group.getName(), Utils.combinedMessage(regionsSuccess, "region"));
 			}
 			if(!regionsFailed.isEmpty()) {
-				plugin.message(player, "groupadd-weFailed", group.getName(), Utils.combinedMessage(regionsFailed, "region"));
+				messageBridge.message(player, "groupadd-weFailed", group.getName(), Utils.combinedMessage(regionsFailed, "region"));
 			}
 			// Update all regions, this does it in a task, updating them without lag
-			plugin.getFileManager().updateRegions(new ArrayList<>(regionsSuccess), player);
+			fileManager.updateRegions(new ArrayList<>(regionsSuccess), player);
 		} else {
-			GeneralRegion region = plugin.getFileManager().getRegion(args[2]);
+			GeneralRegion region = fileManager.getRegion(args[2]);
 			if(region == null) {
-				plugin.message(sender, "cmd-notRegistered", args[2]);
+				messageBridge.message(sender, "cmd-notRegistered", args[2]);
 				return;
 			}
 			if(group.addMember(region)) {
 				region.update();
-				plugin.message(sender, "groupadd-success", group.getName(), group.getMembers().size(), region);
+				messageBridge.message(sender, "groupadd-success", group.getName(), group.getMembers().size(), region);
 			} else {
-				plugin.message(sender, "groupadd-failed", group.getName(), region);
+				messageBridge.message(sender, "groupadd-failed", group.getName(), region);
 			}
 		}
 	}
@@ -93,9 +110,9 @@ public class GroupaddCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		List<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			result = plugin.getFileManager().getGroupNames();
+			result = fileManager.getGroupNames();
 		} else if(toComplete == 3) {
-			result = plugin.getFileManager().getRegionNames();
+			result = fileManager.getRegionNames();
 		}
 		return result;
 	}

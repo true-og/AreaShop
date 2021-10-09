@@ -1,11 +1,17 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.regions.ImportJob;
+import me.wiefferink.areashop.regions.ImportJobFactory;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class ImportCommand extends CommandAreaShop {
 
 	/* RegionGroup priority usage:
@@ -13,6 +19,10 @@ public class ImportCommand extends CommandAreaShop {
 	   1: Settings from /worlds/<world>/config.yml
 	   2: Settings from /worlds/<world>/parent-regions.yml (if their priority is set it is added to this value)
 	 */
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private ImportJobFactory importJobFactory;
 
 	@Override
 	public String getCommandStart() {
@@ -36,17 +46,17 @@ public class ImportCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.import")) {
-			plugin.message(sender, "import-noPermission");
+			messageBridge.message(sender, "import-noPermission");
 			return;
 		}
 
 		if(args.length < 2) {
-			plugin.message(sender, "import-help");
+			messageBridge.message(sender, "import-help");
 			return;
 		}
 
 		if(!"RegionForSale".equalsIgnoreCase(args[1])) {
-			plugin.message(sender, "import-wrongSource");
+			messageBridge.message(sender, "import-wrongSource");
 			return;
 		}
 
@@ -54,7 +64,7 @@ public class ImportCommand extends CommandAreaShop {
 			return;
 		}
 
-		new ImportJob(sender);
+		importJobFactory.createImportJob(sender).execute();
 	}
 
 	@Override

@@ -1,10 +1,15 @@
 package me.wiefferink.areashop.regions;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.RentingRegionEvent;
 import me.wiefferink.areashop.events.ask.UnrentingRegionEvent;
 import me.wiefferink.areashop.events.notify.RentedRegionEvent;
 import me.wiefferink.areashop.events.notify.UnrentedRegionEvent;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.tools.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -15,6 +20,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,8 +36,15 @@ public class RentRegion extends GeneralRegion {
 	 * Constructor.
 	 * @param config All settings of this region
 	 */
-	public RentRegion(YamlConfiguration config) {
-		super(config);
+	@AssistedInject
+	RentRegion(
+			@Nonnull AreaShop plugin,
+			@Nonnull FeatureManager featureManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Assisted @Nonnull YamlConfiguration config
+	) {
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, config);
 	}
 
 	/**
@@ -39,8 +52,16 @@ public class RentRegion extends GeneralRegion {
 	 * @param name  The name of the region (correct casing)
 	 * @param world The world of the WorldGuard region
 	 */
-	public RentRegion(String name, World world) {
-		super(name, world);
+	@AssistedInject
+	RentRegion(
+			@Nonnull AreaShop plugin,
+			@Nonnull FeatureManager featureManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Assisted @Nonnull String name,
+			@Assisted @Nonnull World world
+	) {
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, name, world);
 	}
 
 	@Override

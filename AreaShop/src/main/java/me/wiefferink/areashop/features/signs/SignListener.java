@@ -4,11 +4,16 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import io.github.bakedlibs.dough.blocks.ChunkPosition;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
+import me.wiefferink.areashop.interfaces.BukkitInterface;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Materials;
 import me.wiefferink.areashop.tools.Utils;
@@ -37,12 +42,30 @@ public class SignListener implements Listener {
 
     private final BlockBehaviourHelper behaviourHelper;
     private final AreaShop plugin;
+    private final MessageBridge messageBridge;
     private final SignManager signManager;
+    private final SignLinkerManager signLinkerManager;
+    private final BukkitInterface bukkitInterface;
+    private final WorldGuardInterface worldGuardInterface;
+    private final RegionFactory regionFactory;
 
-    public SignListener(@Nonnull BlockBehaviourHelper behaviourHelper, @Nonnull AreaShop plugin, SignManager signManager) {
+    public SignListener(
+                        @Nonnull AreaShop plugin,
+                        @Nonnull BlockBehaviourHelper behaviourHelper,
+                        @Nonnull RegionFactory regionFactory,
+                        @Nonnull MessageBridge messageBridge,
+                        @Nonnull SignLinkerManager signLinkerManager,
+                        @Nonnull BukkitInterface bukkitInterface,
+                        @Nonnull WorldGuardInterface worldGuardInterface,
+                        @Nonnull SignManager signManager) {
         this.signManager = signManager;
+        this.signLinkerManager = signLinkerManager;
+        this.regionFactory = regionFactory;
         this.behaviourHelper = behaviourHelper;
         this.plugin = plugin;
+        this.bukkitInterface = bukkitInterface;
+        this.worldGuardInterface = worldGuardInterface;
+        this.messageBridge = messageBridge;
     }
 
 
@@ -101,10 +124,10 @@ public class SignListener implements Listener {
             // Remove the sign of the rental region if the player has permission
             if(event.getPlayer().hasPermission("areashop.delsign")) {
                 signManager.removeSign(regionSign);
-                plugin.message(event.getPlayer(), "delsign-success", regionSign.getRegion());
+                messageBridge.message(event.getPlayer(), "delsign-success", regionSign.getRegion());
             } else { // Cancel the breaking of the sign
                 event.setCancelled(true);
-                plugin.message(event.getPlayer(), "delsign-noPermission", regionSign.getRegion());
+                messageBridge.message(event.getPlayer(), "delsign-noPermission", regionSign.getRegion());
             }
         }
     }
@@ -135,7 +158,7 @@ public class SignListener implements Listener {
 
         // Ignore players that are in sign link mode (which will handle the event itself)
         Player player = event.getPlayer();
-        if(plugin.getSignlinkerManager().isInSignLinkMode(player)) {
+        if(signLinkerManager.isInSignLinkMode(player)) {
             return;
         }
 
@@ -164,14 +187,14 @@ public class SignListener implements Listener {
         }
         Player player = event.getPlayer();
         if(!plugin.isReady()) {
-            plugin.message(player, "general-notReady");
+            messageBridge.message(player, "general-notReady");
             return;
         }
 
         // Check if the sign is meant for this plugin
         if(event.getLine(0).contains(plugin.getConfig().getString("signTags.rent"))) {
             if(!player.hasPermission("areashop.createrent") && !player.hasPermission("areashop.createrent.member") && !player.hasPermission("areashop.createrent.owner")) {
-                plugin.message(player, "setup-noPermissionRent");
+                messageBridge.message(player, "setup-noPermissionRent");
                 return;
             }
 
@@ -185,7 +208,7 @@ public class SignListener implements Listener {
 
             // If the secondLine does not contain a name try to find the region by location
             if(secondLine == null || secondLine.isEmpty()) {
-                Set<ProtectedRegion> regions = plugin.getWorldGuardHandler().getApplicableRegionsSet(event.getBlock().getLocation());
+                Set<ProtectedRegion> regions = worldGuardInterface.getApplicableRegionsSet(event.getBlock().getLocation());
                 if(regions != null) {
                     boolean first = true;
                     ProtectedRegion candidate = null;
@@ -199,7 +222,7 @@ public class SignListener implements Listener {
                             } else if(pr.getParent() != null && pr.getParent().equals(candidate)) {
                                 candidate = pr;
                             } else {
-                                plugin.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
+                                messageBridge.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
                                 return;
                             }
                         }
@@ -214,26 +237,26 @@ public class SignListener implements Listener {
             boolean durationSet = thirdLine != null && !thirdLine.isEmpty();
             // check if all the lines are correct
             if(secondLine == null || secondLine.isEmpty()) {
-                plugin.message(player, "setup-noRegion");
+                messageBridge.message(player, "setup-noRegion");
                 return;
             }
             ProtectedRegion region = regionManager.getRegion(secondLine);
             if(region == null) {
-                plugin.message(player, "cmd-noRegion", secondLine);
+                messageBridge.message(player, "cmd-noRegion", secondLine);
                 return;
             }
 
             FileManager.AddResult addResult = plugin.getFileManager().checkRegionAdd(player, regionManager.getRegion(secondLine), event.getPlayer().getWorld(), GeneralRegion.RegionType.RENT);
             if(addResult == FileManager.AddResult.BLACKLISTED) {
-                plugin.message(player, "setup-blacklisted", secondLine);
+                messageBridge.message(player, "setup-blacklisted", secondLine);
             } else if(addResult == FileManager.AddResult.ALREADYADDED) {
-                plugin.message(player, "setup-alreadyRentSign");
+                messageBridge.message(player, "setup-alreadyRentSign");
             } else if(addResult == FileManager.AddResult.ALREADYADDEDOTHERWORLD) {
-                plugin.message(player, "setup-alreadyOtherWorld");
+                messageBridge.message(player, "setup-alreadyOtherWorld");
             } else if(addResult == FileManager.AddResult.NOPERMISSION) {
-                plugin.message(player, "setup-noPermission", secondLine);
+                messageBridge.message(player, "setup-noPermission", secondLine);
             } else if(thirdLine != null && !thirdLine.isEmpty() && !Utils.checkTimeFormat(thirdLine)) {
-                plugin.message(player, "setup-wrongDuration");
+                messageBridge.message(player, "setup-wrongDuration");
             } else {
                 double price = 0.0;
                 if(priceSet) {
@@ -241,15 +264,15 @@ public class SignListener implements Listener {
                     try {
                         price = Double.parseDouble(fourthLine);
                     } catch(NumberFormatException e) {
-                        plugin.message(player, "setup-wrongPrice");
+                        messageBridge.message(player, "setup-wrongPrice");
                         return;
                     }
                 }
 
                 // Add rent to the FileManager
-                final RentRegion rent = new RentRegion(secondLine, event.getPlayer().getWorld());
-                boolean isMember = plugin.getWorldGuardHandler().containsMember(rent.getRegion(), player.getUniqueId());
-                boolean isOwner = plugin.getWorldGuardHandler().containsOwner(rent.getRegion(), player.getUniqueId());
+                final RentRegion rent = regionFactory.createRentRegion(secondLine, event.getPlayer().getWorld());
+                boolean isMember = worldGuardInterface.containsMember(rent.getRegion(), player.getUniqueId());
+                boolean isOwner = worldGuardInterface.containsOwner(rent.getRegion(), player.getUniqueId());
                 boolean landlord = (!player.hasPermission("areashop.createrent")
                         && ((player.hasPermission("areashop.createrent.owner") && isOwner)
                         || (player.hasPermission("areashop.createrent.member") && isMember)));
@@ -263,23 +286,23 @@ public class SignListener implements Listener {
                 if(durationSet) {
                     rent.setDuration(thirdLine);
                 }
-                rent.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), plugin.getBukkitHandler().getSignFacing(event.getBlock()), null);
+                rent.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
 
                 AddingRegionEvent addingRegionEvent = plugin.getFileManager().addRegion(rent);
                 if (addingRegionEvent.isCancelled()) {
-                    plugin.message(player, "general-cancelled", addingRegionEvent.getReason());
+                    messageBridge.message(player, "general-cancelled", addingRegionEvent.getReason());
                     return;
                 }
 
                 rent.handleSchematicEvent(GeneralRegion.RegionEvent.CREATED);
-                plugin.message(player, "setup-rentSuccess", rent);
+                messageBridge.message(player, "setup-rentSuccess", rent);
                 // Update the region after the event has written its lines
                 Do.sync(rent::update);
             }
         } else if(event.getLine(0).contains(plugin.getConfig().getString("signTags.buy"))) {
             // Check for permission
             if(!player.hasPermission("areashop.createbuy") && !player.hasPermission("areashop.createbuy.member") && !player.hasPermission("areashop.createbuy.owner")) {
-                plugin.message(player, "setup-noPermissionBuy");
+                messageBridge.message(player, "setup-noPermissionBuy");
                 return;
             }
 
@@ -292,7 +315,7 @@ public class SignListener implements Listener {
 
             // If the secondLine does not contain a name try to find the region by location
             if(secondLine == null || secondLine.isEmpty()) {
-                Set<ProtectedRegion> regions = plugin.getWorldGuardHandler().getApplicableRegionsSet(event.getBlock().getLocation());
+                Set<ProtectedRegion> regions = worldGuardInterface.getApplicableRegionsSet(event.getBlock().getLocation());
                 if(regions != null) {
                     boolean first = true;
                     ProtectedRegion candidate = null;
@@ -306,7 +329,7 @@ public class SignListener implements Listener {
                             } else if(pr.getParent() != null && pr.getParent().equals(candidate)) {
                                 candidate = pr;
                             } else {
-                                plugin.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
+                                messageBridge.message(player, "setup-couldNotDetect", candidate.getId(), pr.getId());
                                 return;
                             }
                         }
@@ -320,23 +343,23 @@ public class SignListener implements Listener {
             boolean priceSet = thirdLine != null && !thirdLine.isEmpty();
             // Check if all the lines are correct
             if(secondLine == null || secondLine.isEmpty()) {
-                plugin.message(player, "setup-noRegion");
+                messageBridge.message(player, "setup-noRegion");
                 return;
             }
             ProtectedRegion region = regionManager.getRegion(secondLine);
             if(region == null) {
-                plugin.message(player, "cmd-noRegion", secondLine);
+                messageBridge.message(player, "cmd-noRegion", secondLine);
                 return;
             }
             FileManager.AddResult addResult = plugin.getFileManager().checkRegionAdd(player, region, event.getPlayer().getWorld(), GeneralRegion.RegionType.BUY);
             if(addResult == FileManager.AddResult.BLACKLISTED) {
-                plugin.message(player, "setup-blacklisted", secondLine);
+                messageBridge.message(player, "setup-blacklisted", secondLine);
             } else if(addResult == FileManager.AddResult.ALREADYADDED) {
-                plugin.message(player, "setup-alreadyRentSign");
+                messageBridge.message(player, "setup-alreadyRentSign");
             } else if(addResult == FileManager.AddResult.ALREADYADDEDOTHERWORLD) {
-                plugin.message(player, "setup-alreadyOtherWorld");
+                messageBridge.message(player, "setup-alreadyOtherWorld");
             } else if(addResult == FileManager.AddResult.NOPERMISSION) {
-                plugin.message(player, "setup-noPermission", secondLine);
+                messageBridge.message(player, "setup-noPermission", secondLine);
             } else {
                 double price = 0.0;
                 if(priceSet) {
@@ -344,15 +367,15 @@ public class SignListener implements Listener {
                     try {
                         price = Double.parseDouble(thirdLine);
                     } catch(NumberFormatException e) {
-                        plugin.message(player, "setup-wrongPrice");
+                        messageBridge.message(player, "setup-wrongPrice");
                         return;
                     }
                 }
 
                 // Add buy to the FileManager
-                final BuyRegion buy = new BuyRegion(secondLine, event.getPlayer().getWorld());
-                boolean isMember = plugin.getWorldGuardHandler().containsMember(buy.getRegion(), player.getUniqueId());
-                boolean isOwner = plugin.getWorldGuardHandler().containsOwner(buy.getRegion(), player.getUniqueId());
+                final BuyRegion buy = regionFactory.createBuyRegion(secondLine, event.getPlayer().getWorld());
+                boolean isMember = worldGuardInterface.containsMember(buy.getRegion(), player.getUniqueId());
+                boolean isOwner = worldGuardInterface.containsOwner(buy.getRegion(), player.getUniqueId());
                 boolean landlord = (!player.hasPermission("areashop.createbuy")
                         && ((player.hasPermission("areashop.createbuy.owner") && isOwner)
                         || (player.hasPermission("areashop.createbuy.member") && isMember)));
@@ -363,23 +386,23 @@ public class SignListener implements Listener {
                 if(priceSet) {
                     buy.setPrice(price);
                 }
-                buy.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), plugin.getBukkitHandler().getSignFacing(event.getBlock()), null);
+                buy.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
 
                 AddingRegionEvent addingRegionEvent = plugin.getFileManager().addRegion(buy);
                 if (addingRegionEvent.isCancelled()) {
-                    plugin.message(player, "general-cancelled", addingRegionEvent.getReason());
+                    messageBridge.message(player, "general-cancelled", addingRegionEvent.getReason());
                     return;
                 }
 
                 buy.handleSchematicEvent(GeneralRegion.RegionEvent.CREATED);
-                plugin.message(player, "setup-buySuccess", buy);
+                messageBridge.message(player, "setup-buySuccess", buy);
                 // Update the region after the event has written its lines
                 Do.sync(buy::update);
             }
         } else if(event.getLine(0).contains(plugin.getConfig().getString("signTags.add"))) {
             // Check for permission
             if(!player.hasPermission("areashop.addsign")) {
-                plugin.message(player, "addsign-noPermission");
+                messageBridge.message(player, "addsign-noPermission");
                 return;
             }
 
@@ -392,28 +415,28 @@ public class SignListener implements Listener {
                 // Get region by secondLine of the sign
                 region = plugin.getFileManager().getRegion(secondLine);
                 if(region == null) {
-                    plugin.message(player, "addSign-notRegistered", secondLine);
+                    messageBridge.message(player, "addSign-notRegistered", secondLine);
                     return;
                 }
             } else {
                 // Get region by sign position
                 List<GeneralRegion> regions = Utils.getImportantRegions(event.getBlock().getLocation());
                 if(regions.isEmpty()) {
-                    plugin.message(player, "addsign-noRegions");
+                    messageBridge.message(player, "addsign-noRegions");
                     return;
                 } else if(regions.size() > 1) {
-                    plugin.message(player, "addsign-couldNotDetectSign", regions.get(0).getName(), regions.get(1).getName());
+                    messageBridge.message(player, "addsign-couldNotDetectSign", regions.get(0).getName(), regions.get(1).getName());
                     return;
                 }
                 region = regions.get(0);
             }
 
             if(thirdLine == null || thirdLine.isEmpty()) {
-                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), plugin.getBukkitHandler().getSignFacing(event.getBlock()), null);
-                plugin.message(player, "addsign-success", region);
+                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
+                messageBridge.message(player, "addsign-success", region);
             } else {
-                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), plugin.getBukkitHandler().getSignFacing(event.getBlock()), thirdLine);
-                plugin.message(player, "addsign-successProfile", thirdLine, region);
+                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), thirdLine);
+                messageBridge.message(player, "addsign-successProfile", thirdLine, region);
             }
 
             // Update the region later because this event will do it first

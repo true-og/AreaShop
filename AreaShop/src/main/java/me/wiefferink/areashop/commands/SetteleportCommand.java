@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.commands;
 
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -8,11 +10,19 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class SetteleportCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop settp";
@@ -44,11 +54,11 @@ public class SetteleportCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.setteleport") && !sender.hasPermission("areashop.setteleportall")) {
-			plugin.message(sender, "setteleport-noPermission");
+			messageBridge.message(sender, "setteleport-noPermission");
 			return;
 		}
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "onlyByPlayer");
+			messageBridge.message(sender, "onlyByPlayer");
 			return;
 		}
 		Player player = (Player)sender;
@@ -57,22 +67,22 @@ public class SetteleportCommand extends CommandAreaShop {
 			// get the region by location
 			List<GeneralRegion> regions = Utils.getImportantRegions(((Player)sender).getLocation());
 			if(regions.isEmpty()) {
-				plugin.message(sender, "cmd-noRegionsAtLocation");
+				messageBridge.message(sender, "cmd-noRegionsAtLocation");
 				return;
 			} else if(regions.size() > 1) {
-				plugin.message(sender, "cmd-moreRegionsAtLocation");
+				messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 				return;
 			} else {
 				region = regions.get(0);
 			}
 		} else {
-			region = plugin.getFileManager().getRegion(args[1]);
+			region = fileManager.getRegion(args[1]);
 		}
 
 		boolean owner;
 
 		if(region == null) {
-			plugin.message(player, "setteleport-noRentOrBuy", args[1]);
+			messageBridge.message(player, "setteleport-noRentOrBuy", args[1]);
 			return;
 		}
 		if(region instanceof RentRegion) {
@@ -81,10 +91,10 @@ public class SetteleportCommand extends CommandAreaShop {
 			owner = player.getUniqueId().equals(((BuyRegion)region).getBuyer());
 		}
 		if(!player.hasPermission("areashop.setteleport")) {
-			plugin.message(player, "setteleport-noPermission", region);
+			messageBridge.message(player, "setteleport-noPermission", region);
 			return;
 		} else if(!owner && !player.hasPermission("areashop.setteleportall")) {
-			plugin.message(player, "setteleport-noPermissionOther", region);
+			messageBridge.message(player, "setteleport-noPermissionOther", region);
 			return;
 		}
 
@@ -92,23 +102,23 @@ public class SetteleportCommand extends CommandAreaShop {
 		if(args.length > 2 && args[2] != null && (args[2].equalsIgnoreCase("reset") || args[2].equalsIgnoreCase("yes") || args[2].equalsIgnoreCase("true"))) {
 			region.getTeleportFeature().setTeleport(null);
 			region.update();
-			plugin.message(player, "setteleport-reset", region);
+			messageBridge.message(player, "setteleport-reset", region);
 			return;
 		}
 		if(!player.hasPermission("areashop.setteleportoutsideregion") && (wgRegion == null || !wgRegion.contains(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()))) {
-			plugin.message(player, "setteleport-notInside", region);
+			messageBridge.message(player, "setteleport-notInside", region);
 			return;
 		}
 		region.getTeleportFeature().setTeleport(player.getLocation());
 		region.update();
-		plugin.message(player, "setteleport-success", region);
+		messageBridge.message(player, "setteleport-success", region);
 	}
 
 	@Override
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			result.addAll(plugin.getFileManager().getRegionNames());
+			result.addAll(fileManager.getRegionNames());
 		} else if(toComplete == 3) {
 			result.add("reset");
 		}

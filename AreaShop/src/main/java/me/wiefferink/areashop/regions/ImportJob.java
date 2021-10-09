@@ -1,14 +1,22 @@
-package me.wiefferink.areashop.commands;
+package me.wiefferink.areashop.regions;
 
 import com.google.common.base.Charsets;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.features.signs.RegionSign;
+import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.features.signs.SignsFeature;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
 import org.bukkit.Bukkit;
@@ -19,7 +27,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,22 +42,39 @@ import java.util.UUID;
 public class ImportJob {
 
 	private final AreaShop plugin;
+	private final FileManager fileManager;
+	private final SignManager signManager;
+	private final WorldGuardInterface worldGuardInterface;
 	private final CommandSender sender;
+	private final MessageBridge messageBridge;
+	private final RegionFactory regionFactory;
 
 	/**
 	 * Create and execute the import.
 	 * @param sender CommandSender that should receive progress updates
 	 */
-	public ImportJob(CommandSender sender) {
+	@AssistedInject
+	ImportJob(
+			@Nonnull AreaShop plugin,
+			@Nonnull FileManager fileManager,
+			@Nonnull SignManager signManager,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull RegionFactory regionFactory,
+			@Assisted @Nonnull CommandSender sender) {
+		this.regionFactory = regionFactory;
 		this.sender = sender;
-		this.plugin = AreaShop.getInstance();
-		execute();
+		this.plugin = plugin;
+		this.signManager = signManager;
+		this.fileManager = fileManager;
+		this.worldGuardInterface = worldGuardInterface;
+		this.messageBridge = messageBridge;
 	}
 
 	/**
 	 * Execute the job.
 	 */
-	private void execute() {
+	public void execute() {
 		// Check for RegionForSale data
 		File regionForSaleFolder = new File(plugin.getDataFolder().getParentFile().getAbsolutePath(), "RegionForSale");
 		if(!regionForSaleFolder.exists()) {
@@ -71,8 +98,8 @@ public class ImportJob {
 		message("import-start");
 
 		// Group with settings for all imported regions
-		RegionGroup regionForSaleGroup = new RegionGroup(plugin, "RegionForSale");
-		plugin.getFileManager().addGroup(regionForSaleGroup);
+		RegionGroup regionForSaleGroup = regionFactory.createRegionGroup("RegionForSale");
+		fileManager.addGroup(regionForSaleGroup);
 
 		// Import /RegionForSale/config.yml settings
 		File regionForSaleConfigFile = new File(regionForSaleFolder.getAbsolutePath(), "config.yml");
@@ -150,11 +177,11 @@ public class ImportJob {
 				worldConfig = new YamlConfiguration();
 			} else {
 				// RegionGroup with all world settings
-				RegionGroup worldGroup = new RegionGroup(plugin, "RegionForSale-" + worldFolder.getName());
+				RegionGroup worldGroup = regionFactory.createRegionGroup("RegionForSale-" + worldFolder.getName());
 				importRegionSettings(worldConfig, worldGroup.getSettings(), null, false);
 				worldGroup.setSetting("priority", 1);
 				worldGroup.addWorld(worldFolder.getName());
-				plugin.getFileManager().addGroup(regionForSaleGroup);
+				fileManager.addGroup(regionForSaleGroup);
 				worldGroup.saveRequired();
 			}
 
@@ -186,7 +213,7 @@ public class ImportJob {
 					}
 
 					// Import parent region settings into a RegionGroup
-					RegionGroup parentRegionGroup = new RegionGroup(plugin, "RegionForSale-" + worldFolder.getName() + "-" + parentRegionName);
+					RegionGroup parentRegionGroup = regionFactory.createRegionGroup( "RegionForSale-" + worldFolder.getName() + "-" + parentRegionName);
 					importRegionSettings(parentRegionSection, parentRegionGroup.getSettings(), null, false);
 					parentRegionGroup.setSetting("priority", 2 + parentRegionSection.getLong("info.priority", 0));
 					parentRegionGroup.saveRequired();
@@ -198,7 +225,7 @@ public class ImportJob {
 
 			// Read and import regions
 			for(String regionKey : regions.getKeys(false)) {
-				GeneralRegion existingRegion = plugin.getFileManager().getRegion(regionKey);
+				GeneralRegion existingRegion = fileManager.getRegion(regionKey);
 				if(existingRegion != null) {
 					if(world.getName().equalsIgnoreCase(existingRegion.getWorldName())) {
 						messageNoPrefix("import-alreadyAdded", regionKey);
@@ -241,9 +268,9 @@ public class ImportJob {
 				// Create region
 				GeneralRegion region;
 				if(rentable || (owner != null && !isBought)) {
-					region = new RentRegion(regionKey, world);
+					region = regionFactory.createRentRegion(regionKey, world);
 				} else {
-					region = new BuyRegion(regionKey, world);
+					region = regionFactory.createBuyRegion(regionKey, world);
 				}
 				AddingRegionEvent event = plugin.getFileManager().addRegion(region);
 				if (event.isCancelled()) {
@@ -260,16 +287,16 @@ public class ImportJob {
 				if(owner != null) {
 					@SuppressWarnings("deprecation")
 					OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(owner);
-					if(offlinePlayer != null) {
+					if(offlinePlayer.hasPlayedBefore()) {
 						existing.add(offlinePlayer.getUniqueId());
 					}
 				}
-				for(UUID uuid : plugin.getWorldGuardHandler().getOwners(worldGuardRegion).asUniqueIdList()) {
+				for(UUID uuid : worldGuardInterface.getOwners(worldGuardRegion).asUniqueIdList()) {
 					if(!existing.contains(uuid)) {
 						existing.add(uuid);
 					}
 				}
-				for(UUID uuid : plugin.getWorldGuardHandler().getMembers(worldGuardRegion).asUniqueIdList()) {
+				for(UUID uuid : worldGuardInterface.getMembers(worldGuardRegion).asUniqueIdList()) {
 					if(!existing.contains(uuid)) {
 						existing.add(uuid);
 					}
@@ -291,9 +318,9 @@ public class ImportJob {
 		}
 
 		// Update all regions
-		plugin.getFileManager().updateAllRegions(sender);
+		fileManager.updateAllRegions(sender);
 		// Write all imported regions and settings to disk
-		plugin.getFileManager().saveRequiredFiles();
+		fileManager.saveRequiredFiles();
 	}
 
 	/**
@@ -400,7 +427,7 @@ public class ImportJob {
 				}
 
 				// Check if this location is already added to a region
-				Optional<RegionSign> optionalRegionSign = plugin.getSignManager().signFromLocation(location);
+				Optional<RegionSign> optionalRegionSign = signManager.signFromLocation(location);
 				if(optionalRegionSign.isPresent()) {
 					RegionSign regionSign = optionalRegionSign.get();
 					if(!regionSign.getRegion().equals(region)) {
@@ -461,10 +488,10 @@ public class ImportJob {
 	 * @param replacements The replacements to insert in the message
 	 */
 	public void messageNoPrefix(String key, Object... replacements) {
-		plugin.messageNoPrefix(sender, key, replacements);
+		messageBridge.messageNoPrefix(sender, key, replacements);
 
 		if(!(sender instanceof ConsoleCommandSender)) {
-			plugin.messageNoPrefix(Bukkit.getConsoleSender(), key, replacements);
+			messageBridge.messageNoPrefix(Bukkit.getConsoleSender(), key, replacements);
 		}
 	}
 
@@ -474,10 +501,10 @@ public class ImportJob {
 	 * @param replacements The replacements to insert in the message
 	 */
 	public void message(String key, Object... replacements) {
-		plugin.message(sender, key, replacements);
+		messageBridge.message(sender, key, replacements);
 
 		if(!(sender instanceof ConsoleCommandSender)) {
-			plugin.message(Bukkit.getConsoleSender(), key, replacements);
+			messageBridge.message(Bukkit.getConsoleSender(), key, replacements);
 		}
 	}
 }

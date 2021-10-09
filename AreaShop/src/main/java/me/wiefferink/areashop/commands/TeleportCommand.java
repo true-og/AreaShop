@@ -1,14 +1,24 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class TeleportCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop tp";
@@ -42,21 +52,21 @@ public class TeleportCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.teleport") && !sender.hasPermission("areashop.teleportall") && !sender.hasPermission("areashop.teleportavailable") && !sender.hasPermission("areashop.teleportavailablesign") && !sender.hasPermission("areashop.teleportsign") && !sender.hasPermission("areashop.teleportsignall") && !sender.hasPermission("areashop.teleportfriend") && !sender.hasPermission("teleportfriendsign")) {
-			plugin.message(sender, "teleport-noPermission");
+			messageBridge.message(sender, "teleport-noPermission");
 			return;
 		}
 		if(!(sender instanceof Player)) {
-			plugin.message(sender, "cmd-onlyByPlayer");
+			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 		if(args.length <= 1 || args[1] == null) {
-			plugin.message(sender, "teleport-help");
+			messageBridge.message(sender, "teleport-help");
 			return;
 		}
 		Player player = (Player)sender;
-		GeneralRegion region = plugin.getFileManager().getRegion(args[1]);
+		GeneralRegion region = fileManager.getRegion(args[1]);
 		if(region == null) {
-			plugin.message(player, "teleport-noRentOrBuy", args[1]);
+			messageBridge.message(player, "teleport-noRentOrBuy", args[1]);
 			return;
 		}
 
@@ -72,7 +82,7 @@ public class TeleportCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			result.addAll(plugin.getFileManager().getRegionNames());
+			result.addAll(fileManager.getRegionNames());
 		} else if(toComplete == 3) {
 			result.add("sign");
 		}

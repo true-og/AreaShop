@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.regions;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.ResellingRegionEvent;
@@ -7,6 +9,9 @@ import me.wiefferink.areashop.events.ask.SellingRegionEvent;
 import me.wiefferink.areashop.events.notify.BoughtRegionEvent;
 import me.wiefferink.areashop.events.notify.ResoldRegionEvent;
 import me.wiefferink.areashop.events.notify.SoldRegionEvent;
+import me.wiefferink.areashop.interfaces.WorldEditInterface;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.tools.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -15,18 +20,35 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.Calendar;
 import java.util.UUID;
 
 public class BuyRegion extends GeneralRegion {
 
-	public BuyRegion(YamlConfiguration config) {
-		super(config);
+	@AssistedInject
+	BuyRegion(
+			@Nonnull AreaShop plugin,
+			@Nonnull FeatureManager featureManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Assisted @Nonnull YamlConfiguration config
+	) {
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, config);
 	}
 
-	public BuyRegion(String name, World world) {
-		super(name, world);
+	@AssistedInject
+	BuyRegion(
+			@Nonnull AreaShop plugin,
+			@Nonnull FeatureManager featureManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Assisted @Nonnull String name,
+			@Assisted @Nonnull World world
+	) {
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, name, world);
 	}
 
 	@Override

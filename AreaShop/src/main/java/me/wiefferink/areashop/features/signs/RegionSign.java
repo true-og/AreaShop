@@ -6,6 +6,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import io.papermc.lib.PaperLib;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -36,18 +37,23 @@ public class RegionSign {
 
 	private final BlockBehaviourHelper blockHelper;
 	private final SignErrorLogger errorLogger;
+	private final BukkitInterface bukkitInterface;
 
 	private final SignsFeature signsFeature;
 	private final String key;
 
 
 	@AssistedInject
-	RegionSign(BlockBehaviourHelper blockBehaviourHelper,
-					  SignErrorLogger signErrorLogger,
-					  @Assisted @Nonnull SignsFeature signsFeature,
-					  @Assisted @Nonnull String key) {
+	RegionSign(
+			@Nonnull BlockBehaviourHelper blockBehaviourHelper,
+			@Nonnull SignErrorLogger signErrorLogger,
+			@Nonnull BukkitInterface bukkitInterface,
+			@Assisted @Nonnull SignsFeature signsFeature,
+			@Assisted @Nonnull String key
+	) {
 		this.blockHelper = blockBehaviourHelper;
 		this.errorLogger = signErrorLogger;
+		this.bukkitInterface = bukkitInterface;
 		this.signsFeature = signsFeature;
 		this.key = key;
 	}
@@ -219,7 +225,7 @@ public class RegionSign {
 			getRegion().setSetting("general.signs." + key + ".signType", block.getType().name());
 		}
 		if(!regionConfig.isString("general.signs." + key + ".facing")) {
-			BlockFace signFacing = AreaShop.getInstance().getBukkitHandler().getSignFacing(block);
+			BlockFace signFacing = bukkitInterface.getSignFacing(block);
 			getRegion().setSetting("general.signs." + key + ".facing", signFacing == null ? null : signFacing.toString());
 		}
 

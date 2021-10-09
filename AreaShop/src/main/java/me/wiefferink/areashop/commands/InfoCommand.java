@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.commands;
 
 import io.github.bakedlibs.dough.blocks.BlockPosition;
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
@@ -11,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,8 +24,14 @@ import java.util.Set;
 
 // TODO fix '/as info' help message hitting replacement limit (improve depth tracking?)
 // TODO add info about autoExtend
+@Singleton
 public class InfoCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop info";
@@ -52,7 +62,7 @@ public class InfoCommand extends CommandAreaShop {
 			try {
 				page = Integer.parseInt(pageInput);
 			} catch(NumberFormatException e) {
-				plugin.message(sender, "info-wrongPage", pageInput);
+				messageBridge.message(sender, "info-wrongPage", pageInput);
 				return;
 			}
 		}
@@ -60,7 +70,7 @@ public class InfoCommand extends CommandAreaShop {
 			regions.removeIf(generalRegion -> !filterGroup.isMember(generalRegion));
 		}
 		if(regions.isEmpty()) {
-			plugin.message(sender, "info-noRegions");
+			messageBridge.message(sender, "info-noRegions");
 		} else {
 			// First sort by type, then by name
 			regions.sort((one, two) -> {
@@ -76,7 +86,7 @@ public class InfoCommand extends CommandAreaShop {
 			if(filterGroup != null) {
 				limitedToGroup = Message.fromKey("info-limitedToGroup").replacements(filterGroup.getName());
 			}
-			plugin.message(sender, keyHeader, limitedToGroup);
+			messageBridge.message(sender, keyHeader, limitedToGroup);
 			// Page entries
 			int totalPages = (int)Math.ceil(regions.size() / (double)itemsPerPage); // Clip page to correct boundaries, not much need to tell the user
 			if(regions.size() == itemsPerPage + 1) { // 19 total items is mapped to 1 page of 19
@@ -103,7 +113,7 @@ public class InfoCommand extends CommandAreaShop {
 						state = "Reselling";
 					}
 				}
-				plugin.messageNoPrefix(sender, "info-entry" + state, region);
+				messageBridge.messageNoPrefix(sender, "info-entry" + state, region);
 				linesPrinted++;
 			}
 			Message footer = Message.empty();
@@ -160,7 +170,7 @@ public class InfoCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.info")) {
-			plugin.message(sender, "info-noPermission");
+			messageBridge.message(sender, "info-noPermission");
 			return;
 		}
 		if(args.length > 1 && args[1] != null) {
@@ -169,9 +179,9 @@ public class InfoCommand extends CommandAreaShop {
 			Set<String> groupFilters = new HashSet<>(Arrays.asList("all", "rented", "forrent", "sold", "forsale", "reselling"));
 			if(groupFilters.contains(args[1].toLowerCase()) && args.length > 2) {
 				if(!Utils.isNumeric(args[2])) {
-					filterGroup = plugin.getFileManager().getGroup(args[2]);
+					filterGroup = fileManager.getGroup(args[2]);
 					if(filterGroup == null) {
-						plugin.message(sender, "info-noFiltergroup", args[2]);
+						messageBridge.message(sender, "info-noFiltergroup", args[2]);
 						return;
 					}
 					// Pass page number to args[2] if available
@@ -183,48 +193,48 @@ public class InfoCommand extends CommandAreaShop {
 
 			// All regions
 			if(args[1].equalsIgnoreCase("all")) {
-				showSortedPagedList(sender, new ArrayList<>(plugin.getFileManager().getRegions()), filterGroup, "info-allHeader", (args.length > 2 ? args[2] : null), "info all");
+				showSortedPagedList(sender, new ArrayList<>(fileManager.getRegions()), filterGroup, "info-allHeader", (args.length > 2 ? args[2] : null), "info all");
 			}
 
 			// Rented regions
 			else if(args[1].equalsIgnoreCase("rented")) {
-				List<RentRegion> regions = new ArrayList<>(plugin.getFileManager().getRents());
+				List<RentRegion> regions = new ArrayList<>(fileManager.getRents());
 				regions.removeIf(RentRegion::isAvailable);
 				showSortedPagedList(sender, regions, filterGroup, "info-rentedHeader", (args.length > 2 ? args[2] : null), "info rented");
 			}
 			// Forrent regions
 			else if(args[1].equalsIgnoreCase("forrent")) {
-				List<RentRegion> regions = new ArrayList<>(plugin.getFileManager().getRents());
+				List<RentRegion> regions = new ArrayList<>(fileManager.getRents());
 				regions.removeIf(RentRegion::isRented);
 				showSortedPagedList(sender, regions, filterGroup, "info-forrentHeader", (args.length > 2 ? args[2] : null), "info forrent");
 			}
 			// Sold regions
 			else if(args[1].equalsIgnoreCase("sold")) {
-				List<BuyRegion> regions = new ArrayList<>(plugin.getFileManager().getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
 				regions.removeIf(BuyRegion::isAvailable);
 				showSortedPagedList(sender, regions, filterGroup, "info-soldHeader", (args.length > 2 ? args[2] : null), "info sold");
 			}
 			// Forsale regions
 			else if(args[1].equalsIgnoreCase("forsale")) {
-				List<BuyRegion> regions = new ArrayList<>(plugin.getFileManager().getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
 				regions.removeIf(BuyRegion::isSold);
 				showSortedPagedList(sender, regions, filterGroup, "info-forsaleHeader", (args.length > 2 ? args[2] : null), "info forsale");
 			}
 			// Reselling regions
 			else if(args[1].equalsIgnoreCase("reselling")) {
-				List<BuyRegion> regions = new ArrayList<>(plugin.getFileManager().getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
 				regions.removeIf(region -> !region.isInResellingMode());
 				showSortedPagedList(sender, regions, filterGroup, "info-resellingHeader", (args.length > 2 ? args[2] : null), "info reselling");
 			}
 
 			// List of regions without a group
 			else if(args[1].equalsIgnoreCase("nogroup")) {
-				List<GeneralRegion> regions = new ArrayList<>(plugin.getFileManager().getRegions());
-				for(RegionGroup group : plugin.getFileManager().getGroups()) {
+				List<GeneralRegion> regions = new ArrayList<>(fileManager.getRegions());
+				for(RegionGroup group : fileManager.getGroups()) {
 					regions.removeAll(group.getMemberRegions());
 				}
 				if(regions.isEmpty()) {
-					plugin.message(sender, "info-nogroupNone");
+					messageBridge.message(sender, "info-nogroupNone");
 				} else {
 					showSortedPagedList(sender, regions, filterGroup, "info-nogroupHeader", (args.length > 2 ? args[2] : null), "info nogroup");
 				}
@@ -236,17 +246,17 @@ public class InfoCommand extends CommandAreaShop {
 					RentRegion rent = null;
 					BuyRegion buy = null;
 					if(args.length > 2) {
-						rent = plugin.getFileManager().getRent(args[2]);
-						buy = plugin.getFileManager().getBuy(args[2]);
+						rent = fileManager.getRent(args[2]);
+						buy = fileManager.getBuy(args[2]);
 					} else {
 						if(sender instanceof Player) {
 							// get the region by location
 							List<GeneralRegion> regions = Utils.getImportantRegions(((Player)sender).getLocation());
 							if(regions.isEmpty()) {
-								plugin.message(sender, "cmd-noRegionsAtLocation");
+								messageBridge.message(sender, "cmd-noRegionsAtLocation");
 								return;
 							} else if(regions.size() > 1) {
-								plugin.message(sender, "cmd-moreRegionsAtLocation");
+								messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 								return;
 							} else {
 								if(regions.get(0) instanceof RentRegion) {
@@ -256,26 +266,26 @@ public class InfoCommand extends CommandAreaShop {
 								}
 							}
 						} else {
-							plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+							messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 							return;
 						}
 					}
 
 					if(rent == null && buy == null) {
-						plugin.message(sender, "info-regionNotExisting", args[2]);
+						messageBridge.message(sender, "info-regionNotExisting", args[2]);
 						return;
 					}
 
 					if(rent != null) {
-						plugin.message(sender, "info-regionHeaderRent", rent);
+						messageBridge.message(sender, "info-regionHeaderRent", rent);
 						if(rent.isRented()) {
-							plugin.messageNoPrefix(sender, "info-regionRented", rent);
-							plugin.messageNoPrefix(sender, "info-regionExtending", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionRented", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionExtending", rent);
 							// Money back
 							if(UnrentCommand.canUse(sender, rent)) {
-								plugin.messageNoPrefix(sender, "info-regionMoneyBackRentClick", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRentClick", rent);
 							} else {
-								plugin.messageNoPrefix(sender, "info-regionMoneyBackRent", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRent", rent);
 							}
 							// Friends
 							if(!rent.getFriendsFeature().getFriendNames().isEmpty()) {
@@ -283,30 +293,30 @@ public class InfoCommand extends CommandAreaShop {
 								if(DelfriendCommand.canUse(sender, rent)) {
 									messagePart = "info-friendRemove";
 								}
-								plugin.messageNoPrefix(sender, "info-regionFriends", rent, Utils.combinedMessage(rent.getFriendsFeature().getFriendNames(), messagePart));
+								messageBridge.messageNoPrefix(sender, "info-regionFriends", rent, Utils.combinedMessage(rent.getFriendsFeature().getFriendNames(), messagePart));
 							}
 						} else {
-							plugin.messageNoPrefix(sender, "info-regionCanBeRented", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionCanBeRented", rent);
 						}
 						if(rent.getLandlordName() != null) {
-							plugin.messageNoPrefix(sender, "info-regionLandlord", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionLandlord", rent);
 						}
 						// Maximum extends
 						if(rent.getMaxExtends() != -1) {
 							if(rent.getMaxExtends() == 0) {
-								plugin.messageNoPrefix(sender, "info-regionNoExtending", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionNoExtending", rent);
 							} else if(rent.isRented()) {
-								plugin.messageNoPrefix(sender, "info-regionExtendsLeft", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionExtendsLeft", rent);
 							} else {
-								plugin.messageNoPrefix(sender, "info-regionMaxExtends", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionMaxExtends", rent);
 							}
 						}
 						// If maxExtends is zero it does not make sense to show this message
 						if(rent.getMaxRentTime() != -1 && rent.getMaxExtends() != 0) {
-							plugin.messageNoPrefix(sender, "info-regionMaxRentTime", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionMaxRentTime", rent);
 						}
 						if(rent.getInactiveTimeUntilUnrent() != -1) {
-							plugin.messageNoPrefix(sender, "info-regionInactiveUnrent", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionInactiveUnrent", rent);
 						}
 						// Teleport
 						Message tp = Message.fromKey("info-prefix");
@@ -332,40 +342,40 @@ public class InfoCommand extends CommandAreaShop {
 							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()).getPlain());
 						}
 						if(!signLocations.isEmpty()) {
-							plugin.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));
+							messageBridge.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));
 						}
 						// Groups
 						if(sender.hasPermission("areashop.groupinfo") && !rent.getGroupNames().isEmpty()) {
-							plugin.messageNoPrefix(sender, "info-regionGroups", Utils.createCommaSeparatedList(rent.getGroupNames()));
+							messageBridge.messageNoPrefix(sender, "info-regionGroups", Utils.createCommaSeparatedList(rent.getGroupNames()));
 						}
 						// Restoring
 						if(rent.isRestoreEnabled()) {
-							plugin.messageNoPrefix(sender, "info-regionRestoringRent", rent);
+							messageBridge.messageNoPrefix(sender, "info-regionRestoringRent", rent);
 						}
 						// Restrictions
 						if(!rent.isRented()) {
 							if(rent.restrictedToRegion()) {
-								plugin.messageNoPrefix(sender, "info-regionRestrictedRegionRent", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionRestrictedRegionRent", rent);
 							} else if(rent.restrictedToWorld()) {
-								plugin.messageNoPrefix(sender, "info-regionRestrictedWorldRent", rent);
+								messageBridge.messageNoPrefix(sender, "info-regionRestrictedWorldRent", rent);
 							}
 						}
-						plugin.messageNoPrefix(sender, "info-regionFooterRent", rent);
+						messageBridge.messageNoPrefix(sender, "info-regionFooterRent", rent);
 					} else if(buy != null) {
-						plugin.message(sender, "info-regionHeaderBuy", buy);
+						messageBridge.message(sender, "info-regionHeaderBuy", buy);
 						if(buy.isSold()) {
 							if(buy.isInResellingMode()) {
-								plugin.messageNoPrefix(sender, "info-regionReselling", buy);
-								plugin.messageNoPrefix(sender, "info-regionReselPrice", buy);
+								messageBridge.messageNoPrefix(sender, "info-regionReselling", buy);
+								messageBridge.messageNoPrefix(sender, "info-regionReselPrice", buy);
 							} else {
-								plugin.messageNoPrefix(sender, "info-regionBought", buy);
+								messageBridge.messageNoPrefix(sender, "info-regionBought", buy);
 							}
 							// Money back
 							if(!buy.getBooleanSetting("buy.sellDisabled")) {
 								if (SellCommand.canUse(sender, buy)) {
-									plugin.messageNoPrefix(sender, "info-regionMoneyBackBuyClick", buy);
+									messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuyClick", buy);
 								} else {
-									plugin.messageNoPrefix(sender, "info-regionMoneyBackBuy", buy);
+									messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuy", buy);
 								}
 							}
 							// Friends
@@ -374,16 +384,16 @@ public class InfoCommand extends CommandAreaShop {
 								if(DelfriendCommand.canUse(sender, buy)) {
 									messagePart = "info-friendRemove";
 								}
-								plugin.messageNoPrefix(sender, "info-regionFriends", buy, Utils.combinedMessage(buy.getFriendsFeature().getFriendNames(), messagePart));
+								messageBridge.messageNoPrefix(sender, "info-regionFriends", buy, Utils.combinedMessage(buy.getFriendsFeature().getFriendNames(), messagePart));
 							}
 						} else {
-							plugin.messageNoPrefix(sender, "info-regionCanBeBought", buy);
+							messageBridge.messageNoPrefix(sender, "info-regionCanBeBought", buy);
 						}
 						if(buy.getLandlord() != null) {
-							plugin.messageNoPrefix(sender, "info-regionLandlord", buy);
+							messageBridge.messageNoPrefix(sender, "info-regionLandlord", buy);
 						}
 						if(buy.getInactiveTimeUntilSell() != -1) {
-							plugin.messageNoPrefix(sender, "info-regionInactiveSell", buy);
+							messageBridge.messageNoPrefix(sender, "info-regionInactiveSell", buy);
 						}
 						// Teleport
 						Message tp = Message.fromKey("info-prefix");
@@ -409,34 +419,34 @@ public class InfoCommand extends CommandAreaShop {
 							signLocations.add(Message.fromKey("info-regionSignLocation").replacements(location.getWorld().getName(), location.getX(), location.getY(), location.getZ()).getPlain());
 						}
 						if(!signLocations.isEmpty()) {
-							plugin.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));
+							messageBridge.messageNoPrefix(sender, "info-regionSigns", Utils.createCommaSeparatedList(signLocations));
 						}
 						// Groups
 						if(sender.hasPermission("areashop.groupinfo") && !buy.getGroupNames().isEmpty()) {
-							plugin.messageNoPrefix(sender, "info-regionGroups", Utils.createCommaSeparatedList(buy.getGroupNames()));
+							messageBridge.messageNoPrefix(sender, "info-regionGroups", Utils.createCommaSeparatedList(buy.getGroupNames()));
 						}
 						// Restoring
 						if(buy.isRestoreEnabled()) {
-							plugin.messageNoPrefix(sender, "info-regionRestoringBuy", buy);
+							messageBridge.messageNoPrefix(sender, "info-regionRestoringBuy", buy);
 						}
 						// Restrictions
 						if(!buy.isSold()) {
 							if(buy.restrictedToRegion()) {
-								plugin.messageNoPrefix(sender, "info-regionRestrictedRegionBuy", buy);
+								messageBridge.messageNoPrefix(sender, "info-regionRestrictedRegionBuy", buy);
 							} else if(buy.restrictedToWorld()) {
-								plugin.messageNoPrefix(sender, "info-regionRestrictedWorldBuy", buy);
+								messageBridge.messageNoPrefix(sender, "info-regionRestrictedWorldBuy", buy);
 							}
 						}
-						plugin.messageNoPrefix(sender, "info-regionFooterBuy", buy);
+						messageBridge.messageNoPrefix(sender, "info-regionFooterBuy", buy);
 					}
 				} else {
-					plugin.message(sender, "info-regionHelp");
+					messageBridge.message(sender, "info-regionHelp");
 				}
 			} else {
-				plugin.message(sender, "info-help");
+				messageBridge.message(sender, "info-help");
 			}
 		} else {
-			plugin.message(sender, "info-help");
+			messageBridge.message(sender, "info-help");
 		}
 	}
 
@@ -451,8 +461,8 @@ public class InfoCommand extends CommandAreaShop {
 					result.add(player.getName());
 				}
 			} else if(start[2].equalsIgnoreCase("region")) {
-				result.addAll(plugin.getFileManager().getBuyNames());
-				result.addAll(plugin.getFileManager().getRentNames());
+				result.addAll(fileManager.getBuyNames());
+				result.addAll(fileManager.getRentNames());
 			}
 		}
 		return result;

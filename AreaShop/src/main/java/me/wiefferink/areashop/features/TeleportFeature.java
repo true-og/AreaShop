@@ -6,6 +6,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
+import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.areashop.tools.Value;
@@ -26,6 +27,9 @@ import java.util.Set;
 
 public class TeleportFeature extends RegionFeature {
 
+	@Inject
+	private WorldGuardInterface worldGuardInterface;
+	
 	@Inject
 	@Deprecated
 	TeleportFeature(@Nonnull AreaShop plugin) {
@@ -542,8 +546,8 @@ public class TeleportFeature extends RegionFeature {
 		// Calculate a default location
 		if(startLocation == null) {
 			// Set to block in the middle, y configured in the config
-			Vector regionMin = AreaShop.getInstance().getWorldGuardHandler().getMinimumPoint(worldguardRegion);
-			Vector regionMax = AreaShop.getInstance().getWorldGuardHandler().getMaximumPoint(worldguardRegion);
+			Vector regionMin = worldGuardInterface.getMinimumPoint(worldguardRegion);
+			Vector regionMax = worldGuardInterface.getMaximumPoint(worldguardRegion);
 			Vector middle = regionMin.clone().midpoint(regionMax);
 			String configSetting = getRegion().getStringSetting("general.teleportLocationY");
 			if("bottom".equalsIgnoreCase(configSetting)) {

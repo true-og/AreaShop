@@ -1,5 +1,7 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -9,13 +11,21 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
+@Singleton
 public class SetownerCommand extends CommandAreaShop {
 
+	@Inject
+	private MessageBridge messageBridge;
+	@Inject
+	private FileManager fileManager;
+	
 	@Override
 	public String getCommandStart() {
 		return "areashop setowner";
@@ -32,12 +42,12 @@ public class SetownerCommand extends CommandAreaShop {
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(!sender.hasPermission("areashop.setownerrent") && !sender.hasPermission("areashop.setownerbuy")) {
-			plugin.message(sender, "setowner-noPermission");
+			messageBridge.message(sender, "setowner-noPermission");
 			return;
 		}
 		GeneralRegion region;
 		if(args.length < 2) {
-			plugin.message(sender, "setowner-help");
+			messageBridge.message(sender, "setowner-help");
 			return;
 		}
 		if(args.length == 2) {
@@ -45,32 +55,32 @@ public class SetownerCommand extends CommandAreaShop {
 				// get the region by location
 				List<GeneralRegion> regions = Utils.getImportantRegions(((Player)sender).getLocation());
 				if(regions.isEmpty()) {
-					plugin.message(sender, "cmd-noRegionsAtLocation");
+					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;
 				} else if(regions.size() > 1) {
-					plugin.message(sender, "cmd-moreRegionsAtLocation");
+					messageBridge.message(sender, "cmd-moreRegionsAtLocation");
 					return;
 				} else {
 					region = regions.get(0);
 				}
 			} else {
-				plugin.message(sender, "cmd-automaticRegionOnlyByPlayer");
+				messageBridge.message(sender, "cmd-automaticRegionOnlyByPlayer");
 				return;
 			}
 		} else {
-			region = plugin.getFileManager().getRegion(args[2]);
+			region = fileManager.getRegion(args[2]);
 		}
 		if(region == null) {
-			plugin.message(sender, "setowner-notRegistered");
+			messageBridge.message(sender, "setowner-notRegistered");
 			return;
 		}
 
 		if(region instanceof RentRegion && !sender.hasPermission("areashop.setownerrent")) {
-			plugin.message(sender, "setowner-noPermissionRent", region);
+			messageBridge.message(sender, "setowner-noPermissionRent", region);
 			return;
 		}
 		if(region instanceof BuyRegion && !sender.hasPermission("areashop.setownerbuy")) {
-			plugin.message(sender, "setowner-noPermissionBuy", region);
+			messageBridge.message(sender, "setowner-noPermissionBuy", region);
 			return;
 		}
 
@@ -81,7 +91,7 @@ public class SetownerCommand extends CommandAreaShop {
 			uuid = player.getUniqueId();
 		}
 		if(uuid == null) {
-			plugin.message(sender, "setowner-noPlayer", args[1], region);
+			messageBridge.message(sender, "setowner-noPlayer", args[1], region);
 			return;
 		}
 
@@ -91,20 +101,20 @@ public class SetownerCommand extends CommandAreaShop {
 				// extend
 				rent.setRentedUntil(rent.getRentedUntil() + rent.getDuration());
 				rent.setRenter(uuid);
-				plugin.message(sender, "setowner-succesRentExtend", region);
+				messageBridge.message(sender, "setowner-succesRentExtend", region);
 			} else {
 				// change
 				if(!rent.isRented()) {
 					rent.setRentedUntil(Calendar.getInstance().getTimeInMillis() + rent.getDuration());
 				}
 				rent.setRenter(uuid);
-				plugin.message(sender, "setowner-succesRent", region);
+				messageBridge.message(sender, "setowner-succesRent", region);
 			}
 		}
 		if(region instanceof BuyRegion) {
 			BuyRegion buy = (BuyRegion)region;
 			buy.setBuyer(uuid);
-			plugin.message(sender, "setowner-succesBuy", region);
+			messageBridge.message(sender, "setowner-succesBuy", region);
 		}
 		region.getFriendsFeature().deleteFriend(region.getOwner(), null);
 		region.update();
@@ -119,7 +129,7 @@ public class SetownerCommand extends CommandAreaShop {
 				result.add(player.getName());
 			}
 		} else if(toComplete == 3) {
-			result.addAll(plugin.getFileManager().getRegionNames());
+			result.addAll(fileManager.getRegionNames());
 		}
 		return result;
 	}
