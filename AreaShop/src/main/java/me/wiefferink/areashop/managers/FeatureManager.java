@@ -27,20 +27,10 @@ import java.util.function.Function;
 @Singleton
 public class FeatureManager extends Manager {
 
-	// List of defined features
-	private static final Set<Class<? extends RegionFeature>> featureClasses = new HashSet<>(Arrays.asList(
-			DebugFeature.class,
-			SignsFeature.class,
-			FriendsFeature.class,
-			WorldGuardRegionFlagsFeature.class,
-			TeleportFeature.class,
-			CommandsFeature.class
-	));
-
 	private static final Collection<Class<? extends RegionFeature>> globalFeatureClasses = Arrays.asList(
 			CommandsFeature.class,
-			TeleportFeature.class,
-			CommandsFeature.class
+			WorldGuardRegionFlagsFeature.class,
+			DebugFeature.class
 	);
 	// One instance of each feature, registered for event handling
 	private final Set<RegionFeature> globalFeatures = new HashSet<>();

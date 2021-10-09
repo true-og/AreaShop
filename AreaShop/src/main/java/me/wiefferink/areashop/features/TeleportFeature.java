@@ -29,12 +29,6 @@ public class TeleportFeature extends RegionFeature {
 
 	@Inject
 	private WorldGuardInterface worldGuardInterface;
-	
-	@Inject
-	@Deprecated
-	TeleportFeature(@Nonnull AreaShopPlugin plugin) {
-		super(plugin);
-	}
 
 	@AssistedInject
 	public TeleportFeature(@Nonnull AreaShopPlugin plugin, @Assisted @Nonnull GeneralRegion region) {
