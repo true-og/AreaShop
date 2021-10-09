@@ -68,7 +68,7 @@ public class RentCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			for(RentRegion region : fileManager.getRents()) {
+			for(RentRegion region : fileManager.getRentsRef()) {
 				if(!region.isRented()) {
 					result.add(region.getName());
 				}

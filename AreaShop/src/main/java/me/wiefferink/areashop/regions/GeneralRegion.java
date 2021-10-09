@@ -1237,12 +1237,12 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 				int totalLimit = plugin.getConfig().getInt("limitGroups." + group + ".total");
 				int typeLimit = plugin.getConfig().getInt("limitGroups." + group + "." + typePath);
 				//AreaShop.debug("typeLimitOther="+typeLimit+", typePath="+typePath);
-				int totalCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRegions(), exclude);
+				int totalCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRegionsRef(), exclude);
 				int typeCurrent;
 				if(type == RegionType.RENT) {
-					typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRents(), exclude);
+					typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRentsRef(), exclude);
 				} else {
-					typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getBuys(), exclude);
+					typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getBuysRef(), exclude);
 				}
 				if(totalLimit == -1) {
 					totalLimit = Integer.MAX_VALUE;

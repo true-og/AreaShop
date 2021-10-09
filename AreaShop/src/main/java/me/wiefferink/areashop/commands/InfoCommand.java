@@ -193,43 +193,43 @@ public class InfoCommand extends CommandAreaShop {
 
 			// All regions
 			if(args[1].equalsIgnoreCase("all")) {
-				showSortedPagedList(sender, new ArrayList<>(fileManager.getRegions()), filterGroup, "info-allHeader", (args.length > 2 ? args[2] : null), "info all");
+				showSortedPagedList(sender, new ArrayList<>(fileManager.getRegionsRef()), filterGroup, "info-allHeader", (args.length > 2 ? args[2] : null), "info all");
 			}
 
 			// Rented regions
 			else if(args[1].equalsIgnoreCase("rented")) {
-				List<RentRegion> regions = new ArrayList<>(fileManager.getRents());
+				List<RentRegion> regions = new ArrayList<>(fileManager.getRentsRef());
 				regions.removeIf(RentRegion::isAvailable);
 				showSortedPagedList(sender, regions, filterGroup, "info-rentedHeader", (args.length > 2 ? args[2] : null), "info rented");
 			}
 			// Forrent regions
 			else if(args[1].equalsIgnoreCase("forrent")) {
-				List<RentRegion> regions = new ArrayList<>(fileManager.getRents());
+				List<RentRegion> regions = new ArrayList<>(fileManager.getRentsRef());
 				regions.removeIf(RentRegion::isRented);
 				showSortedPagedList(sender, regions, filterGroup, "info-forrentHeader", (args.length > 2 ? args[2] : null), "info forrent");
 			}
 			// Sold regions
 			else if(args[1].equalsIgnoreCase("sold")) {
-				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuysRef());
 				regions.removeIf(BuyRegion::isAvailable);
 				showSortedPagedList(sender, regions, filterGroup, "info-soldHeader", (args.length > 2 ? args[2] : null), "info sold");
 			}
 			// Forsale regions
 			else if(args[1].equalsIgnoreCase("forsale")) {
-				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuysRef());
 				regions.removeIf(BuyRegion::isSold);
 				showSortedPagedList(sender, regions, filterGroup, "info-forsaleHeader", (args.length > 2 ? args[2] : null), "info forsale");
 			}
 			// Reselling regions
 			else if(args[1].equalsIgnoreCase("reselling")) {
-				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuys());
+				List<BuyRegion> regions = new ArrayList<>(fileManager.getBuysRef());
 				regions.removeIf(region -> !region.isInResellingMode());
 				showSortedPagedList(sender, regions, filterGroup, "info-resellingHeader", (args.length > 2 ? args[2] : null), "info reselling");
 			}
 
 			// List of regions without a group
 			else if(args[1].equalsIgnoreCase("nogroup")) {
-				List<GeneralRegion> regions = new ArrayList<>(fileManager.getRegions());
+				List<GeneralRegion> regions = new ArrayList<>(fileManager.getRegionsRef());
 				for(RegionGroup group : fileManager.getGroups()) {
 					regions.removeAll(group.getMemberRegions());
 				}

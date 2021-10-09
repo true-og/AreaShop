@@ -231,6 +231,14 @@ public class FileManager extends Manager {
 	 * @return List of all rental regions
 	 */
 	public Collection<RentRegion> getRents() {
+		return new ArrayList<>(rents.values());
+	}
+
+	/**
+	 * Get all rental regions.
+	 * @return List of all rental regions
+	 */
+	public Collection<RentRegion> getRentsRef() {
 		return Collections.unmodifiableCollection(rents.values());
 	}
 
@@ -238,15 +246,28 @@ public class FileManager extends Manager {
 	 * Get all buy regions.
 	 * @return List of all buy regions
 	 */
-	public Collection<BuyRegion> getBuys() {
+	public List<BuyRegion> getBuys() {
+		return new ArrayList<>(buys.values());
+	}
+
+	public Collection<BuyRegion> getBuysRef() {
 		return Collections.unmodifiableCollection(buys.values());
+	}
+
+
+	/**
+	 * Get all regions.
+	 * @return List of all regions (it is safe to modify the list)
+	 */
+	public List<GeneralRegion> getRegions() {
+		return new ArrayList<>(regions.values());
 	}
 
 	/**
 	 * Get all regions.
 	 * @return List of all regions (it is safe to modify the list)
 	 */
-	public Collection<GeneralRegion> getRegions() {
+	public Collection<GeneralRegion> getRegionsRef() {
 		return Collections.unmodifiableCollection(regions.values());
 	}
 
@@ -487,7 +508,7 @@ public class FileManager extends Manager {
 	public void performPeriodicSignUpdate() {
 		Do.forAll(
 			plugin.getConfig().getInt("signs.regionsPerTick"),
-			getRents(),
+			getRentsRef(),
 			region -> {
 				if(region.needsPeriodicUpdate()) {
 					region.update();
@@ -502,7 +523,7 @@ public class FileManager extends Manager {
 	public void sendRentExpireWarnings() {
 		Do.forAll(
 			plugin.getConfig().getInt("expireWarning.regionsPerTick"),
-			getRents(),
+			getRentsRef(),
 			RentRegion::sendExpirationWarnings
 		);
 	}
@@ -541,7 +562,7 @@ public class FileManager extends Manager {
 	 * Update all regions, happens in a task to minimize lag.
 	 */
 	public void updateAllRegions() {
-		updateRegions(getRegions(), null);
+		updateRegions(getRegionsRef(), null);
 	}
 
 	/**
@@ -549,7 +570,7 @@ public class FileManager extends Manager {
 	 * @param confirmationReceiver Optional CommandSender that should receive progress messages
 	 */
 	public void updateAllRegions(CommandSender confirmationReceiver) {
-		updateRegions(getRegions(), confirmationReceiver);
+		updateRegions(getRegionsRef(), confirmationReceiver);
 	}
 
 
@@ -593,7 +614,7 @@ public class FileManager extends Manager {
 
 		Do.forAll(
 			plugin.getConfig().getInt("saving.regionsPerTick"),
-			getRegions(),
+			getRegionsRef(),
 			region -> {
 				if(region.isSaveRequired()) {
 					region.saveNow();
@@ -609,7 +630,7 @@ public class FileManager extends Manager {
 		if(isSaveGroupsRequired()) {
 			saveGroupsNow();
 		}
-		for(GeneralRegion region : getRegions()) {
+		for(GeneralRegion region : getRegionsRef()) {
 			if(region.isSaveRequired()) {
 				region.saveNow();
 			}
@@ -674,7 +695,7 @@ public class FileManager extends Manager {
 	public void checkRents() {
 		Do.forAll(
 			plugin.getConfig().getInt("expiration.regionsPerTick"),
-			getRents(),
+			getRentsRef(),
 			RentRegion::checkExpiration
 		);
 	}
@@ -685,7 +706,7 @@ public class FileManager extends Manager {
 	public void checkForInactiveRegions() {
 		Do.forAll(
 			plugin.getConfig().getInt("inactive.regionsPerTick"),
-			getRegions(),
+			getRegionsRef(),
 			GeneralRegion::checkInactive
 		);
 	}
@@ -1307,13 +1328,13 @@ public class FileManager extends Manager {
 
 		// Add 'general.lastActive' to rented/bought regions (initialize at current time)
 		if(fileStatus == null || fileStatus < 3) {
-			for(GeneralRegion region : getRegions()) {
+			for(GeneralRegion region : getRegionsRef()) {
 				region.updateLastActiveTime();
 			}
 			// Update versions file to 3
 			versions.put(AreaShop.versionFiles, 3);
 			saveVersions();
-			if(!getRegions().isEmpty()) {
+			if(!getRegionsRef().isEmpty()) {
 				AreaShop.info("  Added last active time to regions (v2 to v3)");
 			}
 		}

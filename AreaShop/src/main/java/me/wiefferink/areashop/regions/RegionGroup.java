@@ -48,7 +48,7 @@ public class RegionGroup {
 	public Set<String> getAutoRegions() {
 		if(autoDirty) {
 			autoRegions = new HashSet<>();
-			for(GeneralRegion region : fileManager.getRegions()) {
+			for(GeneralRegion region : fileManager.getRegionsRef()) {
 				if(worlds.contains(region.getWorldName())) {
 					autoRegions.add(region.getName());
 				}

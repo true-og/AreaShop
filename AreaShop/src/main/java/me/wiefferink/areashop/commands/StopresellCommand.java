@@ -94,7 +94,7 @@ public class StopresellCommand extends CommandAreaShop {
 	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
 		ArrayList<String> result = new ArrayList<>();
 		if(toComplete == 2) {
-			for(BuyRegion region : fileManager.getBuys()) {
+			for(BuyRegion region : fileManager.getBuysRef()) {
 				if(region.isSold() && region.isInResellingMode()) {
 					result.add(region.getName());
 				}

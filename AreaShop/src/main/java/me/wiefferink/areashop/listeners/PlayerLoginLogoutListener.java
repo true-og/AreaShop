@@ -58,7 +58,7 @@ public final class PlayerLoginLogoutListener implements Listener {
 				return false;
 			}
 			// Notify for rents that almost run out
-			for(RentRegion region : plugin.getFileManager().getRents()) {
+			for(RentRegion region : plugin.getFileManager().getRentsRef()) {
 				if(region.isRenter(player)) {
 					String warningSetting = region.getStringSetting("rent.warningOnLoginTime");
 					if(warningSetting == null || warningSetting.isEmpty()) {
@@ -84,7 +84,7 @@ public final class PlayerLoginLogoutListener implements Listener {
 			}
 
 			List<GeneralRegion> regions = new ArrayList<>();
-			for(GeneralRegion region : plugin.getFileManager().getRegions()) {
+			for(GeneralRegion region : plugin.getFileManager().getRegionsRef()) {
 				if(region.isOwner(player)) {
 					regions.add(region);
 				}
@@ -127,7 +127,7 @@ public final class PlayerLoginLogoutListener implements Listener {
 	 * @param player The player to update the active times for
 	 */
 	private void updateLastActive(Player player) {
-		for(GeneralRegion region : plugin.getFileManager().getRegions()) {
+		for(GeneralRegion region : plugin.getFileManager().getRegionsRef()) {
 			if(region.isOwner(player)) {
 				region.updateLastActiveTime();
 			}

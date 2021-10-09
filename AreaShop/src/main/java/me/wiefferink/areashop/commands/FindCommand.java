@@ -85,7 +85,7 @@ public class FindCommand extends CommandAreaShop {
 
 		// Find buy regions
 		if(args[1].equalsIgnoreCase("buy")) {
-			Collection<BuyRegion> regions = fileManager.getBuys();
+			Collection<BuyRegion> regions = fileManager.getBuysRef();
 			List<BuyRegion> results = new LinkedList<>();
 			for(BuyRegion region : regions) {
 				if(!region.isSold()
@@ -125,7 +125,7 @@ public class FindCommand extends CommandAreaShop {
 
 		// Find rental regions
 		else {
-			Collection<RentRegion> regions = fileManager.getRents();
+			Collection<RentRegion> regions = fileManager.getRentsRef();
 			List<RentRegion> results = new LinkedList<>();
 			for(RentRegion region : regions) {
 				if(!region.isRented()

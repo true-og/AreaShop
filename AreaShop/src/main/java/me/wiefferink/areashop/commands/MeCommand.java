@@ -67,20 +67,20 @@ public class MeCommand extends CommandAreaShop {
 
 		// Get the regions owned by the player
 		Set<RentRegion> rentRegions = new HashSet<>();
-		for(RentRegion region : fileManager.getRents()) {
+		for(RentRegion region : fileManager.getRentsRef()) {
 			if(region.isOwner(player)) {
 				rentRegions.add(region);
 			}
 		}
 		Set<BuyRegion> buyRegions = new HashSet<>();
-		for(BuyRegion region : fileManager.getBuys()) {
+		for(BuyRegion region : fileManager.getBuysRef()) {
 			if(region.isOwner(player)) {
 				buyRegions.add(region);
 			}
 		}
 		// Get the regions the player is added as friend
 		Set<GeneralRegion> friendRegions = new HashSet<>();
-		for(GeneralRegion region : fileManager.getRegions()) {
+		for(GeneralRegion region : fileManager.getRegionsRef()) {
 			if(region.getFriendsFeature().getFriends().contains(player.getUniqueId())) {
 				friendRegions.add(region);
 			}
