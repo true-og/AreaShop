@@ -172,7 +172,7 @@ public class RegionSign {
 				return false;
 			}
 			// Don't do physics here, we first need to update the direction
-			blockState.setType(signType);
+			block.setType(signType);
 			blockState = PaperLib.getBlockState(block, false).getState();
 			if (blockData instanceof WallSign) {
 				((WallSign) blockData).setFacing(getFacing());
