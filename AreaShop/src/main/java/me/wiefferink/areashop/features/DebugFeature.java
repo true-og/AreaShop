@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.features;
 
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.RentingRegionEvent;
 import me.wiefferink.areashop.events.ask.ResellingRegionEvent;
@@ -27,58 +27,58 @@ import javax.inject.Singleton;
 public class DebugFeature extends RegionFeature {
 
 	@Inject
-	DebugFeature(@Nonnull AreaShopPlugin plugin) {
+	DebugFeature(@Nonnull AreaShop plugin) {
 		super(plugin);
 	}
 
 	@EventHandler
 	public void buyingRegion(BuyingRegionEvent event) {
-		AreaShopPlugin.debug("BuyingRegionEvent: " + event.getPlayer().getName() + " is trying to buy " + event.getRegion().getName());
+		AreaShop.debug("BuyingRegionEvent: " + event.getPlayer().getName() + " is trying to buy " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void boughtRegion(BoughtRegionEvent event) {
-		AreaShopPlugin.debug("BoughtRegionEvent: " + event.getRegion().getPlayerName() + " bought " + event.getRegion().getName());
+		AreaShop.debug("BoughtRegionEvent: " + event.getRegion().getPlayerName() + " bought " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void sellingRegion(SellingRegionEvent event) {
-		AreaShopPlugin.debug("SellingRegionEvent: " + event.getRegion().getName() + " is trying to sell " + event.getRegion().getName());
+		AreaShop.debug("SellingRegionEvent: " + event.getRegion().getName() + " is trying to sell " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void soldRegion(SoldRegionEvent event) {
-		AreaShopPlugin.debug("SoldRegionEvent: " + Utils.toName(event.getOldBuyer()) + " sold " + event.getRegion().getName());
+		AreaShop.debug("SoldRegionEvent: " + Utils.toName(event.getOldBuyer()) + " sold " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void resellingRegion(ResellingRegionEvent event) {
-		AreaShopPlugin.debug("ResellingRegionEvent: " + event.getRegion().getName() + " is trying to resell " + event.getRegion().getName());
+		AreaShop.debug("ResellingRegionEvent: " + event.getRegion().getName() + " is trying to resell " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void resoldRegion(ResoldRegionEvent event) {
-		AreaShopPlugin.debug("ResoldRegionEvent: " + Utils.toName(event.getFromPlayer()) + " resold " + event.getRegion().getName() + " to " + event.getRegion().getPlayerName());
+		AreaShop.debug("ResoldRegionEvent: " + Utils.toName(event.getFromPlayer()) + " resold " + event.getRegion().getName() + " to " + event.getRegion().getPlayerName());
 	}
 
 	@EventHandler
 	public void rentingRegion(RentingRegionEvent event) {
-		AreaShopPlugin.debug("RentingRegionEvent: " + event.getPlayer().getName() + " is trying to rent " + event.getRegion().getName() + ", extending=" + event.isExtending());
+		AreaShop.debug("RentingRegionEvent: " + event.getPlayer().getName() + " is trying to rent " + event.getRegion().getName() + ", extending=" + event.isExtending());
 	}
 
 	@EventHandler
 	public void rentedRegion(RentedRegionEvent event) {
-		AreaShopPlugin.debug("RentedRegionEvent: " + event.getRegion().getPlayerName() + " rented " + event.getRegion().getName() + ", extending=" + event.hasExtended());
+		AreaShop.debug("RentedRegionEvent: " + event.getRegion().getPlayerName() + " rented " + event.getRegion().getName() + ", extending=" + event.hasExtended());
 	}
 
 	@EventHandler
 	public void unrentingRegion(UnrentingRegionEvent event) {
-		AreaShopPlugin.debug("UnrentingRegionEvent: " + event.getRegion().getPlayerName() + " is trying to unrent " + event.getRegion().getName());
+		AreaShop.debug("UnrentingRegionEvent: " + event.getRegion().getPlayerName() + " is trying to unrent " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void unrentedRegion(UnrentedRegionEvent event) {
-		AreaShopPlugin.debug("UnrentedRegionEvent: " + Utils.toName(event.getOldRenter()) + " unrented " + event.getRegion().getName());
+		AreaShop.debug("UnrentedRegionEvent: " + Utils.toName(event.getOldRenter()) + " unrented " + event.getRegion().getName());
 	}
 
 	@EventHandler
@@ -88,21 +88,21 @@ public class DebugFeature extends RegionFeature {
 
 	@EventHandler
 	public void addedRegion(AddedRegionEvent event) {
-		AreaShopPlugin.debug("AddedRegionEvent: " + event.getRegion().getName());
+		AreaShop.debug("AddedRegionEvent: " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void removedRegion(DeletedRegionEvent event) {
-		AreaShopPlugin.debug("DeletedRegionEvent: " + event.getRegion().getName());
+		AreaShop.debug("DeletedRegionEvent: " + event.getRegion().getName());
 	}
 
 	@EventHandler
 	public void addedFriend(AddedFriendEvent event) {
-		AreaShopPlugin.debug("AddedFriendEvent: region " + event.getRegion().getName() + ", " + event.getFriend().getName() + " by " + (event.getBy() == null ? "<nobody>" : event.getBy().getName()));
+		AreaShop.debug("AddedFriendEvent: region " + event.getRegion().getName() + ", " + event.getFriend().getName() + " by " + (event.getBy() == null ? "<nobody>" : event.getBy().getName()));
 	}
 
 	@EventHandler
 	public void deleteFriend(DeletedFriendEvent event) {
-		AreaShopPlugin.debug("DeletedFriendEvent: region " + event.getRegion().getName() + ", " + event.getFriend().getName() + " by " + (event.getBy() == null ? "<nobody>" : event.getBy().getName()));
+		AreaShop.debug("DeletedFriendEvent: region " + event.getRegion().getName() + ", " + event.getFriend().getName() + " by " + (event.getBy() == null ? "<nobody>" : event.getBy().getName()));
 	}
 }

@@ -1,5 +1,5 @@
 name: AreaShop
-main: me.wiefferink.areashop.AreaShopPlugin
+main: me.wiefferink.areashop.AreaShop
 version: "@version@"
 description: "Selling and renting WorldGuard regions to your players, highly configurable."
 depend: [Vault, WorldGuard, WorldEdit]

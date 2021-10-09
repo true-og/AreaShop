@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 @Singleton
 public class FileManager extends Manager {
 
-	private final AreaShopPlugin plugin;
+	private final AreaShop plugin;
 	private final Map<String, GeneralRegion> regions;
 	private final Map<String, BuyRegion> buys;
 	private final Map<String, RentRegion> rents;
@@ -105,7 +105,7 @@ public class FileManager extends Manager {
 	 */
 	@Inject
 	FileManager(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull WorldGuardInterface worldGuardInterface,
 			@Nonnull MessageBridge messageBridge,
 			@Nonnull RegionFactory regionFactory
@@ -117,17 +117,17 @@ public class FileManager extends Manager {
 		regions = new HashMap<>();
 		buys = new HashMap<>();
 		rents = new HashMap<>();
-		regionsPath = plugin.getDataFolder() + File.separator + AreaShopPlugin.regionsFolder;
+		regionsPath = plugin.getDataFolder() + File.separator + AreaShop.regionsFolder;
 		configPath = plugin.getDataFolder() + File.separator + "config.yml";
 		groups = new HashMap<>();
-		groupsPath = plugin.getDataFolder() + File.separator + AreaShopPlugin.groupsFile;
-		defaultPath = plugin.getDataFolder() + File.separator + AreaShopPlugin.defaultFile;
-		versionPath = plugin.getDataFolder().getPath() + File.separator + AreaShopPlugin.versionFile;
-		schemFolder = plugin.getDataFolder() + File.separator + AreaShopPlugin.schematicFolder;
+		groupsPath = plugin.getDataFolder() + File.separator + AreaShop.groupsFile;
+		defaultPath = plugin.getDataFolder() + File.separator + AreaShop.defaultFile;
+		versionPath = plugin.getDataFolder().getPath() + File.separator + AreaShop.versionFile;
+		schemFolder = plugin.getDataFolder() + File.separator + AreaShop.schematicFolder;
 		worldRegionsRequireSaving = new HashSet<>();
 		File schemFile = new File(schemFolder);
 		if(!schemFile.exists() & !schemFile.mkdirs()) {
-			AreaShopPlugin.warn("Could not create schematic files directory: " + schemFile.getAbsolutePath());
+			AreaShop.warn("Could not create schematic files directory: " + schemFile.getAbsolutePath());
 		}
 		loadVersions();
 	}
@@ -321,7 +321,7 @@ public class FileManager extends Manager {
 	public AddingRegionEvent addRegionNoSave(GeneralRegion region) {
 		AddingRegionEvent event = new AddingRegionEvent(region);
 		if(region == null) {
-			AreaShopPlugin.debug("Tried adding a null region!");
+			AreaShop.debug("Tried adding a null region!");
 			event.cancel("null region");
 			return event;
 		}
@@ -377,14 +377,14 @@ public class FileManager extends Manager {
 		// Determine if the player is an owner or member of the region
 		boolean isMember = player != null && worldGuardInterface.containsMember(region, player.getUniqueId());
 		boolean isOwner = player != null && worldGuardInterface.containsOwner(region, player.getUniqueId());
-		AreaShopPlugin.debug("checkRegionAdd: isOwner=" + isOwner + ", isMember=" + isMember);
+		AreaShop.debug("checkRegionAdd: isOwner=" + isOwner + ", isMember=" + isMember);
 		String typeString;
 		if(type == RegionType.RENT) {
 			typeString = "rent";
 		} else {
 			typeString = "buy";
 		}
-		AreaShopPlugin.debug("  permissions: .create=" + sender.hasPermission("areashop.create" + typeString) + ", .create.owner=" + sender.hasPermission("areashop.create" + typeString + ".owner") + ", .create.member=" + sender.hasPermission("areashop.create" + typeString + ".member"));
+		AreaShop.debug("  permissions: .create=" + sender.hasPermission("areashop.create" + typeString) + ", .create.owner=" + sender.hasPermission("areashop.create" + typeString + ".owner") + ", .create.member=" + sender.hasPermission("areashop.create" + typeString + ".member"));
 		if(!(sender.hasPermission("areashop.create" + typeString)
 				|| (sender.hasPermission("areashop.create" + typeString + ".owner") && isOwner)
 				|| (sender.hasPermission("areashop.create" + typeString + ".member") && isMember))) {
@@ -453,7 +453,7 @@ public class FileManager extends Manager {
 		rents.remove(name);
 
 		// Remove file
-		File file = new File(plugin.getDataFolder() + File.separator + AreaShopPlugin.regionsFolder + File.separator + region.getLowerCaseName() + ".yml");
+		File file = new File(plugin.getDataFolder() + File.separator + AreaShop.regionsFolder + File.separator + region.getLowerCaseName() + ".yml");
 		if(file.exists()) {
 			boolean deleted;
 			try {
@@ -462,7 +462,7 @@ public class FileManager extends Manager {
 				deleted = false;
 			}
 			if(!deleted) {
-				AreaShopPlugin.warn("File could not be deleted: " + file);
+				AreaShop.warn("File could not be deleted: " + file);
 			}
 		}
 
@@ -572,12 +572,12 @@ public class FileManager extends Manager {
 	 * Save the groups file to disk synchronously.
 	 */
 	public void saveGroupsNow() {
-		AreaShopPlugin.debug("saveGroupsNow() done");
+		AreaShop.debug("saveGroupsNow() done");
 		saveGroupsRequired = false;
 		try {
 			groupsConfig.save(groupsPath);
 		} catch(IOException e) {
-			AreaShopPlugin.warn("Groups file could not be saved: " + groupsPath);
+			AreaShop.warn("Groups file could not be saved: " + groupsPath);
 		}
 	}
 
@@ -637,7 +637,7 @@ public class FileManager extends Manager {
 					try {
 						manager.saveChanges();
 					} catch(Exception e) {
-						AreaShopPlugin.warn("WorldGuard regions in world " + world + " could not be saved");
+						AreaShop.warn("WorldGuard regions in world " + world + " could not be saved");
 					}
 				}
 			}
@@ -702,13 +702,13 @@ public class FileManager extends Manager {
 			try (ObjectInputStream input = new ObjectInputStream(new FileInputStream(versionPath))) {
 				versions = (HashMap<String, Integer>) input.readObject();
 			} catch(IOException | ClassNotFoundException | ClassCastException e) {
-				AreaShopPlugin.warn("Something went wrong reading file: " + versionPath);
+				AreaShop.warn("Something went wrong reading file: " + versionPath);
 				versions = null;
 			}
 		}
 		if(versions == null || versions.isEmpty()) {
 			versions = new HashMap<>();
-			versions.put(AreaShopPlugin.versionFiles, 0);
+			versions.put(AreaShop.versionFiles, 0);
 			this.saveVersions();
 		}
 	}
@@ -718,12 +718,12 @@ public class FileManager extends Manager {
 	 */
 	public void saveVersions() {
 		if(!(new File(versionPath).exists())) {
-			AreaShopPlugin.debug("versions file created, this should happen only after installing or upgrading the plugin");
+			AreaShop.debug("versions file created, this should happen only after installing or upgrading the plugin");
 		}
 		try (ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(versionPath))) {
 			output.writeObject(versions);
 		} catch(IOException e) {
-			AreaShopPlugin.warn("File could not be saved: " + versionPath);
+			AreaShop.warn("File could not be saved: " + versionPath);
 		}
 	}
 
@@ -769,27 +769,27 @@ public class FileManager extends Manager {
 		// Safe the file from the jar to disk if it does not exist
 		if(!defaultFile.exists()) {
 			try(
-					InputStream input = plugin.getResource(AreaShopPlugin.defaultFile);
-					OutputStream output = new FileOutputStream(defaultFile)
+                    InputStream input = plugin.getResource(AreaShop.defaultFile);
+                    OutputStream output = new FileOutputStream(defaultFile)
 			) {
 				int read;
 				byte[] bytes = new byte[1024];
 				while((read = input.read(bytes)) != -1) {
 					output.write(bytes, 0, read);
 				}
-				AreaShopPlugin.info("File with default region settings has been saved, should only happen on first startup");
+				AreaShop.info("File with default region settings has been saved, should only happen on first startup");
 			} catch(IOException e) {
-				AreaShopPlugin.warn("Something went wrong saving the default region settings: " + defaultFile.getAbsolutePath());
+				AreaShop.warn("Something went wrong saving the default region settings: " + defaultFile.getAbsolutePath());
 			}
 		}
 		// Load default.yml from the plugin folder, and as backup the default one
 		try(
 				InputStreamReader custom = new InputStreamReader(new FileInputStream(defaultFile), Charsets.UTF_8);
-				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShopPlugin.defaultFile), Charsets.UTF_8)
+				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.defaultFile), Charsets.UTF_8)
 		) {
 			defaultConfig = YamlConfiguration.loadConfiguration(custom);
 			if(defaultConfig.getKeys(false).isEmpty()) {
-				AreaShopPlugin.warn("File 'default.yml' is empty, check for errors in the log.");
+				AreaShop.warn("File 'default.yml' is empty, check for errors in the log.");
 				result = false;
 			}
 			defaultConfigFallback = YamlConfiguration.loadConfiguration(normal);
@@ -809,28 +809,28 @@ public class FileManager extends Manager {
 		// Safe the file from the jar to disk if it does not exist
 		if(!configFile.exists()) {
 			try(
-					InputStream input = plugin.getResource(AreaShopPlugin.configFile);
-					OutputStream output = new FileOutputStream(configFile)
+                    InputStream input = plugin.getResource(AreaShop.configFile);
+                    OutputStream output = new FileOutputStream(configFile)
 			) {
 				int read;
 				byte[] bytes = new byte[1024];
 				while((read = input.read(bytes)) != -1) {
 					output.write(bytes, 0, read);
 				}
-				AreaShopPlugin.info("Default config file has been saved, should only happen on first startup");
+				AreaShop.info("Default config file has been saved, should only happen on first startup");
 			} catch(IOException e) {
-				AreaShopPlugin.warn("Something went wrong saving the config file: " + configFile.getAbsolutePath());
+				AreaShop.warn("Something went wrong saving the config file: " + configFile.getAbsolutePath());
 			}
 		}
 		// Load config.yml from the plugin folder
 		try(
-				InputStreamReader custom = new InputStreamReader(new FileInputStream(configFile), Charsets.UTF_8);
-				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShopPlugin.configFile), Charsets.UTF_8);
-				InputStreamReader hidden = new InputStreamReader(plugin.getResource(AreaShopPlugin.configFileHidden), Charsets.UTF_8)
+                InputStreamReader custom = new InputStreamReader(new FileInputStream(configFile), Charsets.UTF_8);
+                InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.configFile), Charsets.UTF_8);
+                InputStreamReader hidden = new InputStreamReader(plugin.getResource(AreaShop.configFileHidden), Charsets.UTF_8)
 		) {
 			config = YamlConfiguration.loadConfiguration(custom);
 			if(config.getKeys(false).isEmpty()) {
-				AreaShopPlugin.warn("File 'config.yml' is empty, check for errors in the log.");
+				AreaShop.warn("File 'config.yml' is empty, check for errors in the log.");
 				result = false;
 			} else {
 				config.addDefaults(YamlConfiguration.loadConfiguration(normal));
@@ -846,7 +846,7 @@ public class FileManager extends Manager {
 				}
 			}
 		} catch(IOException e) {
-			AreaShopPlugin.warn("Something went wrong while reading the config.yml file: " + configFile.getAbsolutePath());
+			AreaShop.warn("Something went wrong while reading the config.yml file: " + configFile.getAbsolutePath());
 			result = false;
 		}
 		Utils.initialize(config);
@@ -866,7 +866,7 @@ public class FileManager extends Manager {
 			) {
 				groupsConfig = YamlConfiguration.loadConfiguration(reader);
 			} catch(IOException e) {
-				AreaShopPlugin.warn("Could not load groups.yml file: " + groupFile.getAbsolutePath());
+				AreaShop.warn("Could not load groups.yml file: " + groupFile.getAbsolutePath());
 			}
 		}
 		if(groupsConfig == null) {
@@ -887,7 +887,7 @@ public class FileManager extends Manager {
 		final File file = new File(regionsPath);
 		if(!file.exists()) {
 			if(!file.mkdirs()) {
-				AreaShopPlugin.warn("Could not create region files directory: " + file.getAbsolutePath());
+				AreaShop.warn("Could not create region files directory: " + file.getAbsolutePath());
 				return;
 			}
 			plugin.setReady(true);
@@ -919,10 +919,10 @@ public class FileManager extends Manager {
 				) {
 					regionConfig = YamlConfiguration.loadConfiguration(reader);
 					if(regionConfig.getKeys(false).isEmpty()) {
-						AreaShopPlugin.warn("Region file '" + regionFile.getName() + "' is empty, check for errors in the log.");
+						AreaShop.warn("Region file '" + regionFile.getName() + "' is empty, check for errors in the log.");
 					}
 				} catch(IOException e) {
-					AreaShopPlugin.warn("Something went wrong reading region file: " + regionFile.getAbsolutePath());
+					AreaShop.warn("Something went wrong reading region file: " + regionFile.getAbsolutePath());
 					continue;
 				}
 
@@ -960,11 +960,11 @@ public class FileManager extends Manager {
 
 		// All files are loaded, print problems to the console
 		if(!noRegionType.isEmpty()) {
-			AreaShopPlugin.warn("The following region files do no have a region type: " + Utils.createCommaSeparatedList(noRegionType));
+			AreaShop.warn("The following region files do no have a region type: " + Utils.createCommaSeparatedList(noRegionType));
 		}
 
 		if(!noNamePaths.isEmpty()) {
-			AreaShopPlugin.warn("The following region files do no have a name in their file: " + Utils.createCommaSeparatedList(noNamePaths));
+			AreaShop.warn("The following region files do no have a name in their file: " + Utils.createCommaSeparatedList(noNamePaths));
 		}
 
 		if(!noRegion.isEmpty()) {
@@ -972,8 +972,8 @@ public class FileManager extends Manager {
 			for(GeneralRegion region : noRegion) {
 				noRegionNames.add(region.getName());
 			}
-			AreaShopPlugin.warn("AreaShop regions that are missing their WorldGuard region: " + Utils.createCommaSeparatedList(noRegionNames));
-			AreaShopPlugin.warn("Remove these regions from AreaShop with '/as del' or recreate their regions in WorldGuard.");
+			AreaShop.warn("AreaShop regions that are missing their WorldGuard region: " + Utils.createCommaSeparatedList(noRegionNames));
+			AreaShop.warn("Remove these regions from AreaShop with '/as del' or recreate their regions in WorldGuard.");
 		}
 
 		boolean noWorldRegions = !noWorld.isEmpty();
@@ -990,11 +990,11 @@ public class FileManager extends Manager {
 			for(GeneralRegion region : toDisplay) {
 				noWorldNames.add(region.getName());
 			}
-			AreaShopPlugin.warn("World " + missingWorld + " is not loaded, the following AreaShop regions are not functional now: " + Utils.createCommaSeparatedList(noWorldNames));
+			AreaShop.warn("World " + missingWorld + " is not loaded, the following AreaShop regions are not functional now: " + Utils.createCommaSeparatedList(noWorldNames));
 			noWorld.removeAll(toDisplay);
 		}
 		if(noWorldRegions) {
-			AreaShopPlugin.warn("Remove these regions from AreaShop with '/as del' or load the world(s) on the server again.");
+			AreaShop.warn("Remove these regions from AreaShop with '/as del' or load the world(s) on the server again.");
 		}
 
 		if(!incorrectDuration.isEmpty()) {
@@ -1002,7 +1002,7 @@ public class FileManager extends Manager {
 			for(GeneralRegion region : incorrectDuration) {
 				incorrectDurationNames.add(region.getName());
 			}
-			AreaShopPlugin.warn("The following regions have an incorrect time format as duration: " + Utils.createCommaSeparatedList(incorrectDurationNames));
+			AreaShop.warn("The following regions have an incorrect time format as duration: " + Utils.createCommaSeparatedList(incorrectDurationNames));
 		}
 		plugin.setReady(true);
 	}
@@ -1014,13 +1014,13 @@ public class FileManager extends Manager {
 	 */
 	@SuppressWarnings("unchecked")
 	private void preUpdateFiles() {
-		Integer fileStatus = versions.get(AreaShopPlugin.versionFiles);
+		Integer fileStatus = versions.get(AreaShop.versionFiles);
 
 		// If the the files are already the current version
-		if(fileStatus != null && fileStatus == AreaShopPlugin.versionFilesCurrent) {
+		if(fileStatus != null && fileStatus == AreaShop.versionFilesCurrent) {
 			return;
 		}
-		AreaShopPlugin.info("Updating AreaShop data to the latest format:");
+		AreaShop.info("Updating AreaShop data to the latest format:");
 
 		// Update to YAML based format
 		if(fileStatus == null || fileStatus < 2) {
@@ -1035,7 +1035,7 @@ public class FileManager extends Manager {
 			if(rentFile.exists()) {
 				rentFileFound = true;
 				if(!oldFolderFile.exists() & !oldFolderFile.mkdirs()) {
-					AreaShopPlugin.warn("Could not create directory: " + oldFolderFile.getAbsolutePath());
+					AreaShop.warn("Could not create directory: " + oldFolderFile.getAbsolutePath());
 				}
 
 				versions.putIfAbsent("rents", -1);
@@ -1046,23 +1046,23 @@ public class FileManager extends Manager {
 					rents = (HashMap<String, HashMap<String, String>>)input.readObject();
 					input.close();
 				} catch(IOException | ClassNotFoundException | ClassCastException e) {
-					AreaShopPlugin.warn("  Error: Something went wrong reading file: " + rentPath);
+					AreaShop.warn("  Error: Something went wrong reading file: " + rentPath);
 				}
 				// Delete the file if it is totally wrong
 				if(rents == null) {
 					try {
 						if(!rentFile.delete()) {
-							AreaShopPlugin.warn("Could not delete file: " + rentFile.getAbsolutePath());
+							AreaShop.warn("Could not delete file: " + rentFile.getAbsolutePath());
 						}
 					} catch(Exception e) {
-						AreaShopPlugin.warn("Could not delete file: " + rentFile.getAbsolutePath());
+						AreaShop.warn("Could not delete file: " + rentFile.getAbsolutePath());
 					}
 				} else {
 					// Move old file
 					try {
 						Files.move(new File(rentPath), new File(oldFolderPath + "rents"));
 					} catch(Exception e) {
-						AreaShopPlugin.warn("  Could not create a backup of '" + rentPath + "', check the file permissions (conversion to next version continues)");
+						AreaShop.warn("  Could not create a backup of '" + rentPath + "', check the file permissions (conversion to next version continues)");
 					}
 					// Check if conversion is needed
 					if(versions.get("rents") < 1) {
@@ -1083,7 +1083,7 @@ public class FileManager extends Manager {
 								// Change to version 0
 								versions.put("rents", 0);
 							}
-							AreaShopPlugin.info("  Updated version of '" + buyPath + "' from -1 to 0 (switch to using lowercase region names, adding default schematic enabling and profile)");
+							AreaShop.info("  Updated version of '" + buyPath + "' from -1 to 0 (switch to using lowercase region names, adding default schematic enabling and profile)");
 						}
 						if(versions.get("rents") < 1) {
 							for(String rentName : rents.keySet()) {
@@ -1097,13 +1097,13 @@ public class FileManager extends Manager {
 								// Change version to 1
 								versions.put("rents", 1);
 							}
-							AreaShopPlugin.info("  Updated version of '" + rentPath + "' from 0 to 1 (switch to UUID's for player identification)");
+							AreaShop.info("  Updated version of '" + rentPath + "' from 0 to 1 (switch to UUID's for player identification)");
 						}
 					}
 					// Save rents to new format
 					File regionsFile = new File(regionsPath);
 					if(!regionsFile.exists() & !regionsFile.mkdirs()) {
-						AreaShopPlugin.warn("Could not create directory: " + regionsFile.getAbsolutePath());
+						AreaShop.warn("Could not create directory: " + regionsFile.getAbsolutePath());
 						return;
 					}
 					for(HashMap<String, String> rent : rents.values()) {
@@ -1139,21 +1139,21 @@ public class FileManager extends Manager {
 						try {
 							regionConfig.save(new File(regionsPath + File.separator + rent.get("name").toLowerCase() + ".yml"));
 						} catch(IOException e) {
-							AreaShopPlugin.warn("  Error: Could not save region file while converting: " + regionsPath + File.separator + rent.get("name").toLowerCase() + ".yml");
+							AreaShop.warn("  Error: Could not save region file while converting: " + regionsPath + File.separator + rent.get("name").toLowerCase() + ".yml");
 						}
 					}
-					AreaShopPlugin.info("  Updated rent regions to new .yml format (check the /regions folder)");
+					AreaShop.info("  Updated rent regions to new .yml format (check the /regions folder)");
 				}
 
 				// Change version number
 				versions.remove("rents");
-				versions.put(AreaShopPlugin.versionFiles, AreaShopPlugin.versionFilesCurrent);
+				versions.put(AreaShop.versionFiles, AreaShop.versionFilesCurrent);
 				saveVersions();
 			}
 			if(buyFile.exists()) {
 				buyFileFound = true;
 				if(!oldFolderFile.exists() & !oldFolderFile.mkdirs()) {
-					AreaShopPlugin.warn("Could not create directory: " + oldFolderFile.getAbsolutePath());
+					AreaShop.warn("Could not create directory: " + oldFolderFile.getAbsolutePath());
 					return;
 				}
 
@@ -1165,23 +1165,23 @@ public class FileManager extends Manager {
 					buys = (HashMap<String, HashMap<String, String>>)input.readObject();
 					input.close();
 				} catch(IOException | ClassNotFoundException | ClassCastException e) {
-					AreaShopPlugin.warn("  Something went wrong reading file: " + buyPath);
+					AreaShop.warn("  Something went wrong reading file: " + buyPath);
 				}
 				// Delete the file if it is totally wrong
 				if(buys == null) {
 					try {
 						if(!buyFile.delete()) {
-							AreaShopPlugin.warn("Could not delete file: " + buyFile.getAbsolutePath());
+							AreaShop.warn("Could not delete file: " + buyFile.getAbsolutePath());
 						}
 					} catch(Exception e) {
-						AreaShopPlugin.warn("Could not delete file: " + buyFile.getAbsolutePath());
+						AreaShop.warn("Could not delete file: " + buyFile.getAbsolutePath());
 					}
 				} else {
 					// Backup current file
 					try {
 						Files.move(new File(buyPath), new File(oldFolderPath + "buys"));
 					} catch(Exception e) {
-						AreaShopPlugin.warn("  Could not create a backup of '" + buyPath + "', check the file permissions (conversion to next version continues)");
+						AreaShop.warn("  Could not create a backup of '" + buyPath + "', check the file permissions (conversion to next version continues)");
 					}
 					// Check if conversion is needed
 					if(versions.get("buys") < 1) {
@@ -1202,7 +1202,7 @@ public class FileManager extends Manager {
 								// Change to version 0
 								versions.put("buys", 0);
 							}
-							AreaShopPlugin.info("  Updated version of '" + buyPath + "' from -1 to 0 (switch to using lowercase region names, adding default schematic enabling and profile)");
+							AreaShop.info("  Updated version of '" + buyPath + "' from -1 to 0 (switch to using lowercase region names, adding default schematic enabling and profile)");
 						}
 						if(versions.get("buys") < 1) {
 							for(String buyName : buys.keySet()) {
@@ -1216,14 +1216,14 @@ public class FileManager extends Manager {
 								// Change version to 1
 								versions.put("buys", 1);
 							}
-							AreaShopPlugin.info("  Updated version of '" + buyPath + "' from 0 to 1 (switch to UUID's for player identification)");
+							AreaShop.info("  Updated version of '" + buyPath + "' from 0 to 1 (switch to UUID's for player identification)");
 						}
 					}
 
 					// Save buys to new format
 					File regionsFile = new File(regionsPath);
 					if(!regionsFile.exists() & !regionsFile.mkdirs()) {
-						AreaShopPlugin.warn("Could not create directory: " + regionsFile.getAbsolutePath());
+						AreaShop.warn("Could not create directory: " + regionsFile.getAbsolutePath());
 					}
 					for(HashMap<String, String> buy : buys.values()) {
 						YamlConfiguration regionConfig = new YamlConfiguration();
@@ -1256,10 +1256,10 @@ public class FileManager extends Manager {
 						try {
 							regionConfig.save(new File(regionsPath + File.separator + buy.get("name").toLowerCase() + ".yml"));
 						} catch(IOException e) {
-							AreaShopPlugin.warn("  Error: Could not save region file while converting: " + regionsPath + File.separator + buy.get("name").toLowerCase() + ".yml");
+							AreaShop.warn("  Error: Could not save region file while converting: " + regionsPath + File.separator + buy.get("name").toLowerCase() + ".yml");
 						}
 					}
-					AreaShopPlugin.info("  Updated buy regions to new .yml format (check the /regions folder)");
+					AreaShop.info("  Updated buy regions to new .yml format (check the /regions folder)");
 				}
 
 				// Change version number
@@ -1285,10 +1285,10 @@ public class FileManager extends Manager {
 				}
 			}
 			// Update versions file to 2
-			versions.put(AreaShopPlugin.versionFiles, 2);
+			versions.put(AreaShop.versionFiles, 2);
 			saveVersions();
 			if(buyFileFound || rentFileFound) {
-				AreaShopPlugin.info("  Updated to YAML based storage (v1 to v2)");
+				AreaShop.info("  Updated to YAML based storage (v1 to v2)");
 			}
 		}
 	}
@@ -1298,10 +1298,10 @@ public class FileManager extends Manager {
 	 * This is to be triggered after the load of the region files.
 	 */
 	private void postUpdateFiles() {
-		Integer fileStatus = versions.get(AreaShopPlugin.versionFiles);
+		Integer fileStatus = versions.get(AreaShop.versionFiles);
 
 		// If the the files are already the current version
-		if(fileStatus != null && fileStatus == AreaShopPlugin.versionFilesCurrent) {
+		if(fileStatus != null && fileStatus == AreaShop.versionFilesCurrent) {
 			return;
 		}
 
@@ -1311,10 +1311,10 @@ public class FileManager extends Manager {
 				region.updateLastActiveTime();
 			}
 			// Update versions file to 3
-			versions.put(AreaShopPlugin.versionFiles, 3);
+			versions.put(AreaShop.versionFiles, 3);
 			saveVersions();
 			if(!getRegions().isEmpty()) {
-				AreaShopPlugin.info("  Added last active time to regions (v2 to v3)");
+				AreaShop.info("  Added last active time to regions (v2 to v3)");
 			}
 		}
 	}

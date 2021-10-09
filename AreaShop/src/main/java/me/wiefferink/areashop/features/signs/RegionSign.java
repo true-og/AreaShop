@@ -5,7 +5,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import io.papermc.lib.PaperLib;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
@@ -28,7 +28,6 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -169,7 +168,6 @@ public class RegionSign {
 			signLines[i] = stateConfig.getString("line" + (i + 1));
 			signEmpty &= (signLines[i] == null || signLines[i].isEmpty());
 		}
-		System.out.println("Region Sign: " + Arrays.toString(signLines));
 		if(signEmpty) {
 			block.setType(Material.AIR);
 			return true;
@@ -179,7 +177,7 @@ public class RegionSign {
 		if(!Materials.isSign(block.getType())) {
 			Material signType = getMaterial();
 			if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
-				AreaShopPlugin.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
+				AreaShop.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
 			}
 			// Don't do physics here, we first need to update the direction
 			block.setType(signType, false);
@@ -192,7 +190,7 @@ public class RegionSign {
 			} else if(blockData instanceof org.bukkit.block.data.type.Sign) {
 				((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
 			} else {
-				AreaShopPlugin.warn("Failed to update the facing direction of the sign at", getStringLocation(), "to ", getFacing(), ", region:", getRegion().getName());
+				AreaShop.warn("Failed to update the facing direction of the sign at", getStringLocation(), "to ", getFacing(), ", region:", getRegion().getName());
 				return false;
 			}
 			block.setBlockData(blockData);
@@ -245,7 +243,7 @@ public class RegionSign {
 		// Check the lines for the timeleft tag
 		for(int i = 1; i <= 4; i++) {
 			String line = stateConfig.getString("line" + i);
-			if(line != null && line.contains(Message.VARIABLE_START + AreaShopPlugin.tagTimeLeft + Message.VARIABLE_END)) {
+			if(line != null && line.contains(Message.VARIABLE_START + AreaShop.tagTimeLeft + Message.VARIABLE_END)) {
 				return true;
 			}
 		}
@@ -269,14 +267,14 @@ public class RegionSign {
 		List<String> playerCommands = new ArrayList<>();
 		for(String command : stateConfig.getStringList(clickType.getValue() + "Player")) {
 			// TODO move variable checking code to InteractiveMessenger?
-			playerCommands.add(command.replace(Message.VARIABLE_START + AreaShopPlugin.tagClicker + Message.VARIABLE_END, clicker.getName()));
+			playerCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
 		}
 		getRegion().runCommands(clicker, playerCommands);
 
 		// Run console commands if specified
 		List<String> consoleCommands = new ArrayList<>();
 		for(String command : stateConfig.getStringList(clickType.getValue() + "Console")) {
-			consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShopPlugin.tagClicker + Message.VARIABLE_END, clicker.getName()));
+			consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
 		}
 		getRegion().runCommands(Bukkit.getConsoleSender(), consoleCommands);
 

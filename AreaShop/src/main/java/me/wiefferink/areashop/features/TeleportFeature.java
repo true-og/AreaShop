@@ -3,7 +3,7 @@ package me.wiefferink.areashop.features;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
@@ -31,7 +31,7 @@ public class TeleportFeature extends RegionFeature {
 	private WorldGuardInterface worldGuardInterface;
 
 	@AssistedInject
-	public TeleportFeature(@Nonnull AreaShopPlugin plugin, @Assisted @Nonnull GeneralRegion region) {
+	public TeleportFeature(@Nonnull AreaShop plugin, @Assisted @Nonnull GeneralRegion region) {
 		super(plugin);
 		setRegion(region);
 	}
@@ -375,11 +375,11 @@ public class TeleportFeature extends RegionFeature {
 			}
 
 			player.teleport(safeLocation);
-			AreaShopPlugin.debug("Found location: " + safeLocation.toString() + " Tries: " + (checked - 1));
+			AreaShop.debug("Found location: " + safeLocation.toString() + " Tries: " + (checked - 1));
 			return true;
 		} else {
 			getRegion().message(player, "teleport-noSafe", checked - 1, maxTries);
-			AreaShopPlugin.debug("No location found, checked " + (checked - 1) + " spots of max " + maxTries);
+			AreaShop.debug("No location found, checked " + (checked - 1) + " spots of max " + maxTries);
 			return false;
 		}
 	}
@@ -505,10 +505,10 @@ public class TeleportFeature extends RegionFeature {
 		// Try to get sign location
 
 		Collection<RegionSign> signs = getRegion().getSignsFeature().signManager().allSigns();
-		RegionSign firstSign = signs.iterator().next();
-		boolean signAvailable = !signs.isEmpty();
 		if(toSign.get()) {
+			boolean signAvailable = !signs.isEmpty();
 			if(signAvailable) {
+				RegionSign firstSign = signs.iterator().next();
 				// Use the location 1 below the sign to prevent weird spawing above the sign
 				startLocation = firstSign.getLocation(); //.subtract(0.0, 1.0, 0.0);
 				startLocation.setPitch(player.getLocation().getPitch());
@@ -555,7 +555,7 @@ public class TeleportFeature extends RegionFeature {
 					int vertical = Integer.parseInt(configSetting);
 					middle = middle.setY(vertical);
 				} catch(NumberFormatException e) {
-					AreaShopPlugin.warn("Could not parse general.teleportLocationY: '" + configSetting + "'");
+					AreaShop.warn("Could not parse general.teleportLocationY: '" + configSetting + "'");
 				}
 			}
 			startLocation = new Location(getRegion().getWorld(), middle.getX(), middle.getY(), middle.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());

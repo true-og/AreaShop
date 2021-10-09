@@ -5,7 +5,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.features.signs.RegionSign;
@@ -33,7 +33,7 @@ import java.util.UUID;
 
 public class ImportJob {
 
-	private final AreaShopPlugin plugin;
+	private final AreaShop plugin;
 	private final FileManager fileManager;
 	private final SignManager signManager;
 	private final WorldGuardInterface worldGuardInterface;
@@ -47,7 +47,7 @@ public class ImportJob {
 	 */
 	@AssistedInject
 	ImportJob(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull FileManager fileManager,
 			@Nonnull SignManager signManager,
 			@Nonnull WorldGuardInterface worldGuardInterface,

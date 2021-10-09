@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.listeners;
 
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -25,14 +25,14 @@ import java.util.List;
  */
 public final class PlayerLoginLogoutListener implements Listener {
 
-	private final AreaShopPlugin plugin;
+	private final AreaShop plugin;
 	private final MessageBridge messageBridge;
 
 	/**
 	 * Constructor.
 	 * @param plugin The AreaShop plugin
 	 */
-	public PlayerLoginLogoutListener(@Nonnull AreaShopPlugin plugin, @Nonnull MessageBridge messageBridge) {
+	public PlayerLoginLogoutListener(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge) {
 		this.plugin = plugin;
 		this.messageBridge = messageBridge;
 	}

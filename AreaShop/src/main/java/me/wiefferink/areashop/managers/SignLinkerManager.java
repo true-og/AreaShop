@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.managers;
 
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
@@ -39,7 +39,7 @@ public class SignLinkerManager extends Manager implements Listener {
 	private boolean eventsRegistered;
 
 	@Inject
-	private AreaShopPlugin plugin;
+	private AreaShop plugin;
 	@Inject
 	private BukkitInterface bukkitInterface;
 	@Inject

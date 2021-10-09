@@ -2,7 +2,7 @@ package me.wiefferink.areashop.managers;
 
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.CommandsFeature;
 import me.wiefferink.areashop.features.DebugFeature;
 import me.wiefferink.areashop.features.FeatureFactory;
@@ -55,7 +55,7 @@ public class FeatureManager extends Manager {
 				feature.listen();
 				globalFeatures.add(feature);
 			} catch(ProvisionException e) {
-				AreaShopPlugin.error("Failed to instantiate global feature:", clazz, e);
+				AreaShop.error("Failed to instantiate global feature:", clazz, e);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ public class FeatureManager extends Manager {
 			try {
 				return function.apply(region);
 			} catch (Throwable e) {
-				AreaShopPlugin.error("Failed to instantiate feature", clazz, "for region", region, e, e.getCause());
+				AreaShop.error("Failed to instantiate feature", clazz, "for region", region, e, e.getCause());
 				return null;
 			}
 		};

@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.managers;
 
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -57,7 +57,7 @@ public class SignErrorLogger {
     }
 
     public synchronized void save() {
-        AreaShopPlugin.debugTask("[Sign Feature] Dumping sign errors to disk...");
+        AreaShop.debugTask("[Sign Feature] Dumping sign errors to disk...");
         final String[] copy;
         synchronized (this.cache) {
             copy = cache.toArray(new String[0]);
@@ -71,9 +71,9 @@ public class SignErrorLogger {
             writer.write(joiner.toString());
         } catch (IOException ex) {
             ex.printStackTrace();
-            AreaShopPlugin.error("Failed to update the sign error log!");
+            AreaShop.error("Failed to update the sign error log!");
         } finally {
-            AreaShopPlugin.debugTask("[Sign Feature] Error dump complete.");
+            AreaShop.debugTask("[Sign Feature] Error dump complete.");
         }
     }
 }

@@ -2,7 +2,7 @@ package me.wiefferink.areashop.regions;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.ResellingRegionEvent;
 import me.wiefferink.areashop.events.ask.SellingRegionEvent;
@@ -33,7 +33,7 @@ public class BuyRegion extends GeneralRegion {
 	
 	@AssistedInject
 	BuyRegion(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
@@ -46,7 +46,7 @@ public class BuyRegion extends GeneralRegion {
 
 	@AssistedInject
 	BuyRegion(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
@@ -238,25 +238,25 @@ public class BuyRegion extends GeneralRegion {
 	@Override
 	public Object provideReplacement(String variable) {
 		switch(variable) {
-			case AreaShopPlugin.tagPrice:
+			case AreaShop.tagPrice:
 				return getFormattedPrice();
-			case AreaShopPlugin.tagRawPrice:
+			case AreaShop.tagRawPrice:
 				return getPrice();
-			case AreaShopPlugin.tagPlayerName:
+			case AreaShop.tagPlayerName:
 				return getPlayerName();
-			case AreaShopPlugin.tagPlayerUUID:
+			case AreaShop.tagPlayerUUID:
 				return getBuyer();
-			case AreaShopPlugin.tagResellPrice:
+			case AreaShop.tagResellPrice:
 				return getFormattedResellPrice();
-			case AreaShopPlugin.tagRawResellPrice:
+			case AreaShop.tagRawResellPrice:
 				return getResellPrice();
-			case AreaShopPlugin.tagMoneyBackAmount:
+			case AreaShop.tagMoneyBackAmount:
 				return getFormattedMoneyBackAmount();
-			case AreaShopPlugin.tagRawMoneyBackAmount:
+			case AreaShop.tagRawMoneyBackAmount:
 				return getMoneyBackAmount();
-			case AreaShopPlugin.tagMoneyBackPercentage:
+			case AreaShop.tagMoneyBackPercentage:
 				return getMoneyBackPercentage() % 1.0 == 0.0 ? (int)getMoneyBackPercentage() : getMoneyBackPercentage();
-			case AreaShopPlugin.tagMaxInactiveTime:
+			case AreaShop.tagMaxInactiveTime:
 				return this.getFormattedInactiveTimeUntilSell();
 
 			default:
@@ -349,7 +349,7 @@ public class BuyRegion extends GeneralRegion {
 
 		// Check region limits
 		LimitResult limitResult = this.limitsAllow(RegionType.BUY, offlinePlayer);
-		AreaShopPlugin.debug("LimitResult: " + limitResult.toString());
+		AreaShop.debug("LimitResult: " + limitResult.toString());
 		if(!limitResult.actionAllowed()) {
 			if(limitResult.getLimitingFactor() == LimitType.TOTAL) {
 				message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(), limitResult.getLimitingGroup());
@@ -389,7 +389,7 @@ public class BuyRegion extends GeneralRegion {
 			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), getResellPrice());
 			if(!r.transactionSuccess()) {
 				message(offlinePlayer, "buy-payError");
-				AreaShopPlugin.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while buying " + getName() + ": " + r.errorMessage);
+				AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while buying " + getName() + ": " + r.errorMessage);
 				return false;
 			}
 			r = null;
@@ -402,7 +402,7 @@ public class BuyRegion extends GeneralRegion {
 				r = economy.depositPlayer(oldOwnerName, getWorldName(), getResellPrice());
 			}
 			if(r == null || !r.transactionSuccess()) {
-				AreaShopPlugin.warn("Something went wrong with paying '" + oldOwnerName + "' " + getFormattedPrice() + " for his resell of region " + getName() + " to " + offlinePlayer.getName());
+				AreaShop.warn("Something went wrong with paying '" + oldOwnerName + "' " + getFormattedPrice() + " for his resell of region " + getName() + " to " + offlinePlayer.getName());
 			}
 			// Resell is done, disable that now
 			disableReselling();
@@ -451,7 +451,7 @@ public class BuyRegion extends GeneralRegion {
 					r = economy.depositPlayer(landlordName, getWorldName(), getPrice());
 				}
 				if(r != null && !r.transactionSuccess()) {
-					AreaShopPlugin.warn("Something went wrong with paying '" + landlordName + "' " + getFormattedPrice() + " for his sell of region " + getName() + " to " + offlinePlayer.getName());
+					AreaShop.warn("Something went wrong with paying '" + landlordName + "' " + getFormattedPrice() + " for his sell of region " + getName() + " to " + offlinePlayer.getName());
 				}
 			}
 
@@ -547,7 +547,7 @@ public class BuyRegion extends GeneralRegion {
 					error = true;
 				}
 				if(error || response == null || !response.transactionSuccess()) {
-					AreaShopPlugin.warn("Something went wrong with paying back money to " + getPlayerName() + " while selling region " + getName());
+					AreaShop.warn("Something went wrong with paying back money to " + getPlayerName() + " while selling region " + getName());
 				}
 			}
 		}
@@ -582,8 +582,8 @@ public class BuyRegion extends GeneralRegion {
 		long lastPlayed = getLastActiveTime();
 		//AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis()-player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
 		if(Calendar.getInstance().getTimeInMillis() > (lastPlayed + inactiveSetting)) {
-			AreaShopPlugin.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
-			AreaShopPlugin.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
+			AreaShop.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
+			AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
 			return this.sell(true, null);
 		}
 		return false;

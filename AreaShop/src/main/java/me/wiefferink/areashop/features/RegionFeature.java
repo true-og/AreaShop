@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.features;
 
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -30,10 +30,10 @@ Possible future feature classes:
 
 public abstract class RegionFeature implements Listener {
 
-	protected final AreaShopPlugin plugin;
+	protected final AreaShop plugin;
 	private GeneralRegion region;
 
-	protected RegionFeature(@Nonnull AreaShopPlugin plugin) {
+	protected RegionFeature(@Nonnull AreaShop plugin) {
 		this.plugin = plugin;
 	}
 

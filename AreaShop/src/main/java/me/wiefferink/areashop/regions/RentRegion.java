@@ -2,7 +2,7 @@ package me.wiefferink.areashop.regions;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.events.ask.RentingRegionEvent;
 import me.wiefferink.areashop.events.ask.UnrentingRegionEvent;
 import me.wiefferink.areashop.events.notify.RentedRegionEvent;
@@ -42,7 +42,7 @@ public class RentRegion extends GeneralRegion {
 	 */
 	@AssistedInject
 	RentRegion(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
@@ -60,7 +60,7 @@ public class RentRegion extends GeneralRegion {
 	 */
 	@AssistedInject
 	RentRegion(
-			@Nonnull AreaShopPlugin plugin,
+			@Nonnull AreaShop plugin,
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
@@ -166,37 +166,37 @@ public class RentRegion extends GeneralRegion {
 	@Override
 	public Object provideReplacement(String variable) {
 		switch(variable) {
-			case AreaShopPlugin.tagPrice:
+			case AreaShop.tagPrice:
 				return getFormattedPrice();
-			case AreaShopPlugin.tagRawPrice:
+			case AreaShop.tagRawPrice:
 				return getPrice();
-			case AreaShopPlugin.tagDuration:
+			case AreaShop.tagDuration:
 				return getDurationString();
-			case AreaShopPlugin.tagPlayerName:
+			case AreaShop.tagPlayerName:
 				return getPlayerName();
-			case AreaShopPlugin.tagPlayerUUID:
+			case AreaShop.tagPlayerUUID:
 				return getRenter();
-			case AreaShopPlugin.tagRentedUntil:
+			case AreaShop.tagRentedUntil:
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(new Date(getRentedUntil()));
-			case AreaShopPlugin.tagRentedUntilShort:
+			case AreaShop.tagRentedUntilShort:
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(new Date(getRentedUntil()));
-			case AreaShopPlugin.tagTimeLeft:
+			case AreaShop.tagTimeLeft:
 				return getTimeLeftString();
-			case AreaShopPlugin.tagMoneyBackAmount:
+			case AreaShop.tagMoneyBackAmount:
 				return getFormattedMoneyBackAmount();
-			case AreaShopPlugin.tagRawMoneyBackAmount:
+			case AreaShop.tagRawMoneyBackAmount:
 				return getMoneyBackAmount();
-			case AreaShopPlugin.tagMoneyBackPercentage:
+			case AreaShop.tagMoneyBackPercentage:
 				return (getMoneyBackPercentage() % 1.0) == 0.0 ? (int)getMoneyBackPercentage() : getMoneyBackPercentage();
-			case AreaShopPlugin.tagTimesExtended:
+			case AreaShop.tagTimesExtended:
 				return this.getTimesExtended();
-			case AreaShopPlugin.tagMaxExtends:
+			case AreaShop.tagMaxExtends:
 				return this.getMaxExtends();
-			case AreaShopPlugin.tagExtendsLeft:
+			case AreaShop.tagExtendsLeft:
 				return getMaxExtends() - getTimesExtended();
-			case AreaShopPlugin.tagMaxRentTime:
+			case AreaShop.tagMaxRentTime:
 				return millisToHumanFormat(getMaxRentTime());
-			case AreaShopPlugin.tagMaxInactiveTime:
+			case AreaShop.tagMaxInactiveTime:
 				return this.getFormattedInactiveTimeUntilUnrent();
 
 			default:
@@ -514,7 +514,7 @@ public class RentRegion extends GeneralRegion {
 			} else {
 				limitResult = this.limitsAllow(RegionType.RENT, offlinePlayer);
 			}
-			AreaShopPlugin.debug("LimitResult: " + limitResult.toString());
+			AreaShop.debug("LimitResult: " + limitResult.toString());
 			if(!limitResult.actionAllowed()) {
 				if(limitResult.getLimitingFactor() == LimitType.TOTAL) {
 					message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(), limitResult.getLimitingGroup());
@@ -590,7 +590,7 @@ public class RentRegion extends GeneralRegion {
 		EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), price);
 		if(!r.transactionSuccess()) {
 			message(offlinePlayer, "rent-payError");
-			AreaShopPlugin.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while renting " + getName() + ": " + r.errorMessage);
+			AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while renting " + getName() + ": " + r.errorMessage);
 			return false;
 		}
 		// Optionally give money to the landlord
@@ -606,7 +606,7 @@ public class RentRegion extends GeneralRegion {
 				r = economy.depositPlayer(landlordName, getWorldName(), price);
 			}
 			if(r == null || !r.transactionSuccess()) {
-				AreaShopPlugin.warn("Something went wrong with paying '" + landlordName + "' " + Utils.formatCurrency(price) + " for his rent of region " + getName() + " to " + offlinePlayer.getName());
+				AreaShop.warn("Something went wrong with paying '" + landlordName + "' " + Utils.formatCurrency(price) + " for his rent of region " + getName() + " to " + offlinePlayer.getName());
 			}
 		}
 
@@ -715,7 +715,7 @@ public class RentRegion extends GeneralRegion {
 					error = true;
 				}
 				if(error || r == null || !r.transactionSuccess()) {
-					AreaShopPlugin.warn("Something went wrong with paying back to " + getPlayerName() + " money while unrenting region " + getName());
+					AreaShop.warn("Something went wrong with paying back to " + getPlayerName() + " money while unrenting region " + getName());
 				}
 			}
 		}
@@ -752,8 +752,8 @@ public class RentRegion extends GeneralRegion {
 		long lastPlayed = getLastActiveTime();
 		//AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis()-player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
 		if(Calendar.getInstance().getTimeInMillis() > (lastPlayed + inactiveSetting)) {
-			AreaShopPlugin.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
-			AreaShopPlugin.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
+			AreaShop.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
+			AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
 			return this.unRent(true, null);
 		}
 		return false;

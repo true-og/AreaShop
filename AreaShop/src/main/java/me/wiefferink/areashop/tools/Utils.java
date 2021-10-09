@@ -2,7 +2,7 @@ package me.wiefferink.areashop.tools;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShopPlugin;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -45,7 +45,7 @@ public class Utils {
 	}
 
 	@Inject
-	private static AreaShopPlugin plugin;
+	private static AreaShop plugin;
 	@Inject
 	private static WorldGuardInterface worldGuardInterface;
 
@@ -168,7 +168,7 @@ public class Utils {
 				return Arrays.asList((Player[])onlinePlayerMethod.invoke(Bukkit.getServer()));
 			}
 		} catch(Exception ex) {
-			AreaShopPlugin.debug("getOnlinePlayers error: " + ex.getMessage());
+			AreaShop.debug("getOnlinePlayers error: " + ex.getMessage());
 		}
 		return new HashSet<>();
 	}
@@ -473,7 +473,7 @@ public class Utils {
 			boolean first = true;
 			for(GeneralRegion region : candidates) {
 				if(region == null) {
-					AreaShopPlugin.debug("skipped null region");
+					AreaShop.debug("skipped null region");
 					continue;
 				}
 				if(first) {
@@ -517,9 +517,9 @@ public class Utils {
 	 */
 	public static String formatCurrency(double amount) {
 		String before = config.getString("moneyCharacter");
-		before = before.replace(AreaShopPlugin.currencyEuro, "€");
+		before = before.replace(AreaShop.currencyEuro, "€");
 		String after = config.getString("moneyCharacterAfter");
-		after = after.replace(AreaShopPlugin.currencyEuro, "€");
+		after = after.replace(AreaShop.currencyEuro, "€");
 		String result;
 		// Check for infinite and NaN
 		if(Double.isInfinite(amount)) {
@@ -633,7 +633,7 @@ public class Utils {
 		} else if(years.contains(durationString)) {
 			calendar.add(Calendar.YEAR, durationInt);
 		} else {
-			AreaShopPlugin.warn("Unknown duration indicator:", durationString, "check if config.yml has the correct time indicators");
+			AreaShop.warn("Unknown duration indicator:", durationString, "check if config.yml has the correct time indicators");
 		}
 		return calendar.getTimeInMillis();
 	}
@@ -763,7 +763,7 @@ public class Utils {
 		try {
 			result = OperandParser.parse(input);
 		} catch(OperandParser.ParseException e) {
-			AreaShopPlugin.warn("Price of region", region.getName(), "is set with an invalid expression: '" + input + "', exception:", ExceptionUtils.getStackTrace(e));
+			AreaShop.warn("Price of region", region.getName(), "is set with an invalid expression: '" + input + "', exception:", ExceptionUtils.getStackTrace(e));
 			return 99999999999.0; // High fallback for safety
 		}
 
@@ -771,7 +771,7 @@ public class Utils {
 		if(Utils.isDouble(result.toString())) {
 			return Double.parseDouble(result.toString());
 		} else {
-			AreaShopPlugin.warn("Price of region", region.getName(), "is set with the expression '" + input + "' that returns a result that is not a number:", result);
+			AreaShop.warn("Price of region", region.getName(), "is set with the expression '" + input + "' that returns a result that is not a number:", result);
 			return 99999999999.0; // High fallback for safety
 		}
 	}
