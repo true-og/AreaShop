@@ -11,8 +11,12 @@ dependencies {
     implementation 'com.github.NLthijs48:BukkitDo:819d51ec2b'
     implementation 'io.papermc:paperlib:1.0.6'
     implementation 'io.github.baked-libs:dough-data:1.0.3'
-    implementation 'com.google.inject:guice:5.0.1'
-    implementation 'com.google.inject.extensions:guice-assistedinject:5.0.1'
+    implementation ('com.google.inject:guice:5.0.1') {
+        exclude group: 'com.google.guava'
+    }
+    implementation ('com.google.inject.extensions:guice-assistedinject:5.0.1') {
+        exclude group: 'com.google.guava'
+    }
     implementation project(':areashop-interface')
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-nms')
@@ -60,6 +64,13 @@ shadowJar {
     relocate('me.wiefferink.bukkitdo', "${base}.bukkitdo")
     relocate('io.papermc.lib', "${base}.paperlib")
     relocate('io.github.bakedlibs.dough', "${base}.dough")
+    relocate("com.google.inject", "${base}.inject")
+    relocate("org.aopalliance", "${base}.aopalliance")
+    relocate("javax.inject", "${base}.javax.inject")
+    include {
+        include("com.google.inject")
+        minimize()
+    }
 }
 
 description = 'AreaShop'
