@@ -5,7 +5,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import io.papermc.lib.PaperLib;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
@@ -263,7 +263,7 @@ public class RegionSign {
 		// Check the lines for the timeleft tag
 		for(int i = 1; i <= 4; i++) {
 			String line = stateConfig.getString("line" + i);
-			if(line != null && line.contains(Message.VARIABLE_START + AreaShop.tagTimeLeft + Message.VARIABLE_END)) {
+			if(line != null && line.contains(Message.VARIABLE_START + AreaShopPlugin.tagTimeLeft + Message.VARIABLE_END)) {
 				return true;
 			}
 		}
@@ -287,14 +287,14 @@ public class RegionSign {
 		List<String> playerCommands = new ArrayList<>();
 		for(String command : stateConfig.getStringList(clickType.getValue() + "Player")) {
 			// TODO move variable checking code to InteractiveMessenger?
-			playerCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
+			playerCommands.add(command.replace(Message.VARIABLE_START + AreaShopPlugin.tagClicker + Message.VARIABLE_END, clicker.getName()));
 		}
 		getRegion().runCommands(clicker, playerCommands);
 
 		// Run console commands if specified
 		List<String> consoleCommands = new ArrayList<>();
 		for(String command : stateConfig.getStringList(clickType.getValue() + "Console")) {
-			consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
+			consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShopPlugin.tagClicker + Message.VARIABLE_END, clicker.getName()));
 		}
 		getRegion().runCommands(Bukkit.getConsoleSender(), consoleCommands);
 

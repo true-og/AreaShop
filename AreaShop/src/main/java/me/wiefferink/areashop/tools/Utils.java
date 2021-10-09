@@ -2,7 +2,7 @@ package me.wiefferink.areashop.tools;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -24,7 +24,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import javax.inject.Inject;
-import java.awt.geom.Area;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,7 +45,7 @@ public class Utils {
 	}
 
 	@Inject
-	private static AreaShop plugin;
+	private static AreaShopPlugin plugin;
 	@Inject
 	private static WorldGuardInterface worldGuardInterface;
 
@@ -169,7 +168,7 @@ public class Utils {
 				return Arrays.asList((Player[])onlinePlayerMethod.invoke(Bukkit.getServer()));
 			}
 		} catch(Exception ex) {
-			AreaShop.debug("getOnlinePlayers error: " + ex.getMessage());
+			AreaShopPlugin.debug("getOnlinePlayers error: " + ex.getMessage());
 		}
 		return new HashSet<>();
 	}
@@ -474,7 +473,7 @@ public class Utils {
 			boolean first = true;
 			for(GeneralRegion region : candidates) {
 				if(region == null) {
-					AreaShop.debug("skipped null region");
+					AreaShopPlugin.debug("skipped null region");
 					continue;
 				}
 				if(first) {
@@ -518,9 +517,9 @@ public class Utils {
 	 */
 	public static String formatCurrency(double amount) {
 		String before = config.getString("moneyCharacter");
-		before = before.replace(AreaShop.currencyEuro, "€");
+		before = before.replace(AreaShopPlugin.currencyEuro, "€");
 		String after = config.getString("moneyCharacterAfter");
-		after = after.replace(AreaShop.currencyEuro, "€");
+		after = after.replace(AreaShopPlugin.currencyEuro, "€");
 		String result;
 		// Check for infinite and NaN
 		if(Double.isInfinite(amount)) {
@@ -634,7 +633,7 @@ public class Utils {
 		} else if(years.contains(durationString)) {
 			calendar.add(Calendar.YEAR, durationInt);
 		} else {
-			AreaShop.warn("Unknown duration indicator:", durationString, "check if config.yml has the correct time indicators");
+			AreaShopPlugin.warn("Unknown duration indicator:", durationString, "check if config.yml has the correct time indicators");
 		}
 		return calendar.getTimeInMillis();
 	}
@@ -764,7 +763,7 @@ public class Utils {
 		try {
 			result = OperandParser.parse(input);
 		} catch(OperandParser.ParseException e) {
-			AreaShop.warn("Price of region", region.getName(), "is set with an invalid expression: '" + input + "', exception:", ExceptionUtils.getStackTrace(e));
+			AreaShopPlugin.warn("Price of region", region.getName(), "is set with an invalid expression: '" + input + "', exception:", ExceptionUtils.getStackTrace(e));
 			return 99999999999.0; // High fallback for safety
 		}
 
@@ -772,7 +771,7 @@ public class Utils {
 		if(Utils.isDouble(result.toString())) {
 			return Double.parseDouble(result.toString());
 		} else {
-			AreaShop.warn("Price of region", region.getName(), "is set with the expression '" + input + "' that returns a result that is not a number:", result);
+			AreaShopPlugin.warn("Price of region", region.getName(), "is set with the expression '" + input + "' that returns a result that is not a number:", result);
 			return 99999999999.0; // High fallback for safety
 		}
 	}

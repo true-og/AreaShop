@@ -2,18 +2,16 @@ package me.wiefferink.areashop.commands;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FileManager;
-import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
-import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.Location;
@@ -140,7 +138,7 @@ public class StackCommand extends CommandAreaShop {
 		} else if(facing == BlockFace.UP) {
 			shift = shift.setY(selection.getHeight() + gap);
 		}
-		AreaShop.debug("  calculated shift vector: " + shift + ", with facing=" + facing);
+		AreaShopPlugin.debug("  calculated shift vector: " + shift + ", with facing=" + facing);
 		// Create regions and add them to AreaShop
 		final String nameTemplate = args[3];
 
@@ -169,7 +167,7 @@ public class StackCommand extends CommandAreaShop {
 		Vector maximumVector = new Vector(maximumLocation.getX(), maximumLocation.getY(), maximumLocation.getZ());
 		new BukkitRunnable() {
 			private int current = -1;
-			private final RegionManager manager = AreaShop.getInstance().getRegionManager(selection.getWorld());
+			private final RegionManager manager = AreaShopPlugin.getInstance().getRegionManager(selection.getWorld());
 			private int counter = 1;
 			private int tooLow = 0;
 			private int tooHigh = 0;
@@ -181,7 +179,7 @@ public class StackCommand extends CommandAreaShop {
 					if(current < amount) {
 						// Create the region name
 						String regionName = countToName(nameTemplate, counter);
-						while(manager.getRegion(regionName) != null || AreaShop.getInstance().getFileManager().getRegion(regionName) != null) {
+						while(manager.getRegion(regionName) != null || AreaShopPlugin.getInstance().getFileManager().getRegion(regionName) != null) {
 							counter++;
 							regionName = countToName(nameTemplate, counter);
 						}

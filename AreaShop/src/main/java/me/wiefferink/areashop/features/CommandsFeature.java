@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.features;
 
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
@@ -29,7 +29,7 @@ import java.util.List;
 public class CommandsFeature extends RegionFeature {
 
 	@Inject
-	CommandsFeature(AreaShop plugin) {
+	CommandsFeature(AreaShopPlugin plugin) {
 		super(plugin);
 	}
 

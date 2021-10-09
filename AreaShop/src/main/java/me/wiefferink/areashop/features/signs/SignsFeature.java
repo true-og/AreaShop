@@ -2,7 +2,7 @@ package me.wiefferink.areashop.features.signs;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -25,7 +25,7 @@ public class SignsFeature extends RegionFeature {
 	 * @param region The region to bind to
 	 */
 	@AssistedInject
-	public SignsFeature(@Nonnull AreaShop plugin,
+	public SignsFeature(@Nonnull AreaShopPlugin plugin,
 						@Nonnull SignManager signManager,
 						@Nonnull SignFactory signFactory,
 						@Assisted @Nonnull GeneralRegion region
@@ -41,7 +41,7 @@ public class SignsFeature extends RegionFeature {
 				RegionSign sign = signFactory.createRegionSign(this, signKey);
 				Location location = sign.getLocation();
 				if(location == null) {
-					AreaShop.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
+					AreaShopPlugin.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
 					continue;
 				}
 				this.globalSignManager.cacheForWorld(location.getWorld()).addSign(sign);

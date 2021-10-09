@@ -1,13 +1,11 @@
 package me.wiefferink.areashop.features;
 
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.regions.GeneralRegion;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
 import javax.annotation.Nonnull;
-import java.awt.geom.Area;
 
 /*
 Possible future feature classes:
@@ -32,10 +30,10 @@ Possible future feature classes:
 
 public abstract class RegionFeature implements Listener {
 
-	protected final AreaShop plugin;
+	protected final AreaShopPlugin plugin;
 	private GeneralRegion region;
 
-	protected RegionFeature(@Nonnull AreaShop plugin) {
+	protected RegionFeature(@Nonnull AreaShopPlugin plugin) {
 		this.plugin = plugin;
 	}
 

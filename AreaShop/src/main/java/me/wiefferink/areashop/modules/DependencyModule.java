@@ -7,6 +7,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class DependencyModule extends AbstractModule {
 
@@ -17,8 +18,8 @@ public class DependencyModule extends AbstractModule {
 
    public DependencyModule(@Nonnull WorldEditPlugin worldEditPlugin,
                            @Nonnull WorldGuardPlugin worldGuardPlugin,
-                           @Nonnull Economy economy,
-                           @Nonnull Permission permission
+                           @Nullable Economy economy,
+                           @Nullable Permission permission
    ) {
        this.worldEditPlugin = worldEditPlugin;
        this.worldGuardPlugin = worldGuardPlugin;

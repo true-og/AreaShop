@@ -2,7 +2,7 @@ package me.wiefferink.areashop.regions;
 
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.events.NotifyRegionEvent;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.FriendsFeature;
@@ -47,7 +47,7 @@ import java.util.UUID;
 
 public abstract class GeneralRegion implements GeneralRegionInterface, Comparable<GeneralRegion>, ReplacementProvider {
 
-	protected final AreaShop plugin;
+	protected final AreaShopPlugin plugin;
 	protected final FeatureManager featureManager;
 	protected final WorldEditInterface worldEditInterface;
 	protected final WorldGuardInterface worldGuardInterface;
@@ -157,7 +157,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param config The configuration of the region
 	 */
 	protected GeneralRegion(
-			@Nonnull AreaShop plugin,
+			@Nonnull AreaShopPlugin plugin,
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
@@ -176,7 +176,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param name  Name of the WorldGuard region that this region is attached to
 	 * @param world The world of the WorldGuard region
 	 */
-	protected GeneralRegion(@Nonnull AreaShop plugin,
+	protected GeneralRegion(@Nonnull AreaShopPlugin plugin,
 							@Nonnull FeatureManager featureManager,
 							@Nonnull WorldEditInterface worldEditInterface,
 							@Nonnull WorldGuardInterface worldGuardInterface,
@@ -630,49 +630,49 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		switch(variable) {
 
 			// Basics
-			case AreaShop.tagRegionName:
+			case AreaShopPlugin.tagRegionName:
 				return getName();
-			case AreaShop.tagRegionType:
+			case AreaShopPlugin.tagRegionType:
 				return getType().getValue().toLowerCase();
-			case AreaShop.tagWorldName:
+			case AreaShopPlugin.tagWorldName:
 				return getWorldName();
-			case AreaShop.tagWidth:
+			case AreaShopPlugin.tagWidth:
 				return getWidth();
-			case AreaShop.tagDepth:
+			case AreaShopPlugin.tagDepth:
 				return getDepth();
-			case AreaShop.tagHeight:
+			case AreaShopPlugin.tagHeight:
 				return getHeight();
-			case AreaShop.tagFriends:
+			case AreaShopPlugin.tagFriends:
 				return Utils.createCommaSeparatedList(getFriendsFeature().getFriendNames());
-			case AreaShop.tagFriendsUUID:
+			case AreaShopPlugin.tagFriendsUUID:
 				return Utils.createCommaSeparatedList(getFriendsFeature().getFriends());
-			case AreaShop.tagLandlord:
+			case AreaShopPlugin.tagLandlord:
 				return getLandlordName();
-			case AreaShop.tagLandlordUUID:
+			case AreaShopPlugin.tagLandlordUUID:
 				return getLandlord();
-			case AreaShop.tagVolume:
+			case AreaShopPlugin.tagVolume:
 				return getVolume();
 
 			// Date/time
-			case AreaShop.tagEpoch:
+			case AreaShopPlugin.tagEpoch:
 				return Calendar.getInstance().getTimeInMillis();
-			case AreaShop.tagMillisecond:
+			case AreaShopPlugin.tagMillisecond:
 				return Calendar.getInstance().get(Calendar.MILLISECOND);
-			case AreaShop.tagSecond:
+			case AreaShopPlugin.tagSecond:
 				return Calendar.getInstance().get(Calendar.SECOND);
-			case AreaShop.tagMinute:
+			case AreaShopPlugin.tagMinute:
 				return Calendar.getInstance().get(Calendar.MINUTE);
-			case AreaShop.tagHour:
+			case AreaShopPlugin.tagHour:
 				return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-			case AreaShop.tagDay:
+			case AreaShopPlugin.tagDay:
 				return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-			case AreaShop.tagMonth:
+			case AreaShopPlugin.tagMonth:
 				return Calendar.getInstance().get(Calendar.MONTH) + 1;
-			case AreaShop.tagYear:
+			case AreaShopPlugin.tagYear:
 				return Calendar.getInstance().get(Calendar.YEAR);
-			case AreaShop.tagDateTime:
+			case AreaShopPlugin.tagDateTime:
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(Calendar.getInstance().getTime());
-			case AreaShop.tagDateTimeShort:
+			case AreaShopPlugin.tagDateTimeShort:
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(Calendar.getInstance().getTime());
 
 			// Teleport locations
@@ -682,27 +682,27 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 					return null;
 				}
 				switch(variable) {
-					case AreaShop.tagTeleportBlockX:
+					case AreaShopPlugin.tagTeleportBlockX:
 						return tp.getBlockX();
-					case AreaShop.tagTeleportBlockY:
+					case AreaShopPlugin.tagTeleportBlockY:
 						return tp.getBlockY();
-					case AreaShop.tagTeleportBlockZ:
+					case AreaShopPlugin.tagTeleportBlockZ:
 						return tp.getBlockZ();
-					case AreaShop.tagTeleportX:
+					case AreaShopPlugin.tagTeleportX:
 						return tp.getX();
-					case AreaShop.tagTeleportY:
+					case AreaShopPlugin.tagTeleportY:
 						return tp.getY();
-					case AreaShop.tagTeleportZ:
+					case AreaShopPlugin.tagTeleportZ:
 						return tp.getZ();
-					case AreaShop.tagTeleportPitch:
+					case AreaShopPlugin.tagTeleportPitch:
 						return tp.getPitch();
-					case AreaShop.tagTeleportYaw:
+					case AreaShopPlugin.tagTeleportYaw:
 						return tp.getYaw();
-					case AreaShop.tagTeleportPitchRound:
+					case AreaShopPlugin.tagTeleportPitchRound:
 						return Math.round(tp.getPitch());
-					case AreaShop.tagTeleportYawRound:
+					case AreaShopPlugin.tagTeleportYawRound:
 						return Math.round(tp.getYaw());
-					case AreaShop.tagTeleportWorld:
+					case AreaShopPlugin.tagTeleportWorld:
 						return tp.getWorld().getName();
 					default:
 						return null;
@@ -788,7 +788,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		// Check if the region is correct
 		ProtectedRegion region = getRegion();
 		if(region == null) {
-			AreaShop.debug("Region '" + getName() + "' does not exist in WorldGuard, save failed");
+			AreaShopPlugin.debug("Region '" + getName() + "' does not exist in WorldGuard, save failed");
 			return false;
 		}
 		// The path to save the schematic
@@ -797,13 +797,13 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		File parent = saveFile.getParentFile();
 		if(parent != null && !parent.exists()) {
 			if(!parent.mkdirs()) {
-				AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
+				AreaShopPlugin.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
 				return false;
 			}
 		}
 		boolean result = worldEditInterface.saveRegionBlocks(saveFile, this);
 		if(result) {
-			AreaShop.debug("Saved schematic for region " + getName());
+			AreaShopPlugin.debug("Saved schematic for region " + getName());
 		}
 		return true;
 	}
@@ -815,14 +815,14 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 */
 	public boolean restoreRegionBlocks(String fileName) {
 		if(getRegion() == null) {
-			AreaShop.debug("Region '" + getName() + "' does not exist in WorldGuard, restore failed");
+			AreaShopPlugin.debug("Region '" + getName() + "' does not exist in WorldGuard, restore failed");
 			return false;
 		}
 		// The path to save the schematic
 		File restoreFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
 		boolean result = worldEditInterface.restoreRegionBlocks(restoreFile, this);
 		if(result) {
-			AreaShop.debug("Restored schematic for region " + getName());
+			AreaShopPlugin.debug("Restored schematic for region " + getName());
 
 			// Workaround for signs inside the region in combination with async restore of plugins like AsyncWorldEdit and FastAsyncWorldEdit
 			Do.syncLater(10, getSignsFeature()::update);
@@ -1228,10 +1228,10 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			if(plugin.hasPermission(offlinePlayer, "areashop.limits." + group) && this.matchesLimitGroup(group)) {
 				String pathPrefix = "limitGroups." + group + ".";
 				if(!plugin.getConfig().isInt(pathPrefix + "total")) {
-					AreaShop.warn("Limit group " + group + " in the config.yml file does not correctly specify the number of total regions (should be specified as total: <number>)");
+					AreaShopPlugin.warn("Limit group " + group + " in the config.yml file does not correctly specify the number of total regions (should be specified as total: <number>)");
 				}
 				if(!plugin.getConfig().isInt(pathPrefix + typePath)) {
-					AreaShop.warn("Limit group " + group + " in the config.yml file does not correctly specify the number of " + typePath + " regions (should be specified as " + typePath + ": <number>)");
+					AreaShopPlugin.warn("Limit group " + group + " in the config.yml file does not correctly specify the number of " + typePath + " regions (should be specified as " + typePath + ": <number>)");
 				}
 				int totalLimit = plugin.getConfig().getInt("limitGroups." + group + ".total");
 				int typeLimit = plugin.getConfig().getInt("limitGroups." + group + "." + typePath);
@@ -1439,7 +1439,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	public void handleSchematicEvent(RegionEvent type) {
 		// Check the individual>group>default setting
 		if(!isRestoreEnabled()) {
-			AreaShop.debug("Schematic operations for " + getName() + " not enabled, skipped");
+			AreaShopPlugin.debug("Schematic operations for " + getName() + " not enabled, skipped");
 			return;
 		}
 		// Get the safe and restore names
@@ -1496,15 +1496,15 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			if(!result) {
 				printed = true;
 				if(error != null) {
-					AreaShop.warn("Command execution failed, command=" + command + ", error=" + error + ", stacktrace:");
-					AreaShop.warn(stacktrace);
-					AreaShop.warn("--- End of stacktrace ---");
+					AreaShopPlugin.warn("Command execution failed, command=" + command + ", error=" + error + ", stacktrace:");
+					AreaShopPlugin.warn(stacktrace);
+					AreaShopPlugin.warn("--- End of stacktrace ---");
 				} else {
-					AreaShop.warn("Command execution failed, command=" + command);
+					AreaShopPlugin.warn("Command execution failed, command=" + command);
 				}
 			}
 			if(!printed) {
-				AreaShop.debug("Command run, executor=" + sender.getName() + ", command=" + command);
+				AreaShopPlugin.debug("Command run, executor=" + sender.getName() + ", command=" + command);
 			}
 		}
 	}

@@ -3,7 +3,7 @@ package me.wiefferink.areashop.features.signs;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import io.github.bakedlibs.dough.blocks.ChunkPosition;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
@@ -41,7 +41,7 @@ import java.util.Set;
 public class SignListener implements Listener {
 
     private final BlockBehaviourHelper behaviourHelper;
-    private final AreaShop plugin;
+    private final AreaShopPlugin plugin;
     private final MessageBridge messageBridge;
     private final SignManager signManager;
     private final SignLinkerManager signLinkerManager;
@@ -50,7 +50,7 @@ public class SignListener implements Listener {
     private final RegionFactory regionFactory;
 
     public SignListener(
-                        @Nonnull AreaShop plugin,
+                        @Nonnull AreaShopPlugin plugin,
                         @Nonnull BlockBehaviourHelper behaviourHelper,
                         @Nonnull RegionFactory regionFactory,
                         @Nonnull MessageBridge messageBridge,
@@ -100,7 +100,7 @@ public class SignListener implements Listener {
         RegionSign regionSign = optionalSign.get();
 
         // Remove the sign so that it does not fall on the floor as an item (next region update will place it back when possible)
-        AreaShop.debug("onIndirectSignBreak: Removed block of sign for", regionSign.getRegion().getName(), "at", regionSign.getStringLocation());
+        AreaShopPlugin.debug("onIndirectSignBreak: Removed block of sign for", regionSign.getRegion().getName(), "at", regionSign.getStringLocation());
         event.getBlock().setType(Material.AIR);
         event.setCancelled(true);
     }

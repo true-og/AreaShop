@@ -3,7 +3,7 @@ package me.wiefferink.areashop.features;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
@@ -32,12 +32,12 @@ public class TeleportFeature extends RegionFeature {
 	
 	@Inject
 	@Deprecated
-	TeleportFeature(@Nonnull AreaShop plugin) {
+	TeleportFeature(@Nonnull AreaShopPlugin plugin) {
 		super(plugin);
 	}
 
 	@AssistedInject
-	public TeleportFeature(@Nonnull AreaShop plugin, @Assisted @Nonnull GeneralRegion region) {
+	public TeleportFeature(@Nonnull AreaShopPlugin plugin, @Assisted @Nonnull GeneralRegion region) {
 		super(plugin);
 		setRegion(region);
 	}
@@ -381,11 +381,11 @@ public class TeleportFeature extends RegionFeature {
 			}
 
 			player.teleport(safeLocation);
-			AreaShop.debug("Found location: " + safeLocation.toString() + " Tries: " + (checked - 1));
+			AreaShopPlugin.debug("Found location: " + safeLocation.toString() + " Tries: " + (checked - 1));
 			return true;
 		} else {
 			getRegion().message(player, "teleport-noSafe", checked - 1, maxTries);
-			AreaShop.debug("No location found, checked " + (checked - 1) + " spots of max " + maxTries);
+			AreaShopPlugin.debug("No location found, checked " + (checked - 1) + " spots of max " + maxTries);
 			return false;
 		}
 	}
@@ -561,7 +561,7 @@ public class TeleportFeature extends RegionFeature {
 					int vertical = Integer.parseInt(configSetting);
 					middle = middle.setY(vertical);
 				} catch(NumberFormatException e) {
-					AreaShop.warn("Could not parse general.teleportLocationY: '" + configSetting + "'");
+					AreaShopPlugin.warn("Could not parse general.teleportLocationY: '" + configSetting + "'");
 				}
 			}
 			startLocation = new Location(getRegion().getWorld(), middle.getX(), middle.getY(), middle.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());

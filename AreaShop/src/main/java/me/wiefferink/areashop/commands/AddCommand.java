@@ -1,7 +1,7 @@
 package me.wiefferink.areashop.commands;
 
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
@@ -23,7 +23,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -42,7 +41,7 @@ public class AddCommand extends CommandAreaShop {
 	@Inject
 	private MessageBridge messageBridge;
 	@Inject
-	private AreaShop plugin;
+	private AreaShopPlugin plugin;
 	@Inject
 	private WorldEditInterface worldEditInterface;
 	@Inject
@@ -140,7 +139,7 @@ public class AddCommand extends CommandAreaShop {
 		}
 		final boolean isRent = "rent".equalsIgnoreCase(args[1]);
 		final Player finalPlayer = player;
-		AreaShop.debug("Starting add task with " + regions.size() + " regions");
+		AreaShopPlugin.debug("Starting add task with " + regions.size() + " regions");
 
 		TreeSet<GeneralRegion> regionsSuccess = new TreeSet<>();
 		TreeSet<GeneralRegion> regionsAlready = new TreeSet<>();
@@ -183,7 +182,7 @@ public class AddCommand extends CommandAreaShop {
 					existing.addAll(worldGuardInterface.getOwners(region).asUniqueIdList());
 					existing.addAll(worldGuardInterface.getMembers(region).asUniqueIdList());
 
-					AreaShop.debug("regionAddLandlordStatus:", regionName,
+					AreaShopPlugin.debug("regionAddLandlordStatus:", regionName,
 							"landlord:", landlord,
 							"existing:", existing,
 							"isMember:", isMember,

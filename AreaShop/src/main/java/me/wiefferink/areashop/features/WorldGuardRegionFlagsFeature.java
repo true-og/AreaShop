@@ -5,7 +5,7 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.InvalidFlagFormat;
 import com.sk89q.worldguard.protection.flags.RegionGroupFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.interfaces.RegionAccessSet;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
@@ -30,7 +30,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 	private WorldGuardPlugin worldGuard;
 	
 	@Inject
-	WorldGuardRegionFlagsFeature(@Nonnull AreaShop plugin) {
+	WorldGuardRegionFlagsFeature(@Nonnull AreaShopPlugin plugin) {
 		super(plugin);
 	}
 
@@ -87,7 +87,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 		// Get the region
 		ProtectedRegion worldguardRegion = region.getRegion();
 		if(worldguardRegion == null) {
-			AreaShop.debug("Region '" + region.getName() + "' does not exist, setting flags failed");
+			AreaShopPlugin.debug("Region '" + region.getName() + "' does not exist, setting flags failed");
 			return false;
 		}
 		// Loop through all flags that are set in the config
@@ -111,7 +111,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 					}
 					//AreaShop.debug("  Flag " + flagName + " set: " + value);
 				} catch(NumberFormatException e) {
-					AreaShop.warn("The value of flag " + flagName + " is not a number");
+					AreaShopPlugin.warn("The value of flag " + flagName + " is not a number");
 					result = false;
 				}
 			} else if(flagName.equalsIgnoreCase("parent")) {
@@ -125,11 +125,11 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 							worldguardRegion.setParent(parentRegion);
 							//AreaShop.debug("  Flag " + flagName + " set: " + value);
 						} catch(ProtectedRegion.CircularInheritanceException e) {
-							AreaShop.warn("The parent set in the config is not correct (circular inheritance)");
+							AreaShopPlugin.warn("The parent set in the config is not correct (circular inheritance)");
 						}
 					}
 				} else {
-					AreaShop.warn("The parent set in the config is not correct (region does not exist)");
+					AreaShopPlugin.warn("The parent set in the config is not correct (region does not exist)");
 				}
 			} else {
 				// Parse all other normal flags (groups are also handled)
@@ -138,7 +138,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 
 				Flag<?> foundFlag = worldGuardInterface.fuzzyMatchFlag(flagName);
 				if(foundFlag == null) {
-					AreaShop.warn("Found wrong flag in flagProfiles section: " + flagName + ", check if that is the correct WorldGuard flag");
+					AreaShopPlugin.warn("Found wrong flag in flagProfiles section: " + flagName + ", check if that is the correct WorldGuard flag");
 					continue;
 				}
 				RegionGroupFlag groupFlag = foundFlag.getRegionGroupFlag();
@@ -160,7 +160,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 									try {
 										groupValue = worldGuardInterface.parseFlagGroupInput(groupFlag, part.substring(2));
 									} catch(InvalidFlagFormat e) {
-										AreaShop.warn("Found wrong group value for flag " + flagName);
+										AreaShopPlugin.warn("Found wrong group value for flag " + flagName);
 									}
 								}
 							} else {
@@ -177,7 +177,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 							setFlag(worldguardRegion, foundFlag, flagSetting);
 							//AreaShop.debug("  Flag " + flagName + " set: " + flagSetting);
 						} catch(InvalidFlagFormat e) {
-							AreaShop.warn("Found wrong value for flag " + flagName);
+							AreaShopPlugin.warn("Found wrong value for flag " + flagName);
 						}
 					}
 					if(groupValue != null) {
@@ -223,7 +223,7 @@ public class WorldGuardRegionFlagsFeature extends RegionFeature {
 					try {
 						result.getPlayerUniqueIds().add(UUID.fromString(access));
 					} catch(IllegalArgumentException e) {
-						AreaShop.warn("Tried using '" + access + "' as uuid for a region member/owner, is your flagProfiles section correct?");
+						AreaShopPlugin.warn("Tried using '" + access + "' as uuid for a region member/owner, is your flagProfiles section correct?");
 					}
 				}
 			}

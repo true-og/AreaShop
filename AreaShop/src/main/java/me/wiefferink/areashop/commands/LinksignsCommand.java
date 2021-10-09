@@ -2,7 +2,7 @@ package me.wiefferink.areashop.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.interactivemessenger.processing.Message;
@@ -20,7 +20,7 @@ public class LinksignsCommand extends CommandAreaShop {
 	@Inject
 	private SignLinkerManager signLinkerManager;
 	@Inject
-	private AreaShop plugin;
+	private AreaShopPlugin plugin;
 	@Inject
 	private MessageBridge messageBridge;
 

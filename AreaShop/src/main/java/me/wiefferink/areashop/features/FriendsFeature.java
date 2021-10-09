@@ -3,7 +3,7 @@ package me.wiefferink.areashop.features;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.askandnotify.AddedFriendEvent;
 import me.wiefferink.areashop.events.askandnotify.DeletedFriendEvent;
@@ -25,7 +25,7 @@ public class FriendsFeature extends RegionFeature {
 	private MessageBridge messageBridge;
 	
 	@AssistedInject
-	public FriendsFeature(@Nonnull AreaShop plugin, @Assisted @Nonnull GeneralRegion region) {
+	public FriendsFeature(@Nonnull AreaShopPlugin plugin, @Assisted @Nonnull GeneralRegion region) {
 		super(plugin);
 		setRegion(region);
 	}

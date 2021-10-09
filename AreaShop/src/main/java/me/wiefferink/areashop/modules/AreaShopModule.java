@@ -3,7 +3,7 @@ package me.wiefferink.areashop.modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.FeatureFactory;
 import me.wiefferink.areashop.features.signs.SignsModule;
@@ -20,14 +20,13 @@ import me.wiefferink.areashop.nms.NMS;
 import me.wiefferink.areashop.regions.ImportJobFactory;
 import me.wiefferink.areashop.regions.RegionModule;
 import me.wiefferink.areashop.tools.Utils;
-import org.bukkit.Utility;
 import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
 
 public class AreaShopModule extends AbstractModule {
 
-    private final AreaShop instance;
+    private final AreaShopPlugin instance;
     private final BukkitInterface bukkitInterface;
     private final WorldGuardInterface worldGuardInterface;
     private final WorldEditInterface worldEditInterface;
@@ -36,7 +35,7 @@ public class AreaShopModule extends AbstractModule {
     private final SignErrorLogger signErrorLogger;
     private final DependencyModule dependencyModule;
 
-    public AreaShopModule(@Nonnull AreaShop instance,
+    public AreaShopModule(@Nonnull AreaShopPlugin instance,
                           @Nonnull MessageBridge messageBridge,
                           @Nonnull NMS nms,
                           @Nonnull BukkitInterface bukkitInterface,
@@ -59,7 +58,7 @@ public class AreaShopModule extends AbstractModule {
     protected void configure() {
         install(this.dependencyModule);
         bind(Plugin.class).toInstance(this.instance);
-        bind(AreaShop.class).toInstance(this.instance);
+        bind(AreaShopPlugin.class).toInstance(this.instance);
         bind(MessageBridge.class).toInstance(this.messageBridge);
         bind(NMS.class).toInstance(this.nms);
         bind(BlockBehaviourHelper.class).toInstance(this.nms.blockBehaviourHelper());

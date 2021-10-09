@@ -1,7 +1,7 @@
 package me.wiefferink.areashop.managers;
 
 import com.google.inject.Injector;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.AddCommand;
 import me.wiefferink.areashop.commands.AddfriendCommand;
@@ -53,14 +53,14 @@ import java.util.TreeSet;
 @Singleton
 public class CommandManager extends Manager implements CommandExecutor, TabCompleter {
 	private final List<CommandAreaShop> commands;
-	private final AreaShop plugin;
+	private final AreaShopPlugin plugin;
 	private final MessageBridge messageBridge;
 
 	/**
 	 * Constructor.
 	 */
 	@Inject
-	CommandManager(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge, @Nonnull
+	CommandManager(@Nonnull AreaShopPlugin plugin, @Nonnull MessageBridge messageBridge, @Nonnull
 				   Injector injector) {
 		this.plugin = plugin;
 		this.messageBridge = messageBridge;

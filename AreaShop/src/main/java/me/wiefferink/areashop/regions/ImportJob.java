@@ -5,20 +5,13 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
-import me.wiefferink.areashop.features.signs.SignsFeature;
-import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FileManager;
-import me.wiefferink.areashop.regions.BuyRegion;
-import me.wiefferink.areashop.regions.GeneralRegion;
-import me.wiefferink.areashop.regions.RegionFactory;
-import me.wiefferink.areashop.regions.RegionGroup;
-import me.wiefferink.areashop.regions.RentRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -27,7 +20,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -41,7 +33,7 @@ import java.util.UUID;
 
 public class ImportJob {
 
-	private final AreaShop plugin;
+	private final AreaShopPlugin plugin;
 	private final FileManager fileManager;
 	private final SignManager signManager;
 	private final WorldGuardInterface worldGuardInterface;
@@ -55,7 +47,7 @@ public class ImportJob {
 	 */
 	@AssistedInject
 	ImportJob(
-			@Nonnull AreaShop plugin,
+			@Nonnull AreaShopPlugin plugin,
 			@Nonnull FileManager fileManager,
 			@Nonnull SignManager signManager,
 			@Nonnull WorldGuardInterface worldGuardInterface,

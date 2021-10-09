@@ -2,7 +2,6 @@ package me.wiefferink.areashop.regions;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.managers.FileManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

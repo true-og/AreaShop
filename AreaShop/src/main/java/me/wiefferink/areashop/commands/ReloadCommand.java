@@ -1,6 +1,6 @@
 package me.wiefferink.areashop.commands;
 
-import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import org.bukkit.command.CommandSender;
 
@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 public class ReloadCommand extends CommandAreaShop {
 
 	@Inject
-	private AreaShop plugin;
+	private AreaShopPlugin plugin;
 	@Inject
 	private MessageBridge messageBridge;
 	
