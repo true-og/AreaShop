@@ -8,6 +8,7 @@ import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
+import me.wiefferink.areashop.managers.FileManager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.RegionFactory;
@@ -31,7 +32,9 @@ public class SignsModule extends AbstractModule {
                                             @Nonnull SignLinkerManager signLinkerManager,
                                             @Nonnull BukkitInterface bukkitInterface,
                                             @Nonnull WorldGuardInterface worldGuardInterface,
-                                            @Nonnull SignManager signManager) {
+                                            @Nonnull SignManager signManager,
+                                            @Nonnull FileManager fileManager
+    ) {
         final SignListener signListener = new SignListener(
                 plugin,
                 behaviourHelper,
@@ -40,7 +43,8 @@ public class SignsModule extends AbstractModule {
                 signLinkerManager,
                 bukkitInterface,
                 worldGuardInterface,
-                signManager
+                signManager,
+                fileManager
         );
         plugin.getServer().getPluginManager().registerEvents(signListener, plugin);
         return signListener;

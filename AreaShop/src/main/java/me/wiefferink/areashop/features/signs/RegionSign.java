@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -99,9 +100,9 @@ public class RegionSign {
 	 */
 	public void remove() {
 		getLocation().getBlock().setType(Material.AIR);
+		this.signsFeature.signManager().removeSign(this);
 		getRegion().setSetting("general.signs." + key, null);
 		// Remove the sign from the region's sign manager
-		this.signsFeature.signManager().removeSign(this);
 	}
 
 	/**
@@ -168,56 +169,38 @@ public class RegionSign {
 			signLines[i] = stateConfig.getString("line" + (i + 1));
 			signEmpty &= (signLines[i] == null || signLines[i].isEmpty());
 		}
+		System.out.println("Region Sign: " + Arrays.toString(signLines));
 		if(signEmpty) {
 			block.setType(Material.AIR);
 			return true;
 		}
 
-		BlockState blockState = PaperLib.getBlockState(block, false).getState();
-		final BlockData blockData = blockState.getBlockData();
-		Material signType = getMaterial();
-
 		// Place the sign back (with proper rotation and type) after it has been hidden or (indirectly) destroyed
-		if (!Materials.isSign(blockState.getType())) {
-			// Check if the sign has popped
+		if(!Materials.isSign(block.getType())) {
+			Material signType = getMaterial();
 			if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
-				final String message = String.format("Setting sign of $1%s of region $2%s failed, could not set sign block back", key, getRegion().getName());
-				errorLogger.submitWarning(message);
-				return false;
+				AreaShopPlugin.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
 			}
 			// Don't do physics here, we first need to update the direction
-			block.setType(signType);
-			blockState = PaperLib.getBlockState(block, false).getState();
-			if (blockData instanceof WallSign) {
-				((WallSign) blockData).setFacing(getFacing());
-			} else if (blockData instanceof Sign) {
-				((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
-			}
-			blockState.setBlockData(blockData);
-			blockState.update(false, true);
-		} else {
-			final String message = "Setting sign $1%s of region $2%s failed, RegionSign material was: $3%s";
-			errorLogger.submitWarning(String.format(message, key, getRegion().getName(), signType.name()));
-		}
+			block.setType(signType, false);
 
-		// Save current rotation and type
-		if (!regionConfig.isString("general.signs." + key + ".signType")) {
-			getRegion().setSetting("general.signs." + key + ".signType", blockState.getType().name());
-		}
-		if (!regionConfig.isString("general.signs." + key + ".facing")) {
-			final BlockFace rotation;
-			if (Materials.isSign(block.getType())) {
-				if (blockData instanceof org.bukkit.block.data.type.Sign) {
-					rotation = ((org.bukkit.block.data.type.Sign) blockData).getRotation();
-				} else if (blockData instanceof WallSign) {
-					rotation = ((WallSign) blockData).getFacing();
-				} else {
-					rotation = null;
-				}
+			BlockState blockState = PaperLib.getBlockState(block, false).getState();
+			BlockData blockData = blockState.getBlockData();
+
+			if(blockData instanceof WallSign) {
+				((WallSign) blockData).setFacing(getFacing());
+			} else if(blockData instanceof org.bukkit.block.data.type.Sign) {
+				((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
 			} else {
-				rotation = null;
+				AreaShopPlugin.warn("Failed to update the facing direction of the sign at", getStringLocation(), "to ", getFacing(), ", region:", getRegion().getName());
+				return false;
 			}
-			getRegion().setSetting("general.signs." + key + ".facing", rotation == null ? null : rotation.toString());
+			block.setBlockData(blockData);
+
+			// Check if the sign has popped
+			if(!Materials.isSign(block.getType())) {
+				return false;
+			}
 		}
 
 		// Save current rotation and type
@@ -230,9 +213,9 @@ public class RegionSign {
 		}
 
 		// Apply replacements and color and then set it on the sign
-		Sign signState = (Sign) blockState;
-		for (int i = 0; i < signLines.length; i++) {
-			if (signLines[i] == null) {
+		Sign signState = (Sign) PaperLib.getBlockState(block, false).getState();
+		for(int i = 0; i < signLines.length; i++) {
+			if(signLines[i] == null) {
 				signState.setLine(i, "");
 				continue;
 			}
@@ -240,8 +223,7 @@ public class RegionSign {
 			signLines[i] = Utils.applyColors(signLines[i]);
 			signState.setLine(i, signLines[i]);
 		}
-		// BlockState#update *should* return true here.
-		blockState.update(false, false);
+		signState.update(false, false);
 		return true;
 	}
 

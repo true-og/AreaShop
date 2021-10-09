@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -215,13 +216,13 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param <T> The feature to get
 	 * @return The feature (either just instantiated or cached)
 	 */
-	public <T extends RegionFeature> T getFeature(Class<T> clazz) {
-		RegionFeature result = features.get(clazz);
-		if(result == null) {
-			result = featureManager.getRegionFeature(this, clazz);
-			features.put(clazz, result);
-		}
+	public <T extends RegionFeature> T getOrCreateFeature(Class<T> clazz) {
+		RegionFeature result = features.computeIfAbsent(clazz, x -> featureManager.getRegionFeature(this, clazz));
 		return clazz.cast(result);
+	}
+
+	public <T extends RegionFeature> Optional<T> getFeature(Class<T> clazz) {
+		return Optional.ofNullable(clazz.cast(features.get(clazz)));
 	}
 
 	/**
@@ -229,7 +230,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return The FriendsFeature of this region
 	 */
 	public FriendsFeature getFriendsFeature() {
-		return getFeature(FriendsFeature.class);
+		return getOrCreateFeature(FriendsFeature.class);
 	}
 
 	/**
@@ -237,7 +238,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return The SignsFeature of this region
 	 */
 	public SignsFeature getSignsFeature() {
-		return getFeature(SignsFeature.class);
+		return getOrCreateFeature(SignsFeature.class);
 	}
 
 	/**
@@ -245,7 +246,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return The TeleportFeature
 	 */
 	public TeleportFeature getTeleportFeature() {
-		return getFeature(TeleportFeature.class);
+		return getOrCreateFeature(TeleportFeature.class);
 	}
 
 	// ABSTRACT
@@ -760,7 +761,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return true if the signs of this region need periodic updating, otherwise false
 	 */
 	public boolean needsPeriodicUpdate() {
-		return !(isDeleted() || !(this instanceof RentRegion)) && getSignsFeature().needsPeriodicUpdate();
+		return !(isDeleted() || !(this instanceof RentRegion)) && getSignsFeature().signManager().needsPeriodicUpdate();
 	}
 
 	/**
@@ -825,7 +826,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			AreaShopPlugin.debug("Restored schematic for region " + getName());
 
 			// Workaround for signs inside the region in combination with async restore of plugins like AsyncWorldEdit and FastAsyncWorldEdit
-			Do.syncLater(10, getSignsFeature()::update);
+			Do.syncLater(10, getSignsFeature().signManager()::update);
 		}
 		return result;
 	}

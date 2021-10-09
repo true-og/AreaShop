@@ -6,6 +6,7 @@ import io.github.bakedlibs.dough.blocks.ChunkPosition;
 import me.wiefferink.areashop.AreaShopPlugin;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
+import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FileManager;
@@ -48,6 +49,7 @@ public class SignListener implements Listener {
     private final BukkitInterface bukkitInterface;
     private final WorldGuardInterface worldGuardInterface;
     private final RegionFactory regionFactory;
+    private final FileManager fileManager;
 
     public SignListener(
                         @Nonnull AreaShopPlugin plugin,
@@ -57,7 +59,9 @@ public class SignListener implements Listener {
                         @Nonnull SignLinkerManager signLinkerManager,
                         @Nonnull BukkitInterface bukkitInterface,
                         @Nonnull WorldGuardInterface worldGuardInterface,
-                        @Nonnull SignManager signManager) {
+                        @Nonnull SignManager signManager,
+                        @Nonnull FileManager fileManager) {
+        this.fileManager = fileManager;
         this.signManager = signManager;
         this.signLinkerManager = signLinkerManager;
         this.regionFactory = regionFactory;
@@ -66,6 +70,12 @@ public class SignListener implements Listener {
         this.bukkitInterface = bukkitInterface;
         this.worldGuardInterface = worldGuardInterface;
         this.messageBridge = messageBridge;
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void regionUpdate(UpdateRegionEvent event) {
+        Optional<SignsFeature> signsFeature = event.getRegion().getFeature(SignsFeature.class);
+        signsFeature.map(SignsFeature::signManager).ifPresent(SignManager::update);
     }
 
 
@@ -180,24 +190,19 @@ public class SignListener implements Listener {
         event.setCancelled(ran);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
-        if(event.isCancelled()) {
-            return;
-        }
         Player player = event.getPlayer();
         if(!plugin.isReady()) {
             messageBridge.message(player, "general-notReady");
             return;
         }
-
         // Check if the sign is meant for this plugin
         if(event.getLine(0).contains(plugin.getConfig().getString("signTags.rent"))) {
             if(!player.hasPermission("areashop.createrent") && !player.hasPermission("areashop.createrent.member") && !player.hasPermission("areashop.createrent.owner")) {
                 messageBridge.message(player, "setup-noPermissionRent");
                 return;
             }
-
             // Get the other lines
             String secondLine = event.getLine(1);
             String thirdLine = event.getLine(2);
@@ -246,7 +251,7 @@ public class SignListener implements Listener {
                 return;
             }
 
-            FileManager.AddResult addResult = plugin.getFileManager().checkRegionAdd(player, regionManager.getRegion(secondLine), event.getPlayer().getWorld(), GeneralRegion.RegionType.RENT);
+            FileManager.AddResult addResult = fileManager.checkRegionAdd(player, regionManager.getRegion(secondLine), event.getPlayer().getWorld(), GeneralRegion.RegionType.RENT);
             if(addResult == FileManager.AddResult.BLACKLISTED) {
                 messageBridge.message(player, "setup-blacklisted", secondLine);
             } else if(addResult == FileManager.AddResult.ALREADYADDED) {
@@ -413,7 +418,7 @@ public class SignListener implements Listener {
             GeneralRegion region;
             if(secondLine != null && !secondLine.isEmpty()) {
                 // Get region by secondLine of the sign
-                region = plugin.getFileManager().getRegion(secondLine);
+                region = fileManager.getRegion(secondLine);
                 if(region == null) {
                     messageBridge.message(player, "addSign-notRegistered", secondLine);
                     return;

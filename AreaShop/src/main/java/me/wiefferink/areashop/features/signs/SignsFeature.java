@@ -25,7 +25,7 @@ public class SignsFeature extends RegionFeature {
 	 * @param region The region to bind to
 	 */
 	@AssistedInject
-	public SignsFeature(@Nonnull AreaShopPlugin plugin,
+	SignsFeature(@Nonnull AreaShopPlugin plugin,
 						@Nonnull SignManager signManager,
 						@Nonnull SignFactory signFactory,
 						@Assisted @Nonnull GeneralRegion region
@@ -75,23 +75,6 @@ public class SignsFeature extends RegionFeature {
 
 	public SignManager signManager() {
 		return this.internalSignManager;
-	}
-
-	@Deprecated
-	public boolean needsPeriodicUpdate() {
-		return this.internalSignManager.needsPeriodicUpdate();
-	}
-
-	@Deprecated
-	public boolean update() {
-		return this.internalSignManager.update();
-	}
-
-	@EventHandler
-	public void regionUpdate(UpdateRegionEvent event) {
-		if (event.getRegion() == this.getRegion()) {
-			this.internalSignManager.update();
-		}
 	}
 
 	/**
