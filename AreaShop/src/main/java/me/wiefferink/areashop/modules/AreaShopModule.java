@@ -13,6 +13,7 @@ import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.CommandManager;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.LegacyFileManager;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
@@ -67,7 +68,7 @@ public class AreaShopModule extends AbstractModule {
         bind(WorldEditInterface.class).toInstance(this.worldEditInterface);
         bind(SignErrorLogger.class).toInstance(this.signErrorLogger);
         // Setup managers
-        bind(FileManager.class).asEagerSingleton();
+        bind(FileManager.class).to(LegacyFileManager.class).asEagerSingleton();
         bind(FeatureManager.class).in(Singleton.class);
         bind(CommandManager.class).in(Singleton.class);
         bind(SignLinkerManager.class).in(Singleton.class);

@@ -15,6 +15,7 @@ import me.wiefferink.areashop.listeners.PlayerLoginLogoutListener;
 import me.wiefferink.areashop.managers.CommandManager;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.LegacyFileManager;
 import me.wiefferink.areashop.managers.Manager;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.managers.SignLinkerManager;
@@ -344,7 +345,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
 		// Load all data from files and check versions
 		fileManager = injector.getInstance(FileManager.class);
-		managers.add(fileManager);
+		managers.add((LegacyFileManager) fileManager);
 		boolean loadFilesResult = fileManager.loadFiles(false);
 		error = error || !loadFilesResult;
 
