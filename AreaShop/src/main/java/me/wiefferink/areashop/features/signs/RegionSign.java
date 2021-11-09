@@ -177,7 +177,7 @@ public class RegionSign {
 		if(!Materials.isSign(block.getType())) {
 			Material signType = getMaterial();
 			if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
-				AreaShop.warn("Setting sign", key, "of region", getRegion().getName(), "failed, could not set sign block back");
+				errorLogger.submitWarning("Setting sign" +  key +  "of region" + getRegion().getName() +  "failed, could not set sign block back");
 			}
 			// Don't do physics here, we first need to update the direction
 			block.setType(signType, false);
@@ -190,7 +190,7 @@ public class RegionSign {
 			} else if(blockData instanceof org.bukkit.block.data.type.Sign) {
 				((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
 			} else {
-				AreaShop.warn("Failed to update the facing direction of the sign at", getStringLocation(), "to ", getFacing(), ", region:", getRegion().getName());
+				errorLogger.submitWarning("Failed to update the facing direction of the sign at" + getStringLocation() + "to " + getFacing() + ", region:" + getRegion().getName());
 				return false;
 			}
 			block.setBlockData(blockData);
