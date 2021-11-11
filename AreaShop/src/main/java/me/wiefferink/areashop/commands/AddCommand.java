@@ -11,7 +11,7 @@ import me.wiefferink.areashop.events.notify.RentedRegionEvent;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
@@ -164,14 +164,14 @@ public class AddCommand extends CommandAreaShop {
 				} else {
 					type = "buy";
 				}
-				FileManager.AddResult result = plugin.getFileManager().checkRegionAdd(sender, region, world, isRent ? GeneralRegion.RegionType.RENT : GeneralRegion.RegionType.BUY);
-				if(result == FileManager.AddResult.ALREADYADDED) {
+				IFileManager.AddResult result = plugin.getFileManager().checkRegionAdd(sender, region, world, isRent ? GeneralRegion.RegionType.RENT : GeneralRegion.RegionType.BUY);
+				if(result == IFileManager.AddResult.ALREADYADDED) {
 					regionsAlready.add(plugin.getFileManager().getRegion(regionName));
-				} else if(result == FileManager.AddResult.ALREADYADDEDOTHERWORLD) {
+				} else if(result == IFileManager.AddResult.ALREADYADDEDOTHERWORLD) {
 					regionsAlreadyOtherWorld.add(plugin.getFileManager().getRegion(regionName));
-				} else if(result == FileManager.AddResult.BLACKLISTED) {
+				} else if(result == IFileManager.AddResult.BLACKLISTED) {
 					namesBlacklisted.add(regionName);
-				} else if(result == FileManager.AddResult.NOPERMISSION) {
+				} else if(result == IFileManager.AddResult.NOPERMISSION) {
 					namesNoPermission.add(regionName);
 				} else {
 					// Check if the player should be landlord

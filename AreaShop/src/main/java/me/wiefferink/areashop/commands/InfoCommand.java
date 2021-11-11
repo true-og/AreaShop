@@ -2,7 +2,7 @@ package me.wiefferink.areashop.commands;
 
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
@@ -28,7 +28,7 @@ public class InfoCommand extends CommandAreaShop {
 	@Inject
 	private MessageBridge messageBridge;
 	@Inject
-	private FileManager fileManager;
+	private IFileManager fileManager;
 	
 	@Override
 	public String getCommandStart() {

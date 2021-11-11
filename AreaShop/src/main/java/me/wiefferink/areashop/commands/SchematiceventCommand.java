@@ -1,7 +1,7 @@
 package me.wiefferink.areashop.commands;
 
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
@@ -20,7 +20,7 @@ public class SchematiceventCommand extends CommandAreaShop {
 	@Inject
 	private MessageBridge messageBridge;
 	@Inject
-	private FileManager fileManager;
+	private IFileManager fileManager;
 	
 	@Override
 	public String getCommandStart() {

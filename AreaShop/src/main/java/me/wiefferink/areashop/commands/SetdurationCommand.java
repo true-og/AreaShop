@@ -1,7 +1,7 @@
 package me.wiefferink.areashop.commands;
 
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
@@ -19,7 +19,7 @@ public class SetdurationCommand extends CommandAreaShop {
 	@Inject
 	private MessageBridge messageBridge;
 	@Inject
-	private FileManager fileManager;
+	private IFileManager fileManager;
 	@Inject
 	private Plugin plugin;
 	

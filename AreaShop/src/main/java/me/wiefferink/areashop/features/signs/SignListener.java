@@ -9,7 +9,7 @@ import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -50,7 +50,7 @@ public class SignListener implements Listener {
     private final BukkitInterface bukkitInterface;
     private final WorldGuardInterface worldGuardInterface;
     private final RegionFactory regionFactory;
-    private final FileManager fileManager;
+    private final IFileManager fileManager;
 
     public SignListener(
                         @Nonnull AreaShop plugin,
@@ -61,7 +61,7 @@ public class SignListener implements Listener {
                         @Nonnull BukkitInterface bukkitInterface,
                         @Nonnull WorldGuardInterface worldGuardInterface,
                         @Nonnull SignManager signManager,
-                        @Nonnull FileManager fileManager) {
+                        @Nonnull IFileManager fileManager) {
         this.fileManager = fileManager;
         this.signManager = signManager;
         this.signLinkerManager = signLinkerManager;
@@ -252,14 +252,14 @@ public class SignListener implements Listener {
                 return;
             }
 
-            FileManager.AddResult addResult = fileManager.checkRegionAdd(player, regionManager.getRegion(secondLine), event.getPlayer().getWorld(), GeneralRegion.RegionType.RENT);
-            if(addResult == FileManager.AddResult.BLACKLISTED) {
+            IFileManager.AddResult addResult = fileManager.checkRegionAdd(player, regionManager.getRegion(secondLine), event.getPlayer().getWorld(), GeneralRegion.RegionType.RENT);
+            if(addResult == IFileManager.AddResult.BLACKLISTED) {
                 messageBridge.message(player, "setup-blacklisted", secondLine);
-            } else if(addResult == FileManager.AddResult.ALREADYADDED) {
+            } else if(addResult == IFileManager.AddResult.ALREADYADDED) {
                 messageBridge.message(player, "setup-alreadyRentSign");
-            } else if(addResult == FileManager.AddResult.ALREADYADDEDOTHERWORLD) {
+            } else if(addResult == IFileManager.AddResult.ALREADYADDEDOTHERWORLD) {
                 messageBridge.message(player, "setup-alreadyOtherWorld");
-            } else if(addResult == FileManager.AddResult.NOPERMISSION) {
+            } else if(addResult == IFileManager.AddResult.NOPERMISSION) {
                 messageBridge.message(player, "setup-noPermission", secondLine);
             } else if(thirdLine != null && !thirdLine.isEmpty() && !Utils.checkTimeFormat(thirdLine)) {
                 messageBridge.message(player, "setup-wrongDuration");
@@ -357,14 +357,14 @@ public class SignListener implements Listener {
                 messageBridge.message(player, "cmd-noRegion", secondLine);
                 return;
             }
-            FileManager.AddResult addResult = plugin.getFileManager().checkRegionAdd(player, region, event.getPlayer().getWorld(), GeneralRegion.RegionType.BUY);
-            if(addResult == FileManager.AddResult.BLACKLISTED) {
+            IFileManager.AddResult addResult = plugin.getFileManager().checkRegionAdd(player, region, event.getPlayer().getWorld(), GeneralRegion.RegionType.BUY);
+            if(addResult == IFileManager.AddResult.BLACKLISTED) {
                 messageBridge.message(player, "setup-blacklisted", secondLine);
-            } else if(addResult == FileManager.AddResult.ALREADYADDED) {
+            } else if(addResult == IFileManager.AddResult.ALREADYADDED) {
                 messageBridge.message(player, "setup-alreadyRentSign");
-            } else if(addResult == FileManager.AddResult.ALREADYADDEDOTHERWORLD) {
+            } else if(addResult == IFileManager.AddResult.ALREADYADDEDOTHERWORLD) {
                 messageBridge.message(player, "setup-alreadyOtherWorld");
-            } else if(addResult == FileManager.AddResult.NOPERMISSION) {
+            } else if(addResult == IFileManager.AddResult.NOPERMISSION) {
                 messageBridge.message(player, "setup-noPermission", secondLine);
             } else {
                 double price = 0.0;

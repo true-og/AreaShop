@@ -8,7 +8,7 @@ import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.regions.RegionFactory;
@@ -33,7 +33,7 @@ public class SignsModule extends AbstractModule {
                                             @Nonnull BukkitInterface bukkitInterface,
                                             @Nonnull WorldGuardInterface worldGuardInterface,
                                             @Nonnull SignManager signManager,
-                                            @Nonnull FileManager fileManager
+                                            @Nonnull IFileManager fileManager
     ) {
         final SignListener signListener = new SignListener(
                 plugin,

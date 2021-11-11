@@ -3,7 +3,7 @@ package me.wiefferink.areashop.commands;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
@@ -23,7 +23,7 @@ public class GroupaddCommand extends CommandAreaShop {
 	@Inject
 	private MessageBridge messageBridge;
 	@Inject
-	private FileManager fileManager;
+	private IFileManager fileManager;
 	@Inject
 	private RegionFactory regionFactory;
 	@Inject

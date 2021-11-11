@@ -11,7 +11,7 @@ import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -34,7 +34,7 @@ import java.util.UUID;
 public class ImportJob {
 
 	private final AreaShop plugin;
-	private final FileManager fileManager;
+	private final IFileManager fileManager;
 	private final SignManager signManager;
 	private final WorldGuardInterface worldGuardInterface;
 	private final CommandSender sender;
@@ -48,7 +48,7 @@ public class ImportJob {
 	@AssistedInject
 	ImportJob(
 			@Nonnull AreaShop plugin,
-			@Nonnull FileManager fileManager,
+			@Nonnull IFileManager fileManager,
 			@Nonnull SignManager signManager,
 			@Nonnull WorldGuardInterface worldGuardInterface,
 			@Nonnull MessageBridge messageBridge,

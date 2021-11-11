@@ -13,7 +13,7 @@ import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.processing.Message;
@@ -415,7 +415,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * Get the FileManager from the plugin.
 	 * @return The FileManager (responsible for saving/loading regions and getting them)
 	 */
-	public FileManager getFileManager() {
+	public IFileManager getFileManager() {
 		return plugin.getFileManager();
 	}
 

@@ -2,7 +2,7 @@ package me.wiefferink.areashop.regions;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import me.wiefferink.areashop.managers.FileManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -16,7 +16,7 @@ import java.util.Set;
 public class RegionGroup {
 
 	private final Plugin plugin;
-	private final FileManager fileManager;
+	private final IFileManager fileManager;
 	private final String name;
 	private final Set<String> regions;
 	private Set<String> autoRegions;
@@ -29,7 +29,7 @@ public class RegionGroup {
 	 * @param name   Name of the group, has to be unique
 	 */
 	@AssistedInject
-	RegionGroup(@Nonnull Plugin plugin, @Nonnull FileManager fileManager, @Assisted String name) {
+	RegionGroup(@Nonnull Plugin plugin, @Nonnull IFileManager fileManager, @Assisted String name) {
 		this.plugin = plugin;
 		this.fileManager = fileManager;
 		this.name = name;

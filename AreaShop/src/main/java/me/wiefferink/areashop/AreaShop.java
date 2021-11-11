@@ -14,8 +14,8 @@ import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.listeners.PlayerLoginLogoutListener;
 import me.wiefferink.areashop.managers.CommandManager;
 import me.wiefferink.areashop.managers.FeatureManager;
+import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.managers.FileManager;
-import me.wiefferink.areashop.managers.LegacyFileManager;
 import me.wiefferink.areashop.managers.Manager;
 import me.wiefferink.areashop.managers.SignErrorLogger;
 import me.wiefferink.areashop.managers.SignLinkerManager;
@@ -70,7 +70,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	private NMS nms;
 	private BukkitInterface bukkitInterface = null;
 	private MessageBridge messageBridge;
-	private FileManager fileManager = null;
+	private IFileManager fileManager = null;
 	private LanguageManager languageManager = null;
 	private CommandManager commandManager = null;
 	private SignLinkerManager signLinkerManager = null;
@@ -344,8 +344,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
 		// Load all data from files and check versions
-		fileManager = injector.getInstance(FileManager.class);
-		managers.add((LegacyFileManager) fileManager);
+		fileManager = injector.getInstance(IFileManager.class);
+		managers.add((FileManager) fileManager);
 		boolean loadFilesResult = fileManager.loadFiles(false);
 		error = error || !loadFilesResult;
 
@@ -661,7 +661,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	 * Method to get the FileManager (loads/save regions and can be used to get regions).
 	 * @return The fileManager
 	 */
-	public FileManager getFileManager() {
+	public IFileManager getFileManager() {
 		return fileManager;
 	}
 
