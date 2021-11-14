@@ -12,13 +12,9 @@ import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
 import me.wiefferink.areashop.events.notify.AddedRegionEvent;
 import me.wiefferink.areashop.events.notify.DeletedRegionEvent;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
-import me.wiefferink.areashop.regions.BuyRegion;
-import me.wiefferink.areashop.regions.GeneralRegion;
+import me.wiefferink.areashop.regions.*;
 import me.wiefferink.areashop.regions.GeneralRegion.RegionEvent;
 import me.wiefferink.areashop.regions.GeneralRegion.RegionType;
-import me.wiefferink.areashop.regions.RegionFactory;
-import me.wiefferink.areashop.regions.RegionGroup;
-import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import org.bukkit.Bukkit;
@@ -34,24 +30,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -963,7 +943,7 @@ public class FileManager extends Manager implements IFileManager {
 		List<String> noRegionType = new ArrayList<>();
 		List<String> noNamePaths = new ArrayList<>();
 		List<GeneralRegion> noWorld = new ArrayList<>();
-		List<GeneralRegion> noRegion = new ArrayList<>();
+		Map<GeneralRegion, File> noRegion = new HashMap<>();
 		List<GeneralRegion> incorrectDuration = new ArrayList<>();
 		for(File regionFile : regionFiles) {
 			if(regionFile.exists() && regionFile.isFile() && !regionFile.isHidden()) {
@@ -976,6 +956,8 @@ public class FileManager extends Manager implements IFileManager {
 					regionConfig = YamlConfiguration.loadConfiguration(reader);
 					if(regionConfig.getKeys(false).isEmpty()) {
 						AreaShop.warn("Region file '" + regionFile.getName() + "' is empty, check for errors in the log.");
+						regionFile.delete();
+						continue;
 					}
 				} catch(IOException e) {
 					AreaShop.warn("Something went wrong reading region file: " + regionFile.getAbsolutePath());
@@ -1001,7 +983,7 @@ public class FileManager extends Manager implements IFileManager {
 				} else if(region.getWorld() == null) {
 					noWorld.add(region);
 				} else if(region.getRegion() == null) {
-					noRegion.add(region);
+					noRegion.put(region, regionFile);
 				} else if(region instanceof RentRegion && !Utils.checkTimeFormat(((RentRegion)region).getDurationString())) {
 					incorrectDuration.add(region);
 				} else {
@@ -1025,11 +1007,11 @@ public class FileManager extends Manager implements IFileManager {
 
 		if(!noRegion.isEmpty()) {
 			List<String> noRegionNames = new ArrayList<>();
-			for(GeneralRegion region : noRegion) {
-				noRegionNames.add(region.getName());
+			for(Map.Entry<GeneralRegion, File> regionMap : noRegion.entrySet()) {
+				noRegionNames.add(regionMap.getKey().getName());
+				regionMap.getValue().delete();
 			}
-			AreaShop.warn("AreaShop regions that are missing their WorldGuard region: " + Utils.createCommaSeparatedList(noRegionNames));
-			AreaShop.warn("Remove these regions from AreaShop with '/as del' or recreate their regions in WorldGuard.");
+			AreaShop.warn("AreaShop regions that are missing their WorldGuard region are now being deleted: " + Utils.createCommaSeparatedList(noRegionNames));
 		}
 
 		boolean noWorldRegions = !noWorld.isEmpty();
