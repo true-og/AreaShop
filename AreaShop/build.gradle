@@ -4,7 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
-version = "2.7.0-SNAPSHOT"
+version = "2.7.0"
 
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
