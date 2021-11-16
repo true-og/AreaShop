@@ -963,7 +963,7 @@ public class FileManager extends Manager implements IFileManager {
 		List<String> noRegionType = new ArrayList<>();
 		List<String> noNamePaths = new ArrayList<>();
 		List<GeneralRegion> noWorld = new ArrayList<>();
-		List<GeneralRegion> noRegion = new ArrayList<>();
+		Map<GeneralRegion, File> noRegion = new HashMap<>();
 		List<GeneralRegion> incorrectDuration = new ArrayList<>();
 		for(File regionFile : regionFiles) {
 			if(regionFile.exists() && regionFile.isFile() && !regionFile.isHidden()) {
@@ -976,6 +976,8 @@ public class FileManager extends Manager implements IFileManager {
 					regionConfig = YamlConfiguration.loadConfiguration(reader);
 					if(regionConfig.getKeys(false).isEmpty()) {
 						AreaShop.warn("Region file '" + regionFile.getName() + "' is empty, check for errors in the log.");
+						regionFile.delete();
+						continue;
 					}
 				} catch(IOException e) {
 					AreaShop.warn("Something went wrong reading region file: " + regionFile.getAbsolutePath());
@@ -1001,7 +1003,7 @@ public class FileManager extends Manager implements IFileManager {
 				} else if(region.getWorld() == null) {
 					noWorld.add(region);
 				} else if(region.getRegion() == null) {
-					noRegion.add(region);
+					noRegion.put(region, regionFile);
 				} else if(region instanceof RentRegion && !Utils.checkTimeFormat(((RentRegion)region).getDurationString())) {
 					incorrectDuration.add(region);
 				} else {
@@ -1025,11 +1027,11 @@ public class FileManager extends Manager implements IFileManager {
 
 		if(!noRegion.isEmpty()) {
 			List<String> noRegionNames = new ArrayList<>();
-			for(GeneralRegion region : noRegion) {
-				noRegionNames.add(region.getName());
+			for(Map.Entry<GeneralRegion, File> regionMap : noRegion.entrySet()) {
+				noRegionNames.add(regionMap.getKey().getName());
+				regionMap.getValue().delete();
 			}
-			AreaShop.warn("AreaShop regions that are missing their WorldGuard region: " + Utils.createCommaSeparatedList(noRegionNames));
-			AreaShop.warn("Remove these regions from AreaShop with '/as del' or recreate their regions in WorldGuard.");
+			AreaShop.warn("AreaShop regions that are missing their WorldGuard region are now being deleted: " + Utils.createCommaSeparatedList(noRegionNames));
 		}
 
 		boolean noWorldRegions = !noWorld.isEmpty();
