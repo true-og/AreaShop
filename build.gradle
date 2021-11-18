@@ -41,14 +41,12 @@ subprojects {
     }
 
     tasks.withType(JavaCompile) {
-        tasks.withType(JavaCompile) {
-            javaToolchains.compilerFor {
-                JavaLanguageVersion.of(16)
-            }
-            options.release.set(16)
-            options.encoding = 'UTF-8'
-            options.fork = true
-            options.deprecation = true
+        javaToolchains.compilerFor {
+            JavaLanguageVersion.of(16)
         }
+        options.release.set(16)
+        options.encoding = 'UTF-8'
+        options.fork = true
+        options.deprecation = true
     }
 }
