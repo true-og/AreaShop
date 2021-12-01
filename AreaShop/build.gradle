@@ -4,7 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
-version = "2.7.0"
+version = "2.7.1"
 
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
@@ -21,6 +21,7 @@ dependencies {
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-nms')
     implementation project(':areashop-nms-1-17')
+    implementation project(':areashop-nms-1-18')
     implementation project(':areashop-worldedit-7')
     implementation project(':areashop-worldguard-7')
     implementation project(':areashop-fastasyncworldedit')
@@ -52,7 +53,7 @@ jar {
 
 compileJava {
     javaToolchains.compilerFor {
-        JavaLanguageVersion.of(16)
+        JavaLanguageVersion.of(17)
     }
 }
 

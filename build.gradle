@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'me.wiefferink.areashop'
-version = '2.7.0'
+version = '2.7.1'
 
 subprojects {
 
@@ -42,9 +42,9 @@ subprojects {
 
     tasks.withType(JavaCompile) {
         javaToolchains.compilerFor {
-            JavaLanguageVersion.of(16)
+            JavaLanguageVersion.of(17)
         }
-        options.release.set(16)
+        options.release.set(17)
         options.encoding = 'UTF-8'
         options.fork = true
         options.deprecation = true
