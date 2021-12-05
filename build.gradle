@@ -1,13 +1,17 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
-group = 'me.wiefferink.areashop'
+group = 'me.wiefferink'
 version = '2.7.1'
 
 subprojects {
 
-    plugins.apply('java')
+    plugins.apply('java-library')
+    plugins.apply('maven-publish')
+
+    version = '2.7.1'
 
     repositories {
         mavenCentral()

@@ -92,9 +92,9 @@ publishing {
         areaShop(MavenPublication) {
             from components.java
             pom {
-                group = "me.wiefferink.areashop"
-                artifactId = "AreaShop"
-                version = "2.7.1"
+                group = "me.wiefferink"
+                artifactId = "$project.name"
+                version = "$project.version"
                 scm {
                     connection = 'scm:git:git://github.com/md5sha256/AreaShop.git'
                     developerConnection = 'scm:git:ssh://github.com/md5sha256/AreaShop.git'
