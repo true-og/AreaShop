@@ -8,5 +8,28 @@ dependencies {
     compileOnly project(':areashop-nms')
 }
 
+publishing {
+    publications {
+        // ... artifact publications
+        nmsProvider(MavenPublication) {
+            pom {
+                group = "me.wiefferink"
+                artifactId = "$project.name"
+                version = "$project.version"
+                scm {
+                    connection = 'scm:git:git://github.com/md5sha256/AreaShop.git'
+                    developerConnection = 'scm:git:ssh://github.com/md5sha256/AreaShop.git'
+                    url = "https://github.com/md5sha256/AreaShop/tree/dev/bleeding"
+                }
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = "https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE"
+                    }
+                }
+            }
+        }
+    }
+}
 
 description = 'AreaShop NMS Helper'
