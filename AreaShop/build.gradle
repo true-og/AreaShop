@@ -2,6 +2,8 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'maven-publish'
+    id 'java-library'
 }
 
 version = "2.7.1"
@@ -45,10 +47,15 @@ processResources {
 
 assemble {
     dependsOn(shadowJar)
+    dependsOn(publishToMavenLocal)
 }
 
 jar {
     archiveClassifier.set('original')
+}
+
+java {
+    withSourcesJar()
 }
 
 compileJava {
@@ -71,6 +78,36 @@ shadowJar {
     include {
         include("com.google.inject")
         minimize()
+    }
+}
+
+sourcesJar {
+    classifier('sources')
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        // ... artifact publications
+        areaShop(MavenPublication) {
+            from components.java
+            pom {
+                group = "me.wiefferink.areashop"
+                artifactId = "AreaShop"
+                version = "2.7.1"
+                scm {
+                    connection = 'scm:git:git://github.com/md5sha256/AreaShop.git'
+                    developerConnection = 'scm:git:ssh://github.com/md5sha256/AreaShop.git'
+                    url = "https://github.com/md5sha256/AreaShop/tree/dev/bleeding"
+                }
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = "https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE"
+                    }
+                }
+            }
+        }
     }
 }
 
