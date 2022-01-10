@@ -1,13 +1,16 @@
 repositories {
     maven {
-        name = 'IS-Repo'
-        url = uri('https://mvn.intellectualsites.com/content/repositories/releases/')
+        name = "S01 Sonatype Snapshots"
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
-    compileOnly 'com.fastasyncworldedit:FAWE-Bukkit:1.17-268'
+    compileOnly 'org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT'
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.0.0-SNAPSHOT")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.0.0-SNAPSHOT") {
+
+    }
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.6'
     compileOnly project(':areashop-interface')
 }

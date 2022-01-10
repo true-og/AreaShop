@@ -1,16 +1,17 @@
 package me.wiefferink.areashop.handlers;
+
 import com.fastasyncworldedit.core.FaweAPI;
 import com.fastasyncworldedit.core.extent.clipboard.MemoryOptimizedClipboard;
 import com.fastasyncworldedit.core.extent.clipboard.io.FastSchematicReader;
 import com.fastasyncworldedit.core.extent.processor.lighting.RelightMode;
-import com.fastasyncworldedit.core.object.FaweLimit;
-import com.fastasyncworldedit.core.util.EditSessionBuilder;
+import com.fastasyncworldedit.core.limit.FaweLimit;
 import com.google.common.annotations.Beta;
 import com.sk89q.jnbt.NBTInputStream;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
@@ -31,6 +32,7 @@ import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
+import net.kyori.adventure.nbt.TagStringIO;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
@@ -115,7 +117,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 		final FaweLimit limit = new FaweLimit();
 		limit.MAX_CHANGES = pluginInterface.getConfig().getInt("maximumBlocks");
-		EditSession editSession = new EditSessionBuilder(world).limit(limit).relightMode(RelightMode.OPTIMAL).build();
+		EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
+				.world(world)
+				.limit(limit)
+				.relightMode(RelightMode.OPTIMAL)
+				.build();
 		editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 		ProtectedRegion region = regionInterface.getRegion();
 		final RegionType regionType = region.getType();
@@ -152,7 +158,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 				}
 				clipboard.setOrigin(clipboard.getMinimumPoint());
 				ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
-				session.setBlockChangeLimit(limit.MAX_CHANGES);
+				session.setBlockChangeLimit((int) limit.MAX_CHANGES);
 				session.setClipboard(clipboardHolder);
 
 				// Build operation
@@ -219,7 +225,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		}
 		final FaweLimit limit = new FaweLimit();
 		limit.MAX_CHANGES = pluginInterface.getConfig().getInt("maximumBlocks");
-		EditSession editSession = new EditSessionBuilder(world).relightMode(RelightMode.OPTIMAL).limit(limit).build();
+		EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder()
+				.world(world)
+				.relightMode(RelightMode.OPTIMAL)
+				.limit(limit)
+				.build();
 
 		final ProtectedRegion region = regionInterface.getRegion();
 		final BlockVector3 min = region.getMinimumPoint(), max = region.getMaximumPoint();
