@@ -1,11 +1,17 @@
-repositories {
-    mavenLocal()
-}
+plugins.apply("io.papermc.paperweight.userdev")
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot:1.17.1-R0.1-SNAPSHOT'
+    paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:1.17.1-R0.1-SNAPSHOT")
     compileOnly project(':areashop-interface')
     compileOnly project(':areashop-nms')
+}
+
+reobfJar {
+    outputJar.set(file("build/libs/${project.name}-${project.version}.jar"))
+}
+
+assemble {
+    dependsOn(reobfJar)
 }
 
 publishing {

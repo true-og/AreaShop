@@ -1,10 +1,11 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'io.papermc.paperweight.userdev' version '1.3.3' apply false
 }
 
 group = 'me.wiefferink'
-version = '2.7.1'
+version = '2.7.2'
 
 subprojects {
 
@@ -45,9 +46,7 @@ subprojects {
     }
 
     tasks.withType(JavaCompile) {
-        javaToolchains.compilerFor {
-            JavaLanguageVersion.of(17)
-        }
+        java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
         options.release.set(17)
         options.encoding = 'UTF-8'
         options.fork = true

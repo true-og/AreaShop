@@ -6,7 +6,7 @@ plugins {
     id 'java-library'
 }
 
-version = "2.7.1"
+version = "2.7.2"
 
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
@@ -22,16 +22,16 @@ dependencies {
     implementation project(':areashop-interface')
     implementation project(':areashop-bukkit-1_13')
     implementation project(':areashop-nms')
-    implementation project(':areashop-nms-1-17')
-    implementation project(':areashop-nms-1-18')
+    runtimeOnly project(path: ':areashop-nms-1-17', configuration: 'reobf')
+    runtimeOnly project(path: ':areashop-nms-1-18', configuration: 'reobf')
     implementation project(':areashop-worldedit-7')
     implementation project(':areashop-worldguard-7')
     implementation project(':areashop-fastasyncworldedit')
-    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
-    compileOnly ('com.sk89q.worldedit:worldedit-bukkit:7.2.5') {
+    compileOnly 'org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT'
+    compileOnly ('com.sk89q.worldedit:worldedit-bukkit:7.2.8') {
         exclude group: 'com.google.guava'
     }
-    compileOnly ('com.sk89q.worldguard:worldguard-bukkit:7.0.5') {
+    compileOnly ('com.sk89q.worldguard:worldguard-bukkit:7.0.6') {
         exclude group: 'com.google.guava'
     }
     compileOnly ('com.github.MilkBowl:VaultAPI:1.7')
@@ -56,12 +56,6 @@ jar {
 
 java {
     withSourcesJar()
-}
-
-compileJava {
-    javaToolchains.compilerFor {
-        JavaLanguageVersion.of(17)
-    }
 }
 
 shadowJar {
