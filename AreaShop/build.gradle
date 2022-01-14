@@ -6,7 +6,7 @@ plugins {
     id 'java-library'
 }
 
-version = "2.7.2"
+version = "2.7.3"
 
 dependencies {
     implementation 'com.github.NLthijs48:InteractiveMessenger:e7749258ca'
