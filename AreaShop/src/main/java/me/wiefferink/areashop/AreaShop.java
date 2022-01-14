@@ -185,10 +185,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		}
 
 		// Find WorldEdit integration version to load
-		String weVersion = null;
+		String weHandlerVersion = null;
 		String rawWeVersion = null;
 		String weBeta = null;
 		Plugin plugin = getServer().getPluginManager().getPlugin("WorldEdit");
+		boolean fawe = false;
 		if(!(plugin instanceof WorldEditPlugin) || !plugin.isEnabled()) {
 			error("WorldEdit plugin is not present or has not loaded correctly");
 			error = true;
@@ -205,11 +206,17 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
 			// Get correct WorldEditInterface (handles things that changed version to version)
 			if(worldEdit.getDescription().getVersion().startsWith("7.")) {
-				weVersion = "7";
+				weHandlerVersion = "WorldEditHandler7";
 			} else {
-				throw new IllegalStateException("Unknown WE Version: " + worldEdit.getDescription().getVersion());
+				// Check if FastAsyncWorldEdit is installed
+				try {
+					Class.forName("com.fastasyncworldedit.core.FaweAPI" );
+				} catch (ClassNotFoundException ignore) {
+					throw new IllegalStateException("Unknown WE Version: " + worldEdit.getDescription().getVersion());
+				}
+				weHandlerVersion = "FastAsyncWorldEditHandler";
+				fawe = true;
 			}
-			weVersion = "WorldEditHandler" + weVersion;
 		}
 
 		// Find WorldGuard integration version to load
@@ -277,30 +284,17 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
 		DependencyModule dependencyModule = new DependencyModule(worldEdit, worldGuard, getEconomy(), getPermissionProvider());
 
-		// Check if FastAsyncWorldEdit is installed
-		boolean fawe;
-		try {
-			Class.forName("com.fastasyncworldedit.core.FaweAPI" );
-			fawe = true;
-		} catch (ClassNotFoundException ignore) {
-			fawe = false;
-		}
-
-		if (fawe) {
-			weVersion = "FastAsyncWorldEditHandler";
-		}
-
 		// Load WorldEdit
 		try {
-			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers." + weVersion);
+			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers." + weHandlerVersion);
 			// Check if we have a NMSHandler class at that location.
 			if(WorldEditInterface.class.isAssignableFrom(clazz)) { // Make sure it actually implements WorldEditInterface
 				worldEditInterface = (WorldEditInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this); // Set our handler
 			}
 		} catch(Exception e) {
-			error("Could not load the handler for WorldEdit (tried to load " + weVersion + "), report this problem to the author: " + ExceptionUtils.getStackTrace(e));
+			error("Could not load the handler for WorldEdit (tried to load " + weHandlerVersion + "), report this problem to the author: " + ExceptionUtils.getStackTrace(e));
 			error = true;
-			weVersion = null;
+			weHandlerVersion = null;
 		}
 
 		// Load WorldGuard
@@ -353,8 +347,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		if(wgVersion != null) {
 			AreaShop.debug("Loaded ", wgVersion, "(raw version:" + rawWgVersion + ", major:" + major + ", minor:" + minor + ", fixes:" + fixes + ", build:" + build + ", fawe:" + fawe + ")");
 		}
-		if(weVersion != null) {
-			AreaShop.debug("Loaded ", weVersion, "(raw version:" + rawWeVersion + ", beta:" + weBeta + ")");
+		if(weHandlerVersion != null) {
+			AreaShop.debug("Loaded ", weHandlerVersion, "(raw version:" + rawWeVersion + ", beta:" + weBeta + ")");
 		}
 		if(bukkitHandler != null) {
 			AreaShop.debug("Loaded BukkitHandler", bukkitHandler);
