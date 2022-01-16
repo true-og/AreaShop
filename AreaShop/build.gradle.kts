@@ -7,24 +7,24 @@ description = "AreaShop"
 dependencies {
     // Platform
     compileOnlyApi(libs.spigot)
-    compileOnly(libs.worldeditCore) {
+    compileOnlyApi(libs.worldeditCore) {
         exclude("com.google.guava", "guava")
     }
-    compileOnly(libs.worldeditBukkit) {
+    compileOnlyApi(libs.worldeditBukkit) {
         exclude("com.google.guava", "guava")
     }
-    compileOnly(libs.worldguardCore) {
+    compileOnlyApi(libs.worldguardCore) {
         exclude("com.google.guava", "guava")
     }
-    compileOnly(libs.worldguardBukkit) {
+    compileOnlyApi(libs.worldguardBukkit) {
         exclude("com.google.guava", "guava")
     }
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+    compileOnlyApi("com.github.MilkBowl:VaultAPI:1.7") {
         exclude("com.google.guava", "guava")
     }
-    implementation(libs.findbugs)
 
     // 3rd party libraries
+    implementation(libs.findbugs)
     implementation("io.papermc:paperlib:1.0.7")
     implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")
@@ -39,13 +39,13 @@ dependencies {
     // Project submodules
     implementation(projects.areashopInterface)
     implementation(projects.areashopBukkit113)
-    implementation(projects.areashopWorldedit7)
-    implementation(projects.areashopWorldguard7)
-    implementation(projects.areashopFastasyncworldedit)
-    // NMS adapters
     implementation(projects.areashopNms)
-    runtimeOnly(project(":areashop-nms-1-17", "reobf"))
-    runtimeOnly(project(":areashop-nms-1-18", "reobf"))
+    // Adapters
+    runtimeOnly(projects.adapters.plugins.worldedit)
+    runtimeOnly(projects.adapters.plugins.worldguard)
+    runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
+    runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
+    runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
 }
 
 tasks {

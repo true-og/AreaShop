@@ -18,7 +18,7 @@ subprojects {
     apply {
         plugin<JavaPlugin>()
         plugin<JavaLibraryPlugin>()
-        if (project.name.startsWith("areashop-nms-").not()) {
+        if (project.path.contains("platform").not()) {
             plugin<MavenPublishPlugin>()
         }
         plugin<IdeaPlugin>()
@@ -59,7 +59,7 @@ subprojects {
         }
     }
 
-    if (project.name.startsWith("areashop-nms-").not()) {
+    if (project.path.contains("platform").not()) {
         publishing {
             publications {
                 create<MavenPublication>(project.name) {
