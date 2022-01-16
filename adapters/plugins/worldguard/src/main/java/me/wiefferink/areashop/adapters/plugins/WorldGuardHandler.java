@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.handlers;
+package me.wiefferink.areashop.adapters.plugins;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector2;
@@ -27,14 +27,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * FAWE WorldGuard handler for pre 1.13
- * @deprecated FAWE no longer has a custom WG implementation.
- */
-@Deprecated(forRemoval = true)
-public class FastAsyncWorldEditWorldGuardHandler extends WorldGuardInterface {
+public class WorldGuardHandler extends WorldGuardInterface {
 
-	public FastAsyncWorldEditWorldGuardHandler(AreaShopInterface pluginInterface) {
+	public WorldGuardHandler(AreaShopInterface pluginInterface) {
 		super(pluginInterface);
 	}
 

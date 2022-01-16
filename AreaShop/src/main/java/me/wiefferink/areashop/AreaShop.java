@@ -175,163 +175,82 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		String[] split = rawServerVersion.split("\\.");
 		String serverVersion = split[3];
 		try {
-			Class<?> nmsImpl = Class.forName("me.wiefferink.areashop.nms." + serverVersion + ".NMSImpl");
+			Class<?> nmsImpl = Class.forName("me.wiefferink.areashop.adapters.platform." + serverVersion + ".NMSImpl");
 			this.nms = nmsImpl.asSubclass(NMS.class).getConstructor().newInstance();
 		} catch (ReflectiveOperationException ex) {
 			ex.printStackTrace();
-			getLogger().severe("Failed to initialize NMS implementation!");
-			getServer().getPluginManager().disablePlugin(this);
+			error("Failed to initialize NMS implementation!");
+			shutdownOnError();
 			return;
 		}
 
 		// Find WorldEdit integration version to load
-		String weHandlerVersion = null;
-		String rawWeVersion = null;
-		String weBeta = null;
+		String weHandlerVersion;
 		Plugin plugin = getServer().getPluginManager().getPlugin("WorldEdit");
-		boolean fawe = false;
 		if(!(plugin instanceof WorldEditPlugin) || !plugin.isEnabled()) {
 			error("WorldEdit plugin is not present or has not loaded correctly");
-			error = true;
+			return;
 		} else {
-			worldEdit = (WorldEditPlugin)plugin;
-			rawWeVersion = worldEdit.getDescription().getVersion();
-
-			// Find beta version
-			Pattern pattern = Pattern.compile("beta-?\\d+");
-			Matcher matcher = pattern.matcher(rawWeVersion);
-			if (matcher.find()) {
-				weBeta = matcher.group();
-			}
-
-			// Get correct WorldEditInterface (handles things that changed version to version)
-			if(worldEdit.getDescription().getVersion().startsWith("7.")) {
-				weHandlerVersion = "WorldEditHandler7";
-			} else {
-				// Check if FastAsyncWorldEdit is installed
-				try {
-					Class.forName("com.fastasyncworldedit.core.FaweAPI" );
-				} catch (ClassNotFoundException ignore) {
-					throw new IllegalStateException("Unknown WE Version: " + worldEdit.getDescription().getVersion());
-				}
+			this.worldEdit = (WorldEditPlugin) plugin;
+			Plugin fawePlugin = getServer().getPluginManager().getPlugin("FastAsyncWorldEdit");
+			if (fawePlugin != null && fawePlugin.isEnabled()) {
 				weHandlerVersion = "FastAsyncWorldEditHandler";
-				fawe = true;
+				info("Detected FastAsyncWorldEdit, using the fawe handler");
+			} else {
+				weHandlerVersion = "WorldEditHandler";
 			}
 		}
 
-		// Find WorldGuard integration version to load
-		String wgVersion = null;
-		String rawWgVersion = null;
-		int major = 0;
-		int minor = 0;
-		int fixes = 0;
-		Integer build = null;
 		plugin = getServer().getPluginManager().getPlugin("WorldGuard");
 		if(!(plugin instanceof WorldGuardPlugin) || !plugin.isEnabled()) {
 			error("WorldGuard plugin is not present or has not loaded correctly");
-			error = true;
+			shutdownOnError();
+			return;
 		} else {
-			worldGuard = (WorldGuardPlugin)plugin;
-			// Get correct WorldGuardInterface (handles things that changed version to version)
-			try {
-				rawWgVersion = worldGuard.getDescription().getVersion();
-				if(rawWgVersion.contains("-SNAPSHOT;")) {
-					String buildNumber = rawWgVersion.substring(rawWgVersion.indexOf("-SNAPSHOT;") + 10);
-					if(buildNumber.contains("-")) {
-						buildNumber = buildNumber.substring(0, buildNumber.indexOf('-'));
-						if (Utils.isNumeric(buildNumber)) {
-							build = Integer.parseInt(buildNumber);
-						} else {
-							warn("Could not correctly parse the build of WorldGuard, raw version: " + rawWgVersion + ", buildNumber: " + buildNumber);
-						}
-					}
-				}
-				// Clear stuff from the version string that is not a number
-				String[] versionParts = rawWgVersion.split("\\.");
-				for(int i = 0; i < versionParts.length; i++) {
-					Pattern pattern = Pattern.compile("^\\d+");
-					Matcher matcher = pattern.matcher(versionParts[i]);
-					if(matcher.find()) {
-						versionParts[i] = matcher.group();
-					}
-				}
-				// Find major, minor and fix numbers
-				try {
-					if(versionParts.length > 0) {
-						major = Integer.parseInt(versionParts[0]);
-					}
-					if(versionParts.length > 1) {
-						minor = Integer.parseInt(versionParts[1]);
-					}
-					if(versionParts.length > 2) {
-						fixes = Integer.parseInt(versionParts[2]);
-					}
-				} catch(NumberFormatException e) {
-					warn("Something went wrong while parsing WorldGuard version number: " + rawWgVersion);
-				}
-
-				// Determine correct implementation to use
-				if(rawWgVersion.startsWith("7.")) {
-					wgVersion = "7";
-				}
-			} catch(Exception e) { // If version detection fails, at least try to load the latest version
-				warn("Parsing the WorldGuard version failed, assuming version 7:", rawWgVersion);
-				wgVersion = "7";
-			}
-
-			wgVersion = "WorldGuardHandler" + wgVersion;
+			this.worldGuard = (WorldGuardPlugin) plugin;
 		}
 
-		DependencyModule dependencyModule = new DependencyModule(worldEdit, worldGuard, getEconomy(), getPermissionProvider());
+		DependencyModule dependencyModule = new DependencyModule(this.worldEdit, this.worldGuard, getEconomy(), getPermissionProvider());
 
 		// Load WorldEdit
 		try {
-			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers." + weHandlerVersion);
-			// Check if we have a NMSHandler class at that location.
+			Class<?> clazz = Class.forName("me.wiefferink.areashop.adapters.plugins." + weHandlerVersion);
 			if(WorldEditInterface.class.isAssignableFrom(clazz)) { // Make sure it actually implements WorldEditInterface
 				worldEditInterface = (WorldEditInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this); // Set our handler
 			}
 		} catch(Exception e) {
 			error("Could not load the handler for WorldEdit (tried to load " + weHandlerVersion + "), report this problem to the author: " + ExceptionUtils.getStackTrace(e));
-			error = true;
-			weHandlerVersion = null;
+			shutdownOnError();
+			return;
 		}
 
 		// Load WorldGuard
 		try {
-			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers." + wgVersion);
+			Class<?> clazz = Class.forName("me.wiefferink.areashop.adapters.plugins.WorldGuardHandler");
 			// Check if we have a NMSHandler class at that location.
 			if(WorldGuardInterface.class.isAssignableFrom(clazz)) { // Make sure it actually implements WorldGuardInterface
 				worldGuardInterface = (WorldGuardInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this); // Set our handler
 			}
 		} catch(Exception e) {
-			error("Could not load the handler for WorldGuard (tried to load " + wgVersion + "), report this problem to the author:" + ExceptionUtils.getStackTrace(e));
-			error = true;
-			wgVersion = null;
-		}
-
-		// Load Bukkit implementation
-		String bukkitHandler;
-		try {
-			Class.forName("org.bukkit.block.data.type.WallSign");
-			bukkitHandler = "1_13";
-		} catch (ClassNotFoundException e) {
-			bukkitHandler = "1_12";
+			error("Could not load the handler for WorldGuard, report this problem to the author:" + ExceptionUtils.getStackTrace(e));
+			shutdownOnError();
+			return;
 		}
 
 		try {
-			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers.BukkitHandler" + bukkitHandler);
+			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers.BukkitHandler1_13");
 			bukkitInterface = (BukkitInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this);
 		} catch (Exception e) {
-			error("Could not load the Bukkit handler (used for sign updates), tried to load:", bukkitHandler + ", report this problem to the author:", ExceptionUtils.getStackTrace(e));
-			error = true;
-			bukkitHandler = null;
+			error("Could not load the Bukkit handler (used for sign updates), report this problem to the author:", ExceptionUtils.getStackTrace(e));
+			shutdownOnError();
+			return;
 		}
 
 		// Check if Vault is present
 		if(getServer().getPluginManager().getPlugin("Vault") == null) {
 			error("Vault plugin is not present or has not loaded correctly");
-			error = true;
+			shutdownOnError();
+			return;
 		}
 
 		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, bukkitInterface, worldEditInterface, worldGuardInterface, signErrorLogger, dependencyModule);
@@ -343,23 +262,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		boolean loadFilesResult = fileManager.loadFiles(false);
 		error = error || !loadFilesResult;
 
-		// Print loaded version of WG and WE in debug
-		if(wgVersion != null) {
-			AreaShop.debug("Loaded ", wgVersion, "(raw version:" + rawWgVersion + ", major:" + major + ", minor:" + minor + ", fixes:" + fixes + ", build:" + build + ", fawe:" + fawe + ")");
-		}
-		if(weHandlerVersion != null) {
-			AreaShop.debug("Loaded ", weHandlerVersion, "(raw version:" + rawWeVersion + ", beta:" + weBeta + ")");
-		}
-		if(bukkitHandler != null) {
-			AreaShop.debug("Loaded BukkitHandler", bukkitHandler);
-		}
-
 		setupLanguageManager();
 
-		if(error) {
-			error("The plugin has not started, fix the errors listed above");
-			return;
-		}
 		featureManager = injector.getInstance(FeatureManager.class);
 		featureManager.initializeFeatures(injector);
 		managers.add(featureManager);
@@ -386,7 +290,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		if(getConfig().getBoolean("checkForUpdates")) {
 			githubUpdateCheck = new GithubUpdateCheck(
 					this,
-					"NLThijs48",
+					"md5sha256",
 					"AreaShop"
 			).withVersionComparator((latestVersion, currentVersion) ->
 					!cleanVersion(latestVersion).equals(cleanVersion(currentVersion))
@@ -412,6 +316,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		if(githubUpdateCheck != null && githubUpdateCheck.hasUpdate() && sender.hasPermission("areashop.notifyupdate")) {
 			messageBridge.message(sender, "update-playerNotify", cleanVersion(githubUpdateCheck.getCurrentVersion()), cleanVersion(githubUpdateCheck.getLatestVersion()));
 		}
+	}
+
+	private void shutdownOnError() {
+		error("The plugin has not started, fix the errors listed above");
+		getServer().getPluginManager().disablePlugin(this);
 	}
 
 	/**

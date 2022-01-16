@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.handlers;
+package me.wiefferink.areashop.adapters.plugins;
 
 import com.fastasyncworldedit.core.FaweAPI;
 import com.fastasyncworldedit.core.extent.clipboard.MemoryOptimizedClipboard;

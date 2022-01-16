@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.nms.v1_18_R1;
+package me.wiefferink.areashop.adapters.platform.v1_17_R1;
 
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import net.minecraft.core.BlockPos;
@@ -7,10 +7,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_18_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_17_R1.block.data.CraftBlockData;
 
 import java.util.Objects;
 
@@ -19,12 +19,12 @@ public class BlockBehaviourImpl implements BlockBehaviourHelper {
     @Override
     public boolean canPlace(Location location, BlockData blockData) {
         Objects.requireNonNull(location.getWorld(), "Null World!");
-        final BlockPos blockPosition = new BlockPos(location.getX(), location.getY(), location.getZ());
+        final BlockPos blockPos = new BlockPos(location.getX(), location.getY(), location.getZ());
         final CraftWorld craftWorld = (CraftWorld) location.getWorld();
         final ServerLevel world = craftWorld.getHandle();
         final CraftBlockData craftBlockData = (CraftBlockData) blockData;
         final BlockState ibd = craftBlockData.getState();
-        return ibd.canSurvive(world, blockPosition);
+        return ibd.canSurvive(world, blockPos);
     }
 
     @Override

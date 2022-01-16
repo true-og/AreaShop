@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.handlers;
+package me.wiefferink.areashop.adapters.plugins;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -37,9 +37,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class WorldEditHandler7 extends WorldEditInterface {
+public class WorldEditHandler extends WorldEditInterface {
 
-	public WorldEditHandler7(AreaShopInterface pluginInterface) {
+	public WorldEditHandler(AreaShopInterface pluginInterface) {
 		super(pluginInterface);
 	}
 

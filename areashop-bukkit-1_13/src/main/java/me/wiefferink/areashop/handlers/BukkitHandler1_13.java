@@ -9,6 +9,11 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.WallSign;
 
+/**
+ * Sign handler for 1.13+
+ * @deprecated Obsolete as we don't support pre-1.13 versions anyway
+ */
+@Deprecated(forRemoval = true)
 public class BukkitHandler1_13 extends BukkitInterface {
 
 	public BukkitHandler1_13(AreaShopInterface pluginInterface) {
