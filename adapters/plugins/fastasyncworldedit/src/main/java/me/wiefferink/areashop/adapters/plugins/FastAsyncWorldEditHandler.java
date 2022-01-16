@@ -43,6 +43,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 // Future: this class could use the schematic save/paste api of FAWE: https://github.com/boy0001/FastAsyncWorldedit/wiki/Pasting-a-schematic
@@ -178,21 +179,21 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
 								+ ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: "
 								+ pluginInterface.getConfig().getInt("maximumBlocks"));
-				CompletableFuture.completedFuture(false);
+				completableFuture.complete(false);
 			} catch (IOException e) {
 				pluginInterface.getLogger().warning(
 						"An error occured while restoring schematic of " + regionInterface.getName()
 								+ ", enable debug to see the complete stacktrace");
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
-				CompletableFuture.completedFuture(false);
+				completableFuture.complete(false);
 			} catch (Exception e) {
 				pluginInterface.getLogger()
 						.warning("crashed during restore of " + regionInterface.getName());
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
-				CompletableFuture.completedFuture(false);
+				completableFuture.complete(false);
 			}
 			editSession.flushQueue();
-			CompletableFuture.completedFuture(true);
+			completableFuture.complete(false);
 		});
 		return completableFuture;
 	}
