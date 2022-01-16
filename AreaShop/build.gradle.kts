@@ -2,8 +2,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-version = "2.7.3"
-
+description = "AreaShop"
 
 dependencies {
     // Platform
@@ -68,6 +67,11 @@ tasks {
         withSourcesJar()
     }
 
+    val javaComponent = project.components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
+        skip()
+    }
+
     shadowJar {
         archiveClassifier.set("")
         base {
@@ -83,7 +87,4 @@ tasks {
         relocate("javax.annotation", "${base}.javax.annotation")
         relocate("javax.inject", "${base}.javax.inject")
     }
-
 }
-
-description = "AreaShop"

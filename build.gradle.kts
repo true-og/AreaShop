@@ -2,9 +2,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-
     id("io.papermc.paperweight.userdev") version "1.3.3" apply false
-
     idea
     eclipse
 }
@@ -12,19 +10,17 @@ plugins {
 group = "me.wiefferink"
 version = "2.7.3"
 
-apply {
-    plugin<MavenPublishPlugin>()
-}
-
 subprojects {
 
-    version = "2.7.3"
+    group = rootProject.group
+    version = rootProject.version
 
     apply {
         plugin<JavaPlugin>()
         plugin<JavaLibraryPlugin>()
-        plugin<MavenPublishPlugin>()
-
+        if (project.name.startsWith("areashop-nms-").not()) {
+            plugin<MavenPublishPlugin>()
+        }
         plugin<IdeaPlugin>()
         plugin<EclipsePlugin>()
     }
@@ -61,11 +57,13 @@ subprojects {
         withType(ProcessResources::class) {
             filteringCharset = Charsets.UTF_8.name()
         }
+    }
 
+    if (project.name.startsWith("areashop-nms-").not()) {
         publishing {
             publications {
                 create<MavenPublication>(project.name) {
-                    from(project.components["java"])
+                    from(components["java"])
                     pom {
                         scm {
                             connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
@@ -84,4 +82,3 @@ subprojects {
         }
     }
 }
-
