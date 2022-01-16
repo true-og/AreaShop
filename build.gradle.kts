@@ -1,22 +1,32 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
+    java
+    `java-library`
+    `maven-publish`
+
     id("io.papermc.paperweight.userdev") version "1.3.3" apply false
+
     idea
+    eclipse
 }
 
 group = "me.wiefferink"
 version = "2.7.3"
 
-plugins.apply("idea")
+apply {
+    plugin<MavenPublishPlugin>()
+}
 
 subprojects {
 
-    plugins.apply("java-library")
+    version = "2.7.3"
 
-    if (project.name.startsWith("areashop-nms-").not()) {
-        // Don't publish the nms implementations
-        plugins.apply("maven-publish")
+    apply {
+        plugin<JavaPlugin>()
+        plugin<JavaLibraryPlugin>()
+        plugin<MavenPublishPlugin>()
+
+        plugin<IdeaPlugin>()
+        plugin<EclipsePlugin>()
     }
 
     repositories {
@@ -52,22 +62,20 @@ subprojects {
             filteringCharset = Charsets.UTF_8.name()
         }
 
-        // Don't publish the nms implementations
-        if (project.name.startsWith("areashop-nms-").not()) {
-            publishing {
-                publications {
-                    create<MavenPublication>(project.name) {
-                        pom {
-                            scm {
-                                connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
-                                developerConnection.set("scm:git:ssh://github.com/md5sha256/AreaShop.git")
-                                url.set("https://github.com/md5sha256/AreaShop/tree/dev/bleeding")
-                            }
-                            licenses {
-                                license {
-                                    name.set("GNU General Public License v3.0")
-                                    url.set("https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE")
-                                }
+        publishing {
+            publications {
+                create<MavenPublication>(project.name) {
+                    from(project.components["java"])
+                    pom {
+                        scm {
+                            connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
+                            developerConnection.set("scm:git:ssh://github.com/md5sha256/AreaShop.git")
+                            url.set("https://github.com/md5sha256/AreaShop/tree/dev/bleeding")
+                        }
+                        licenses {
+                            license {
+                                name.set("GNU General Public License v3.0")
+                                url.set("https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE")
                             }
                         }
                     }

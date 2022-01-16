@@ -32,7 +32,6 @@ import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
-import net.kyori.adventure.nbt.TagStringIO;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;

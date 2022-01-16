@@ -2,8 +2,8 @@ plugins.apply("io.papermc.paperweight.userdev")
 
 dependencies {
     paperDevBundle("1.18.1-R0.1-SNAPSHOT")
-    compileOnly(project(":areashop-interface"))
-    compileOnly(project(":areashop-nms"))
+    compileOnly(projects.areashopInterface)
+    compileOnly(projects.areashopNms)
 }
 
 description = "AreaShop NMS Helper 1-18"
