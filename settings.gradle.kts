@@ -11,7 +11,7 @@ pluginManagement {
 buildCache {
     local {
         directory = File(rootDir, "build-cache")
-        removeUnusedEntriesAfterDays = 7
+        removeUnusedEntriesAfterDays = 30
     }
 }
 

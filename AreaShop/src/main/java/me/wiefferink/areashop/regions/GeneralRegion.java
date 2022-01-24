@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class GeneralRegion implements GeneralRegionInterface, Comparable<GeneralRegion>, ReplacementProvider {
 
@@ -810,6 +811,40 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	}
 
 	/**
+	 * Save all blocks in a region for restoring later.
+	 * @param fileName The name of the file to save to (extension and folder will be added)
+	 * @return true if the region has been saved properly, otherwise false
+	 */
+	public CompletableFuture<Boolean> saveRegionBlocksAsync(String fileName) {
+		if (!worldEditInterface.supportsAsyncOperations()) {
+			return CompletableFuture.completedFuture(saveRegionBlocks(fileName));
+		}
+		// Check if the region is correct
+		ProtectedRegion region = getRegion();
+		if(region == null) {
+			AreaShop.debug("Region '" + getName() + "' does not exist in WorldGuard, save failed");
+			return CompletableFuture.completedFuture(false);
+		}
+		// The path to save the schematic
+		File saveFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
+		// Create parent directories
+		File parent = saveFile.getParentFile();
+		if(parent != null && !parent.exists()) {
+			if(!parent.mkdirs()) {
+				AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
+				return CompletableFuture.completedFuture(false);
+			}
+		}
+		return worldEditInterface.saveRegionBlocksAsync(saveFile, this)
+				.thenApply(result -> {
+					if(result) {
+						AreaShop.debug("Saved schematic async for region " + getName());
+					}
+					return result;
+				});
+	}
+
+	/**
 	 * Restore all blocks in a region for restoring later.
 	 * @param fileName The name of the file to save to (extension and folder will be added)
 	 * @return true if the region has been restored properly, otherwise false
@@ -830,6 +865,35 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		}
 		return result;
 	}
+
+	/**
+	 * Restore all blocks in a region for restoring later.
+	 * @param fileName The name of the file to save to (extension and folder will be added)
+	 * @return true if the region has been restored properly, otherwise false
+	 */
+	public CompletableFuture<Boolean> restoreRegionBlocksAsync(String fileName) {
+		if (!worldEditInterface.supportsAsyncOperations()) {
+			return CompletableFuture.completedFuture(restoreRegionBlocks(fileName));
+		}
+		if(getRegion() == null) {
+			AreaShop.debug("Region '" + getName() + "' does not exist in WorldGuard, restore failed");
+			return CompletableFuture.completedFuture(false);
+		}
+		// The path to save the schematic
+		File restoreFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
+		return worldEditInterface.restoreRegionBlocksAsync(restoreFile, this)
+				.thenApply(result -> {
+					if(result) {
+						AreaShop.debug("Restored schematic async for region " + getName());
+						// Sync back to main
+						Do.syncLater(10, getSignsFeature().signManager()::update);
+					}
+					return result;
+				}
+		);
+	}
+
+
 
 	/**
 	 * Reset all flags of the region.
@@ -1452,14 +1516,23 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		String save = profileSection.getString(type.getValue() + ".save");
 		String restore = profileSection.getString(type.getValue() + ".restore");
 		// Save the region if needed
+		boolean async = worldEditInterface.supportsAsyncOperations();
 		if(save != null && !save.isEmpty()) {
 			save = Message.fromString(save).replacements(this).getSingle();
-			saveRegionBlocks(save);
+			if (async) {
+				saveRegionBlocksAsync(save);
+			} else {
+				saveRegionBlocks(save);
+			}
 		}
 		// Restore the region if needed
 		if(restore != null && !restore.isEmpty()) {
 			restore = Message.fromString(restore).replacements(this).getSingle();
-			restoreRegionBlocks(restore);
+			if (async) {
+				restoreRegionBlocksAsync(restore);
+			} else {
+				restoreRegionBlocks(restore);
+			}
 		}
 	}
 

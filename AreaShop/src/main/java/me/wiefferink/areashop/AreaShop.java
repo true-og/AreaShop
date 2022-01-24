@@ -184,6 +184,13 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			return;
 		}
 
+		// Check if Vault is present
+		if(getServer().getPluginManager().getPlugin("Vault") == null) {
+			error("Vault plugin is not present or has not loaded correctly");
+			shutdownOnError();
+			return;
+		}
+
 		// Find WorldEdit integration version to load
 		String weHandlerVersion;
 		Plugin plugin = getServer().getPluginManager().getPlugin("WorldEdit");
@@ -242,13 +249,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			bukkitInterface = (BukkitInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this);
 		} catch (Exception e) {
 			error("Could not load the Bukkit handler (used for sign updates), report this problem to the author:", ExceptionUtils.getStackTrace(e));
-			shutdownOnError();
-			return;
-		}
-
-		// Check if Vault is present
-		if(getServer().getPluginManager().getPlugin("Vault") == null) {
-			error("Vault plugin is not present or has not loaded correctly");
 			shutdownOnError();
 			return;
 		}

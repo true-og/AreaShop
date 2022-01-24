@@ -121,6 +121,8 @@ debug: false
 version: ${project.version}
 # Maximum number of blocks to save to or restore from a .schemetic file.
 maximumBlocks: 1000000
+# Maximum number of entities to save to or restore from a .schematic file (FAWE only)
+maximumEntities: 1000
 # Maximum number of locations the teleport function should check to find a safe spot.
 maximumTries: 50000
 
