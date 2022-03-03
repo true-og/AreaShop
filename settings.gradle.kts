@@ -34,5 +34,4 @@ include(":areashop")
 
 project(":areashop").projectDir = file("AreaShop")
 
-enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
