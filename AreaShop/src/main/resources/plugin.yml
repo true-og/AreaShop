@@ -5,7 +5,7 @@ description: "Selling and renting WorldGuard regions to your players, highly con
 depend: [Vault, WorldGuard, WorldEdit]
 softdepend: [Multiverse-Core, FastAsyncWorldEdit]
 author: NLThijs48
-website: https://github.com/md5s256/AreaShop
+website: https://github.com/md5sha256/AreaShop
 commands:
   AreaShop:
     description: 'For all commands use /as help.'
