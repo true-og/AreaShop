@@ -46,6 +46,7 @@ dependencies {
     runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
     runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
+    runtimeOnly(project(":adapters:platform:bukkit-1-18-1", "reobf"))
 }
 
 repositories {
