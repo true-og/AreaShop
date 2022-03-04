@@ -29,10 +29,10 @@ dependencies {
     implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")
     implementation("io.github.baked-libs:dough-data:1.0.3")
-    implementation("com.google.inject:guice:5.0.1") {
+    implementation("com.google.inject:guice:5.1.0") {
         exclude("com.google.guava", "guava")
     }
-    implementation("com.google.inject.extensions:guice-assistedinject:5.0.1") {
+    implementation("com.google.inject.extensions:guice-assistedinject:5.1.0") {
         exclude("com.google.guava", "guava")
     }
 
@@ -46,6 +46,10 @@ dependencies {
     runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
     runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
+}
+
+repositories {
+    mavenCentral()
 }
 
 tasks {

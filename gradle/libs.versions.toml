@@ -9,7 +9,7 @@ worldguard = "7.0.6"
 fawe = "2.0.0"
 
 # Gradle plugins
-paperweight = "1.3.3"
+paperweight = "1.3.5"
 
 [libraries]
 # Platform

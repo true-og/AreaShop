@@ -1,7 +1,7 @@
 plugins.apply("io.papermc.paperweight.userdev")
 
 dependencies {
-    paperDevBundle("1.18.1-R0.1-SNAPSHOT")
+    paperDevBundle("1.18.2-R0.1-SNAPSHOT")
     compileOnly(projects.areashopInterface)
     compileOnly(projects.areashopNms)
 }
