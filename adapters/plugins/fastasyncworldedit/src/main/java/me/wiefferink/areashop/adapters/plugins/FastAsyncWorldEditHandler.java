@@ -59,7 +59,8 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		private final BoundingBox boundingBox;
 
 		public RegionBoundMask(final ProtectedRegion region) {
-			final BlockVector3 min = region.getMinimumPoint(), max = region.getMaximumPoint();
+			final BlockVector3 min = region.getMinimumPoint();
+			final BlockVector3 max = region.getMaximumPoint();
 			this.boundingBox = new BoundingBox(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
 		}
 
@@ -90,7 +91,6 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 
 	@Beta
 	public CompletableFuture<Boolean> restoreRegionBlocksAsync(File rawFile, GeneralRegionInterface regionInterface) {
-		// TODO implement using the FastAsyncWorldEdit api to paste async
 		File file = null;
 		for (ClipboardFormat formatOption : BuiltInClipboardFormat.values()) {
 			if (new File(rawFile.getAbsolutePath() + "." + formatOption.getPrimaryFileExtension())
@@ -147,6 +147,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		final RegionType regionType = region.getType();
 		final Mask mask = new RegionBoundMask(region);
 		FaweAPI.getTaskManager().async(() -> {
+			boolean result = true;
 			// Read the schematic and paste it into the world
 			try (Closer closer = Closer.create()) {
 				final FileInputStream fis = closer.register(new FileInputStream(finalFile));
@@ -188,21 +189,21 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
 								+ ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: "
 								+ pluginInterface.getConfig().getInt("maximumBlocks"));
-				completableFuture.complete(false);
+				result = false;
 			} catch (IOException e) {
 				pluginInterface.getLogger().warning(
 						"An error occurred while restoring schematic of " + regionInterface.getName()
 								+ ", enable debug to see the complete stacktrace");
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
-				completableFuture.complete(false);
+				result = false;
 			} catch (Exception e) {
 				pluginInterface.getLogger()
 						.warning("crashed during restore of " + regionInterface.getName());
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
-				completableFuture.complete(false);
+				result = false;
 			}
 			editSession.flushQueue();
-			completableFuture.complete(true);
+			completableFuture.complete(result);
 		});
 		return completableFuture;
 	}
