@@ -210,9 +210,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 
 	@Beta
 	public CompletableFuture<Boolean> saveRegionBlocksAsync(File file, GeneralRegionInterface regionInterface) {
-		// TODO implement using the FastAsyncWorldEdit api to save async
 		ClipboardFormat format = BuiltInClipboardFormat.FAST;
-		// TODO allow selecting FAWE format in the config? (when enabled you cannot go back to vanilla WorldEdit easily)
 
 		file = new File(file.getAbsolutePath() + "." + format.getPrimaryFileExtension());
 		pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file",
@@ -286,7 +284,6 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 
 	@Override
 	public boolean restoreRegionBlocks(File rawFile, GeneralRegionInterface regionInterface) {
-		// TODO implement using the FastAsyncWorldEdit api to paste async
 		File file = null;
 		for (ClipboardFormat formatOption : BuiltInClipboardFormat.values()) {
 			if (new File(rawFile.getAbsolutePath() + "." + formatOption.getPrimaryFileExtension())
@@ -367,7 +364,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 							editSession, origin);
 			copy.setTransform(clipboardHolder.getTransform());
 			// Mask to region (for polygon and other weird shaped regions)
-			// TODO make this more efficient (especially for polygon regions)
+			// FIXME make this more efficient (especially for polygon regions)
 			if (region.getType() != RegionType.CUBOID) {
 				copy.setSourceMask(new RegionBoundMask(region));
 			}
@@ -403,9 +400,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 
 	@Override
 	public boolean saveRegionBlocks(File file, GeneralRegionInterface regionInterface) {
-		// TODO implement using the FastAsyncWorldEdit api to save async
 		ClipboardFormat format = BuiltInClipboardFormat.FAST;
-		// TODO allow selecting FAWE format in the config? (when enabled you cannot go back to vanilla WorldEdit easily)
 
 		file = new File(file.getAbsolutePath() + "." + format.getPrimaryFileExtension());
 		pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file",
