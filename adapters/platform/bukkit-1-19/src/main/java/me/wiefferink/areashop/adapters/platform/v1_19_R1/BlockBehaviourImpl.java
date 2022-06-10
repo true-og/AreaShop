@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.adapters.platform.v1_18_R1;
+package me.wiefferink.areashop.adapters.platform.v1_19_R1;
 
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import net.minecraft.core.BlockPos;
@@ -7,10 +7,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlockState;
-import org.bukkit.craftbukkit.v1_18_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_19_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_19_R1.block.CraftBlockState;
+import org.bukkit.craftbukkit.v1_19_R1.block.data.CraftBlockData;
 
 import java.util.Objects;
 
