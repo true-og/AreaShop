@@ -2,34 +2,75 @@ package me.wiefferink.areashop.interfaces;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Sign;
+import org.bukkit.block.data.type.WallSign;
 
-public abstract class BukkitInterface {
-	protected final AreaShopInterface pluginInterface;
+/**
+ * Sign handler for 1.13+
+ * @deprecated Obsolete as we don't support pre-1.13 versions anyway
+ */
+@Deprecated(forRemoval = true)
+public class BukkitInterface  {
 
 	public BukkitInterface(AreaShopInterface pluginInterface) {
-		this.pluginInterface = pluginInterface;
 	}
 
-	/**
-	 * Get the direciton a sign is facing.
-	 * @param block Sign block to get the facing from
-	 * @return direction the sign is facing
-	 */
-	public abstract BlockFace getSignFacing(Block block);
+	// Uses BlockData, which does not yet exist in 1.12-
+	public BlockFace getSignFacing(Block block) {
+		if (block == null) {
+			return null;
+		}
 
-	/**
-	 * Set the direction a sign is facing.
-	 * @param block Sign block to update
-	 * @param facing direction to let the sign face
-	 * @return true when successful, otherwise false
-	 */
-	public abstract boolean setSignFacing(Block block, BlockFace facing);
+		BlockState blockState = block.getState();
+		BlockData blockData = blockState.getBlockData();
 
-	/**
-	 * Get the block a sign is attached to.
-	 * @param block Sign block
-	 * @return Block the sign is attached to, or null when not a sign or not attached
-	 */
-	public abstract Block getSignAttachedTo(Block block);
+		if(blockData instanceof WallSign) {
+			return ((WallSign) blockData).getFacing();
+		} else if(blockData instanceof Sign) {
+			return ((Sign) blockData).getRotation();
+		}
+
+		return null;
+	}
+
+	// Uses BlockData, WallSign and Sign which don't exist in 1.12-
+	public boolean setSignFacing(Block block, BlockFace facing) {
+		if (block == null || facing == null) {
+			return false;
+		}
+
+		BlockState blockState = block.getState();
+		BlockData blockData = blockState.getBlockData();
+
+		if(blockData instanceof WallSign) {
+			((WallSign) blockData).setFacing(facing);
+		} else if(blockData instanceof Sign) {
+			((Sign) blockData).setRotation(facing);
+		} else {
+			return false;
+		}
+		block.setBlockData(blockData);
+		return true;
+	}
+
+	public Block getSignAttachedTo(Block block) {
+		if (block == null) {
+			return null;
+		}
+
+		BlockState blockState = block.getState();
+
+		BlockData blockData = blockState.getBlockData();
+
+		if(blockData instanceof WallSign) {
+			return block.getRelative(((WallSign) blockData).getFacing().getOppositeFace());
+		} else if(blockData instanceof Sign) {
+			return block.getRelative(BlockFace.DOWN);
+		}
+
+		return null;
+	}
 
 }

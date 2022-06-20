@@ -8,7 +8,6 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
-import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.listeners.PlayerLoginLogoutListener;
@@ -50,8 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Main class for the AreaShop plugin.
@@ -68,7 +65,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	private WorldEditPlugin worldEdit = null;
 	private WorldEditInterface worldEditInterface = null;
 	private NMS nms;
-	private BukkitInterface bukkitInterface = null;
 	private MessageBridge messageBridge;
 	private IFileManager fileManager = null;
 	private LanguageManager languageManager = null;
@@ -244,16 +240,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			return;
 		}
 
-		try {
-			Class<?> clazz = Class.forName("me.wiefferink.areashop.handlers.BukkitHandler1_13");
-			bukkitInterface = (BukkitInterface)clazz.getConstructor(AreaShopInterface.class).newInstance(this);
-		} catch (Exception e) {
-			error("Could not load the Bukkit handler (used for sign updates), report this problem to the author:", ExceptionUtils.getStackTrace(e));
-			shutdownOnError();
-			return;
-		}
-
-		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, bukkitInterface, worldEditInterface, worldGuardInterface, signErrorLogger, dependencyModule);
+		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, worldEditInterface, worldGuardInterface, signErrorLogger, dependencyModule);
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
 		// Load all data from files and check versions
@@ -300,7 +287,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 					return;
 				}
 
-				AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://www.spigotmc.org/resources/areashop.2991/");
+				AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://github.com/md5sha256/releases");
 				for(Player player : Utils.getOnlinePlayers()) {
 					notifyUpdate(player);
 				}
@@ -468,14 +455,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	 */
 	public LanguageManager getLanguageManager() {
 		return languageManager;
-	}
-
-	/**
-	 * Get the BukkitHandler, for sign interactions.
-	 * @return BukkitHandler
-	 */
-	public BukkitInterface getBukkitHandler() {
-		return this.bukkitInterface;
 	}
 
 	/**

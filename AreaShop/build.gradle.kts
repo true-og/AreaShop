@@ -38,7 +38,6 @@ dependencies {
 
     // Project submodules
     implementation(projects.areashopInterface)
-    implementation(projects.areashopBukkit113)
     implementation(projects.areashopNms)
     // Adapters
     runtimeOnly(projects.adapters.plugins.worldedit)

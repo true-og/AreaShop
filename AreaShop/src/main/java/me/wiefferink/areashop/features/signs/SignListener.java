@@ -7,7 +7,6 @@ import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
-import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.managers.SignLinkerManager;
@@ -17,6 +16,7 @@ import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Materials;
+import me.wiefferink.areashop.tools.SignUtils;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import org.bukkit.Chunk;
@@ -47,7 +47,6 @@ public class SignListener implements Listener {
     private final MessageBridge messageBridge;
     private final SignManager signManager;
     private final SignLinkerManager signLinkerManager;
-    private final BukkitInterface bukkitInterface;
     private final WorldGuardInterface worldGuardInterface;
     private final RegionFactory regionFactory;
     private final IFileManager fileManager;
@@ -58,7 +57,6 @@ public class SignListener implements Listener {
                         @Nonnull RegionFactory regionFactory,
                         @Nonnull MessageBridge messageBridge,
                         @Nonnull SignLinkerManager signLinkerManager,
-                        @Nonnull BukkitInterface bukkitInterface,
                         @Nonnull WorldGuardInterface worldGuardInterface,
                         @Nonnull SignManager signManager,
                         @Nonnull IFileManager fileManager) {
@@ -68,7 +66,6 @@ public class SignListener implements Listener {
         this.regionFactory = regionFactory;
         this.behaviourHelper = behaviourHelper;
         this.plugin = plugin;
-        this.bukkitInterface = bukkitInterface;
         this.worldGuardInterface = worldGuardInterface;
         this.messageBridge = messageBridge;
     }
@@ -292,7 +289,7 @@ public class SignListener implements Listener {
                 if(durationSet) {
                     rent.setDuration(thirdLine);
                 }
-                rent.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
+                rent.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), SignUtils.getSignFacing(event.getBlock()), null);
 
                 AddingRegionEvent addingRegionEvent = plugin.getFileManager().addRegion(rent);
                 if (addingRegionEvent.isCancelled()) {
@@ -392,7 +389,7 @@ public class SignListener implements Listener {
                 if(priceSet) {
                     buy.setPrice(price);
                 }
-                buy.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
+                buy.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), SignUtils.getSignFacing(event.getBlock()), null);
 
                 AddingRegionEvent addingRegionEvent = plugin.getFileManager().addRegion(buy);
                 if (addingRegionEvent.isCancelled()) {
@@ -438,10 +435,10 @@ public class SignListener implements Listener {
             }
 
             if(thirdLine == null || thirdLine.isEmpty()) {
-                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), null);
+                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), SignUtils.getSignFacing(event.getBlock()), null);
                 messageBridge.message(player, "addsign-success", region);
             } else {
-                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), bukkitInterface.getSignFacing(event.getBlock()), thirdLine);
+                region.getSignsFeature().addSign(event.getBlock().getLocation(), event.getBlock().getType(), SignUtils.getSignFacing(event.getBlock()), thirdLine);
                 messageBridge.message(player, "addsign-successProfile", thirdLine, region);
             }
 

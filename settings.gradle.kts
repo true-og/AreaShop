@@ -18,7 +18,6 @@ buildCache {
 rootProject.name = "areashop-parent"
 
 // Interfaces
-include(":areashop-bukkit-1_13")
 include(":areashop-interface")
 include(":areashop-nms")
 

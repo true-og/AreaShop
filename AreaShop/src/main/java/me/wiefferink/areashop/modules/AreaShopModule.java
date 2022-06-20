@@ -7,7 +7,6 @@ import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.FeatureFactory;
 import me.wiefferink.areashop.features.signs.SignsModule;
-import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.CommandManager;
@@ -28,7 +27,6 @@ import javax.annotation.Nonnull;
 public class AreaShopModule extends AbstractModule {
 
     private final AreaShop instance;
-    private final BukkitInterface bukkitInterface;
     private final WorldGuardInterface worldGuardInterface;
     private final WorldEditInterface worldEditInterface;
     private final NMS nms;
@@ -39,7 +37,6 @@ public class AreaShopModule extends AbstractModule {
     public AreaShopModule(@Nonnull AreaShop instance,
                           @Nonnull MessageBridge messageBridge,
                           @Nonnull NMS nms,
-                          @Nonnull BukkitInterface bukkitInterface,
                           @Nonnull WorldEditInterface worldEditInterface,
                           @Nonnull WorldGuardInterface worldGuardInterface,
                           @Nonnull SignErrorLogger signErrorLogger,
@@ -49,7 +46,6 @@ public class AreaShopModule extends AbstractModule {
         this.messageBridge = messageBridge;
         this.nms = nms;
         this.signErrorLogger = signErrorLogger;
-        this.bukkitInterface = bukkitInterface;
         this.worldEditInterface = worldEditInterface;
         this.worldGuardInterface = worldGuardInterface;
         this.dependencyModule = dependencyModule;
@@ -63,7 +59,6 @@ public class AreaShopModule extends AbstractModule {
         bind(MessageBridge.class).toInstance(this.messageBridge);
         bind(NMS.class).toInstance(this.nms);
         bind(BlockBehaviourHelper.class).toInstance(this.nms.blockBehaviourHelper());
-        bind(BukkitInterface.class).toInstance(this.bukkitInterface);
         bind(WorldGuardInterface.class).toInstance(this.worldGuardInterface);
         bind(WorldEditInterface.class).toInstance(this.worldEditInterface);
         bind(SignErrorLogger.class).toInstance(this.signErrorLogger);

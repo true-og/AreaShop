@@ -3,10 +3,10 @@ package me.wiefferink.areashop.commands;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
-import me.wiefferink.areashop.interfaces.BukkitInterface;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.tools.Materials;
+import me.wiefferink.areashop.tools.SignUtils;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -33,8 +33,6 @@ public class AddsignCommand extends CommandAreaShop {
 	private SignManager signManager;
 	@Inject
 	private Plugin plugin;
-	@Inject
-	private BukkitInterface bukkitInterface;
 
 	@Override
 	public String getCommandStart() {
@@ -111,7 +109,7 @@ public class AddsignCommand extends CommandAreaShop {
 			return;
 		}
 
-		region.getSignsFeature().addSign(block.getLocation(), block.getType(), bukkitInterface.getSignFacing(block), profile);
+		region.getSignsFeature().addSign(block.getLocation(), block.getType(), SignUtils.getSignFacing(block), profile);
 		if(profile == null) {
 			messageBridge.message(sender, "addsign-success", region);
 		} else {
