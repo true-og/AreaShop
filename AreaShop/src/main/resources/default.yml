@@ -179,9 +179,6 @@ general:
     extended:
       before:
       after:
-    unrenting:
-      before:
-      after:
     unrented:
       before:
       after:
