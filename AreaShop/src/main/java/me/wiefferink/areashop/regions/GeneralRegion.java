@@ -1467,8 +1467,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	public boolean matchesLimitGroup(String group) {
 		List<String> worlds = plugin.getConfig().getStringList("limitGroups." + group + ".worlds");
 		List<String> groups = plugin.getConfig().getStringList("limitGroups." + group + ".groups");
-		if((worlds == null || worlds.isEmpty() || worlds.contains(getWorldName()))) {
-			if(groups == null || groups.isEmpty()) {
+		if(worlds.isEmpty() || worlds.contains(getWorldName())) {
+			if(groups.isEmpty()) {
 				return true;
 			} else {
 				boolean inGroups = false;
@@ -1501,7 +1501,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		String restore = profileSection.getString(type.getValue() + ".restore");
 		// Save the region if needed
 		boolean async = worldEditInterface.supportsAsyncOperations();
-		if(save != null && !save.isEmpty()) {
+		if(save != null && !save.isBlank()) {
 			save = Message.fromString(save).replacements(this).getSingle();
 			if (async) {
 				saveRegionBlocksAsync(save);
@@ -1510,7 +1510,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			}
 		}
 		// Restore the region if needed
-		if(restore != null && !restore.isEmpty()) {
+		if(restore != null && !restore.isBlank()) {
 			restore = Message.fromString(restore).replacements(this).getSingle();
 			if (async) {
 				restoreRegionBlocksAsync(restore);

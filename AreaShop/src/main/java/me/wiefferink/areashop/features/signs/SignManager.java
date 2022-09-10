@@ -53,7 +53,11 @@ public class SignManager extends Manager {
     }
 
     public void removeSign(RegionSign regionSign) {
-        removeSign(regionSign.getLocation());
+        Location location = regionSign.getLocation();
+        if (location.getWorld() == null) {
+            return;
+        }
+        cacheForWorld(location.getWorld()).removeSign(regionSign);
     }
 
     public Optional<RegionSign> removeSign(Location location) {

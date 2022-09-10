@@ -2,6 +2,8 @@ package me.wiefferink.areashop.features.signs;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import io.github.bakedlibs.dough.blocks.BlockPosition;
+import io.github.bakedlibs.dough.blocks.ChunkPosition;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -12,6 +14,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignsFeature extends RegionFeature {
 
@@ -34,17 +38,18 @@ public class SignsFeature extends RegionFeature {
 		setRegion(region);
 		// Setup current signs
 		ConfigurationSection signSection = region.getConfig().getConfigurationSection("general.signs");
-		if(signSection != null) {
-			for(String signKey : signSection.getKeys(false)) {
-				RegionSign sign = signFactory.createRegionSign(this, signKey);
-				Location location = sign.getLocation();
-				if(location == null) {
-					AreaShop.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
-					continue;
-				}
-				this.globalSignManager.cacheForWorld(location.getWorld()).addSign(sign);
-				this.internalSignManager.addSign(sign);
+		if (signSection == null) {
+			return;
+		}
+		for(String signKey : signSection.getKeys(false)) {
+			RegionSign sign = signFactory.createRegionSign(this, signKey);
+			Location location = sign.getLocation();
+			if(location == null) {
+				AreaShop.warn("Sign with key " + signKey + " of region " + region.getName() + " does not have a proper location");
+				continue;
 			}
+			this.globalSignManager.cacheForWorld(location.getWorld()).addSign(sign);
+			this.internalSignManager.addSign(sign);
 		}
 	}
 

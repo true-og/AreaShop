@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class SignCache {
         BlockPosition blockPosition = regionSign.getPosition();
         this.allSigns.put(blockPosition.getPosition(), regionSign);
         ChunkPosition chunkPosition = new ChunkPosition(blockPosition.getChunk());
-        Collection<RegionSign> signs = this.signsByChunk.computeIfAbsent(chunkPosition.getPosition(), x -> new ArrayList<>());
+        Collection<RegionSign> signs = this.signsByChunk.computeIfAbsent(chunkPosition.getPosition(), x -> new HashSet<>());
         signs.add(regionSign);
     }
 

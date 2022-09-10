@@ -36,6 +36,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -89,7 +90,6 @@ public class SignListener implements Listener {
         if(chunkSigns.isEmpty()) {
             return;
         }
-        chunkSigns.remove(null);
         Do.forAll(chunkSigns, RegionSign::update);
     }
 
