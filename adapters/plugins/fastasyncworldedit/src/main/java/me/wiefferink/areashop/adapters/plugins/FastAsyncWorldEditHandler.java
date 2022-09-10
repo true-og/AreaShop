@@ -3,6 +3,7 @@ package me.wiefferink.areashop.adapters.plugins;
 import com.fastasyncworldedit.core.FaweAPI;
 import com.fastasyncworldedit.core.extent.clipboard.MemoryOptimizedClipboard;
 import com.fastasyncworldedit.core.extent.processor.lighting.RelightMode;
+import com.fastasyncworldedit.core.function.mask.AirMask;
 import com.fastasyncworldedit.core.internal.exception.FaweException;
 import com.fastasyncworldedit.core.limit.FaweLimit;
 import com.google.common.annotations.Beta;
@@ -10,7 +11,9 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -19,18 +22,30 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
+import com.sk89q.worldedit.function.block.BlockReplace;
+import com.sk89q.worldedit.function.block.ExtentBlockCopy;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.mask.Mask2D;
+import com.sk89q.worldedit.function.mask.RegionMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.OperationQueue;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.function.pattern.Pattern;
+import com.sk89q.worldedit.function.visitor.RecursiveVisitor;
+import com.sk89q.worldedit.function.visitor.RegionVisitor;
+import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.io.Closer;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionType;
+import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -94,15 +109,15 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 	public CompletableFuture<Boolean> restoreRegionBlocksAsync(File rawFile, GeneralRegionInterface regionInterface) {
 		File file = null;
 		for (ClipboardFormat formatOption : BuiltInClipboardFormat.values()) {
-			if (new File(rawFile.getAbsolutePath() + "." + formatOption.getPrimaryFileExtension())
-					.exists()) {
-				file = new File(
-						rawFile.getAbsolutePath() + "." + formatOption.getPrimaryFileExtension());
+			final String primaryExt = formatOption.getPrimaryFileExtension();
+			final File formattedFile = new File(rawFile.getAbsolutePath() + "." + primaryExt);
+			if (formattedFile.exists()) {
+				file = formattedFile;
 				break;
 			}
 		}
 		if (file == null) {
-			pluginInterface.getLogger().info("Did not restore region " + regionInterface.getName()
+			pluginInterface.getLogger().info(() -> "Did not restore region " + regionInterface.getName()
 					+ ", schematic file does not exist: " + rawFile.getAbsolutePath());
 			return CompletableFuture.completedFuture(false);
 		}
@@ -114,9 +129,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		pluginInterface.debugI("Trying to restore region", regionInterface.getName(), " from file",
 				file.getAbsolutePath(), "with format", format.getName());
 
-		com.sk89q.worldedit.world.World world = null;
+		final com.sk89q.worldedit.world.World world;
 		if (regionInterface.getName() != null) {
 			world = BukkitAdapter.adapt(regionInterface.getWorld());
+		} else {
+			world = null;
 		}
 		if (world == null) {
 			pluginInterface.getLogger().info(
@@ -124,15 +141,6 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 							+ regionInterface.getWorldName());
 			return CompletableFuture.completedFuture(false);
 		}
-		final FaweLimit limit = FaweLimit.MAX.copy();
-		limit.MAX_CHANGES = pluginInterface.getConfig().getInt("maximumBlocks");
-		limit.MAX_ENTITIES = pluginInterface.getConfig().getInt("maximumEntities", (int) (limit.MAX_CHANGES / 1000));
-		EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit()
-				.newEditSessionBuilder()
-				.world(world)
-				.limit(limit)
-				.build();
-		editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 		ProtectedRegion region = regionInterface.getRegion();
 		// Get the origin and size of the region
 		BlockVector3 origin = BlockVector3
@@ -141,16 +149,23 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 						region.getMinimumPoint().getBlockZ());
 		final File finalFile = file;
 		final String regionName = regionInterface.getName();
-		final double regionWidth = regionInterface.getWidth(), regionHeight = regionInterface.getHeight(), regionDepth = regionInterface.getDepth();
-		final LocalSession session =
-				new LocalSession(pluginInterface.getWorldEdit().getLocalConfiguration());
+		final double regionWidth = regionInterface.getWidth();
+		final double regionHeight = regionInterface.getHeight();
+		final double regionDepth = regionInterface.getDepth();
+		final LocalSession session = new LocalSession(pluginInterface.getWorldEdit().getLocalConfiguration());
 		final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 		final RegionType regionType = region.getType();
 		final Mask mask = new RegionBoundMask(region);
+		final Region weRegion = WorldEditRegionConverter.convertToRegion(region);
+		final int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
 		FaweAPI.getTaskManager().async(() -> {
 			boolean result = true;
 			// Read the schematic and paste it into the world
-			try (Closer closer = Closer.create(); editSession) {
+			try (Closer closer = Closer.create(); EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit()
+					.newEditSessionBuilder()
+					.maxBlocks(maxBlocks)
+					.world(world)
+					.build()) {
 				final FileInputStream fis = closer.register(new FileInputStream(finalFile));
 				final ClipboardReader reader = format.getReader(fis);
 				final Clipboard clipboard = reader.read();
@@ -169,23 +184,18 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 				}
 				clipboard.setOrigin(clipboard.getMinimumPoint());
 				ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
-				session.setBlockChangeLimit((int) limit.MAX_CHANGES);
 				session.setClipboard(clipboardHolder);
-
-				// Build operation
-
 				BlockTransformExtent extent = new BlockTransformExtent(clipboard);
 				ForwardExtentCopy copy =
-						new ForwardExtentCopy(extent, clipboard.getRegion(), clipboard.getOrigin(),
-								editSession, origin);
-				copy.setCopyingEntities(false);
+						new ForwardExtentCopy(extent, clipboard.getRegion(), clipboard.getOrigin(), editSession, origin);
+				copy.setCopyingEntities(true);
 				copy.setTransform(clipboardHolder.getTransform());
 				// Mask to region (for polygon and other weird shaped regions)
 				// TODO make this more efficient (especially for polygon regions)
 				if (regionType != RegionType.CUBOID) {
-					copy.setSourceMask(mask);
+					copy.setSourceMask(weRegion == null ? new RegionBoundMask(region) : new RegionMask(weRegion));
 				}
-				Operations.completeLegacy(copy);
+				Operations.complete(copy);
 			} catch (MaxChangedBlocksException e) {
 				pluginInterface.getLogger().warning(
 						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
@@ -216,9 +226,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		file = new File(file.getAbsolutePath() + "." + format.getPrimaryFileExtension());
 		pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file",
 				file.getAbsolutePath(), "with format", format.getName());
-		com.sk89q.worldedit.world.World world = null;
+		final com.sk89q.worldedit.world.World world;
 		if (regionInterface.getWorld() != null) {
 			world = BukkitAdapter.adapt(regionInterface.getWorld());
+		} else {
+			world = null;
 		}
 		if (world == null) {
 			pluginInterface.getLogger().warning(
@@ -227,11 +239,6 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 			return CompletableFuture.completedFuture(false);
 		}
 		final int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
-		EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
-				.world(world)
-				.relightMode(RelightMode.OPTIMAL)
-				.maxBlocks(maxBlocks)
-				.build();
 		final ProtectedRegion region = regionInterface.getRegion();
 		final BlockVector3 min = region.getMinimumPoint();
 		final BlockVector3 max = region.getMaximumPoint();
@@ -240,27 +247,37 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 		final File finalFile = file;
 		FaweAPI.getTaskManager().async(() -> {
+			EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
+					.world(world)
+					.relightMode(RelightMode.OPTIMAL)
+					.maxBlocks(maxBlocks)
+					.build();
 			// Create a clipboard
-			CuboidRegion selection =
-					new CuboidRegion(finalWorld, min, max);
+			CuboidRegion selection = new CuboidRegion(finalWorld, min, max);
 			Clipboard clipboard = new MemoryOptimizedClipboard(selection);
 			clipboard.setOrigin(min);
 			ForwardExtentCopy copy = new ForwardExtentCopy(editSession, selection.clone(), clipboard, min);
-			copy.setCopyingEntities(false);
+			copy.setCopyingEntities(true);
 			try(editSession) {
-				Operations.completeLegacy(copy);
+				Operations.complete(copy);
 			} catch (MaxChangedBlocksException e) {
 				pluginInterface.getLogger().warning(
-						"Exceeded the block limit while saving schematic of " + regionName
+						() -> "Exceeded the block limit while saving schematic of " + regionName
 								+ ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: "
 								+ pluginInterface.getConfig().getInt("maximumBlocks"));
 				completableFuture.complete(false);
 				return;
 			} catch (FaweException e) {
 				pluginInterface.getLogger().warning(
-						"Exceeded the block limit while saving schematic of " + regionName
+						() -> "Exceeded the block limit while saving schematic of " + regionName
 								+ ", limit passed by AreaShop: "
 								+ pluginInterface.getConfig().getInt("maximumBlocks"));
+				completableFuture.complete(false);
+				return;
+			} catch (WorldEditException ex) {
+				pluginInterface.getLogger()
+						.warning(() -> "Crashed during save of " + regionName);
+				pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
 				completableFuture.complete(false);
 				return;
 			}
@@ -271,14 +288,14 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 				ClipboardWriter writer = closer.register(format.getWriter(bos));
 				writer.write(clipboard);
 			} catch (IOException e) {
-				pluginInterface.getLogger().warning(
+				pluginInterface.getLogger().warning(() ->
 						"An error occurred while saving schematic of " + regionName
 								+ ", enable debug to see the complete stacktrace");
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
 				completableFuture.complete(false);
 			} catch (Exception e) {
 				pluginInterface.getLogger()
-						.warning("Crashed during save of " + regionName);
+						.warning(() -> "Crashed during save of " + regionName);
 				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
 				completableFuture.complete(false);
 				return;
@@ -330,6 +347,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 				.build();
 		editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 		ProtectedRegion region = regionInterface.getRegion();
+		Region weRegion = WorldEditRegionConverter.convertToRegion(region);
 		// Get the origin and size of the region
 		BlockVector3 origin = BlockVector3
 				.at(region.getMinimumPoint().getBlockX(), region.getMinimumPoint().getBlockY(),
@@ -359,21 +377,19 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 					new LocalSession(pluginInterface.getWorldEdit().getLocalConfiguration());
 			session.setBlockChangeLimit(pluginInterface.getConfig().getInt("maximumBlocks"));
 			session.setClipboard(clipboardHolder);
-
 			// Build operation
-
 			BlockTransformExtent extent = new BlockTransformExtent(clipboard);
 			ForwardExtentCopy copy =
 					new ForwardExtentCopy(extent, clipboard.getRegion(), clipboard.getOrigin(),
 							editSession, origin);
 			copy.setTransform(clipboardHolder.getTransform());
-			copy.setCopyingEntities(false);
+			copy.setCopyingEntities(true);
 			// Mask to region (for polygon and other weird shaped regions)
 			// FIXME make this more efficient (especially for polygon regions)
 			if (region.getType() != RegionType.CUBOID) {
-				copy.setSourceMask(new RegionBoundMask(region));
+				copy.setSourceMask(weRegion == null ? new RegionBoundMask(region) : new RegionMask(weRegion));
 			}
-			Operations.completeLegacy(copy);
+			Operations.complete(copy);
 		} catch (MaxChangedBlocksException e) {
 			pluginInterface.getLogger().warning(
 					"exceeded the block limit while restoring schematic of " + regionInterface.getName()
@@ -436,6 +452,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 				new CuboidRegion(world, regionInterface.getRegion().getMinimumPoint(),
 						regionInterface.getRegion().getMaximumPoint()), clipboard,
 				regionInterface.getRegion().getMinimumPoint());
+		copy.setCopyingEntities(true);
 		try(editSession) {
 			Operations.completeLegacy(copy);
 		} catch (MaxChangedBlocksException e) {

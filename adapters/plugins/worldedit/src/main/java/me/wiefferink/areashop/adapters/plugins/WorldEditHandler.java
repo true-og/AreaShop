@@ -14,6 +14,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.mask.Mask2D;
+import com.sk89q.worldedit.function.mask.RegionMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -23,6 +24,7 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.io.Closer;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionType;
+import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -89,6 +91,7 @@ public class WorldEditHandler extends WorldEditInterface {
 				.maxBlocks(pluginInterface.getConfig().getInt("maximumBlocks"))
 				.build();
 		ProtectedRegion region = regionInterface.getRegion();
+		Region weRegion = WorldEditRegionConverter.convertToRegion(region);
 		// Get the origin and size of the region
 		BlockVector3 origin = BlockVector3.at(region.getMinimumPoint().getBlockX(), region.getMinimumPoint().getBlockY(), region.getMinimumPoint().getBlockZ());
 
@@ -120,17 +123,21 @@ public class WorldEditHandler extends WorldEditInterface {
 			// Mask to region (for polygon and other weird shaped regions)
 			// TODO make this more efficient (especially for polygon regions)
 			if(region.getType() != RegionType.CUBOID) {
-				copy.setSourceMask(new Mask() {
-					@Override
-					public boolean test(BlockVector3 vector) {
-						return region.contains(vector);
-					}
+				if (weRegion == null) {
+					copy.setSourceMask(new Mask() {
+						@Override
+						public boolean test(BlockVector3 vector) {
+							return region.contains(vector);
+						}
 
-					@Override
-					public Mask2D toMask2D() {
-						return null;
-					}
-				});
+						@Override
+						public Mask2D toMask2D() {
+							return null;
+						}
+					});
+				} else {
+					copy.setSourceMask(new RegionMask(weRegion));
+				}
 			}
 			Operations.completeLegacy(copy);
 		} catch(MaxChangedBlocksException e) {

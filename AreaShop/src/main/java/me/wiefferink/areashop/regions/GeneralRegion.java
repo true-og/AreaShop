@@ -785,11 +785,9 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		File saveFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
 		// Create parent directories
 		File parent = saveFile.getParentFile();
-		if(parent != null && !parent.exists()) {
-			if(!parent.mkdirs()) {
-				AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
-				return false;
-			}
+		if(parent != null && !parent.exists() && !parent.mkdirs()) {
+			AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
+			return false;
 		}
 		boolean result = worldEditInterface.saveRegionBlocks(saveFile, this);
 		if(result) {
@@ -821,10 +819,9 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
 			return CompletableFuture.completedFuture(false);
 		}
-		AreaShop.getInstance().getLogger().info("Saving region: " + fileName);
 		return worldEditInterface.saveRegionBlocksAsync(saveFile, this)
 				.thenApply(result -> {
-					if(result) {
+					if(Boolean.TRUE.equals(result)) {
 						AreaShop.debug("Saved schematic async for region " + getName());
 					}
 					return result;
@@ -868,7 +865,6 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		}
 		// The path to save the schematic
 		File restoreFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
-		AreaShop.getInstance().getLogger().info("Restoring region: " + fileName);
 		return worldEditInterface.restoreRegionBlocksAsync(restoreFile, this)
 				.thenApply(result -> {
 					if(Boolean.TRUE.equals(result)) {
