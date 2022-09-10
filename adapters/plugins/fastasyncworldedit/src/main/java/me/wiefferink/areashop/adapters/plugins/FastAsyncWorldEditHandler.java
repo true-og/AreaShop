@@ -3,17 +3,14 @@ package me.wiefferink.areashop.adapters.plugins;
 import com.fastasyncworldedit.core.FaweAPI;
 import com.fastasyncworldedit.core.extent.clipboard.MemoryOptimizedClipboard;
 import com.fastasyncworldedit.core.extent.processor.lighting.RelightMode;
-import com.fastasyncworldedit.core.function.mask.AirMask;
 import com.fastasyncworldedit.core.internal.exception.FaweException;
-import com.fastasyncworldedit.core.limit.FaweLimit;
-import com.google.common.annotations.Beta;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.MaskingExtent;
+import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -22,27 +19,18 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
-import com.sk89q.worldedit.function.block.BlockReplace;
-import com.sk89q.worldedit.function.block.ExtentBlockCopy;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.mask.Mask2D;
 import com.sk89q.worldedit.function.mask.RegionMask;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.OperationQueue;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.function.pattern.Pattern;
-import com.sk89q.worldedit.function.visitor.RecursiveVisitor;
-import com.sk89q.worldedit.function.visitor.RegionVisitor;
-import com.sk89q.worldedit.history.changeset.ChangeSet;
+import com.sk89q.worldedit.function.visitor.EntityVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.io.Closer;
 import com.sk89q.worldedit.world.World;
-import com.sk89q.worldedit.world.block.BaseBlock;
-import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionType;
 import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
@@ -51,7 +39,6 @@ import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
@@ -155,17 +142,39 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		final LocalSession session = new LocalSession(pluginInterface.getWorldEdit().getLocalConfiguration());
 		final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 		final RegionType regionType = region.getType();
-		final Mask mask = new RegionBoundMask(region);
 		final Region weRegion = WorldEditRegionConverter.convertToRegion(region);
 		final int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
-		FaweAPI.getTaskManager().async(() -> {
-			boolean result = true;
-			// Read the schematic and paste it into the world
-			try (Closer closer = Closer.create(); EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit()
+		// Attempt to remove the entities in the region due to a potential bug with FAWE
+		if (weRegion != null) {
+			EditSession workaroundSession = pluginInterface.getWorldEdit().getWorldEdit()
 					.newEditSessionBuilder()
 					.maxBlocks(maxBlocks)
 					.world(world)
-					.build()) {
+					.build();
+			try (workaroundSession) {
+				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), Entity::remove);
+				Operations.complete(visitor);
+				pluginInterface.getLogger().info("Wiping the region");
+			} catch (MaxChangedBlocksException e) {
+				pluginInterface.getLogger().warning(
+						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
+								+ ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: "
+								+ pluginInterface.getConfig().getInt("maximumBlocks"));
+			} catch (Exception e) {
+				pluginInterface.getLogger()
+						.warning("crashed during restore of " + regionInterface.getName());
+				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
+			}
+		}
+		FaweAPI.getTaskManager().async(() -> {
+			EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit()
+					.newEditSessionBuilder()
+					.maxBlocks(maxBlocks)
+					.world(world)
+					.build();
+			boolean result = true;
+			// Read the schematic and paste it into the world
+			try (Closer closer = Closer.create(); editSession) {
 				final FileInputStream fis = closer.register(new FileInputStream(finalFile));
 				final ClipboardReader reader = format.getReader(fis);
 				final Clipboard clipboard = reader.read();
@@ -348,11 +357,31 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 		editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 		ProtectedRegion region = regionInterface.getRegion();
 		Region weRegion = WorldEditRegionConverter.convertToRegion(region);
+		// Attempt to remove the entities in the region due to a potential bug with FAWE
+		if (weRegion != null) {
+			EditSession workaroundSession = pluginInterface.getWorldEdit().getWorldEdit()
+					.newEditSessionBuilder()
+					.maxBlocks(maxBlocks)
+					.world(world)
+					.build();
+			try (workaroundSession) {
+				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), Entity::remove);
+				Operations.complete(visitor);
+			} catch (MaxChangedBlocksException e) {
+				pluginInterface.getLogger().warning(
+						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
+								+ ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: "
+								+ pluginInterface.getConfig().getInt("maximumBlocks"));
+			} catch (Exception e) {
+				pluginInterface.getLogger()
+						.warning("crashed during restore of " + regionInterface.getName());
+				pluginInterface.debugI(ExceptionUtils.getStackTrace(e));
+			}
+		}
 		// Get the origin and size of the region
 		BlockVector3 origin = BlockVector3
 				.at(region.getMinimumPoint().getBlockX(), region.getMinimumPoint().getBlockY(),
 						region.getMinimumPoint().getBlockZ());
-
 
 		// Read the schematic and paste it into the world
 		try(Closer closer = Closer.create(); editSession) {
