@@ -479,7 +479,7 @@ public class BuyRegion extends GeneralRegion {
 	 */
 	@SuppressWarnings("deprecation")
 	public boolean sell(boolean giveMoneyBack, CommandSender executor) {
-		boolean own = executor instanceof Player && this.isBuyer((Player)executor);
+		boolean own = executor instanceof Player player && this.isBuyer(player);
 		if(executor != null) {
 			if(!executor.hasPermission("areashop.sell") && !own) {
 				message(executor, "sell-noPermissionOther");
@@ -534,7 +534,7 @@ public class BuyRegion extends GeneralRegion {
 
 			// Give back the money
 			OfflinePlayer player = Bukkit.getOfflinePlayer(getBuyer());
-			if(player != null && !noPayBack) {
+			if(player.hasPlayedBefore() && !noPayBack) {
 				EconomyResponse response = null;
 				boolean error = false;
 				try {

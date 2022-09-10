@@ -683,32 +683,20 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 				if(tp == null) {
 					return null;
 				}
-				switch(variable) {
-					case AreaShop.tagTeleportBlockX:
-						return tp.getBlockX();
-					case AreaShop.tagTeleportBlockY:
-						return tp.getBlockY();
-					case AreaShop.tagTeleportBlockZ:
-						return tp.getBlockZ();
-					case AreaShop.tagTeleportX:
-						return tp.getX();
-					case AreaShop.tagTeleportY:
-						return tp.getY();
-					case AreaShop.tagTeleportZ:
-						return tp.getZ();
-					case AreaShop.tagTeleportPitch:
-						return tp.getPitch();
-					case AreaShop.tagTeleportYaw:
-						return tp.getYaw();
-					case AreaShop.tagTeleportPitchRound:
-						return Math.round(tp.getPitch());
-					case AreaShop.tagTeleportYawRound:
-						return Math.round(tp.getYaw());
-					case AreaShop.tagTeleportWorld:
-						return tp.getWorld().getName();
-					default:
-						return null;
-				}
+				return switch (variable) {
+					case AreaShop.tagTeleportBlockX -> tp.getBlockX();
+					case AreaShop.tagTeleportBlockY -> tp.getBlockY();
+					case AreaShop.tagTeleportBlockZ -> tp.getBlockZ();
+					case AreaShop.tagTeleportX -> tp.getX();
+					case AreaShop.tagTeleportY -> tp.getY();
+					case AreaShop.tagTeleportZ -> tp.getZ();
+					case AreaShop.tagTeleportPitch -> tp.getPitch();
+					case AreaShop.tagTeleportYaw -> tp.getYaw();
+					case AreaShop.tagTeleportPitchRound -> Math.round(tp.getPitch());
+					case AreaShop.tagTeleportYawRound -> Math.round(tp.getYaw());
+					case AreaShop.tagTeleportWorld -> tp.getWorld().getName();
+					default -> null;
+				};
 		}
 	}
 
@@ -829,12 +817,11 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		File saveFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
 		// Create parent directories
 		File parent = saveFile.getParentFile();
-		if(parent != null && !parent.exists()) {
-			if(!parent.mkdirs()) {
-				AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
-				return CompletableFuture.completedFuture(false);
-			}
+		if(parent != null && !parent.exists() && !parent.mkdirs()) {
+			AreaShop.warn("Did not save region " + getName() + ", schematic directory could not be created: " + saveFile.getAbsolutePath());
+			return CompletableFuture.completedFuture(false);
 		}
+		AreaShop.getInstance().getLogger().info("Saving region: " + fileName);
 		return worldEditInterface.saveRegionBlocksAsync(saveFile, this)
 				.thenApply(result -> {
 					if(result) {
@@ -881,9 +868,10 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		}
 		// The path to save the schematic
 		File restoreFile = new File(plugin.getFileManager().getSchematicFolder() + File.separator + fileName);
+		AreaShop.getInstance().getLogger().info("Restoring region: " + fileName);
 		return worldEditInterface.restoreRegionBlocksAsync(restoreFile, this)
 				.thenApply(result -> {
-					if(result) {
+					if(Boolean.TRUE.equals(result)) {
 						AreaShop.debug("Restored schematic async for region " + getName());
 						// Sync back to main
 						Do.syncLater(10, getSignsFeature().signManager()::update);

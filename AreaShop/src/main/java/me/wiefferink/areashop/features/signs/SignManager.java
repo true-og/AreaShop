@@ -1,6 +1,7 @@
 package me.wiefferink.areashop.features.signs;
 
 import io.github.bakedlibs.dough.blocks.BlockPosition;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.managers.Manager;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -56,6 +57,9 @@ public class SignManager extends Manager {
     }
 
     public Optional<RegionSign> removeSign(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return Optional.empty();
+        }
         return getCacheForWorld(location.getWorld()).flatMap(cache -> cache.removeSign(location));
     }
 

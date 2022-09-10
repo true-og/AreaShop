@@ -55,7 +55,7 @@ public class DelsignCommand extends CommandAreaShop {
 		BlockIterator blockIterator = new BlockIterator(player, 100);
 		while(blockIterator.hasNext() && block == null) {
 			Block next = blockIterator.next();
-			if(next.getType() != Material.AIR) {
+			if(!next.getType().isAir()) {
 				block = next;
 			}
 		}
@@ -70,8 +70,9 @@ public class DelsignCommand extends CommandAreaShop {
 		}
 		RegionSign regionSign = optionalSign.get();
 		messageBridge.message(sender, "delsign-success", regionSign.getRegion());
-		signManager.removeSign(regionSign);
 		regionSign.remove();
+		// Sometimes the RegionSign data is corrupted. Forcefully set the block to air
+		block.setType(Material.AIR);
 	}
 
 	@Override

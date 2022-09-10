@@ -44,8 +44,7 @@ public class SellCommand extends CommandAreaShop {
 		if(person.hasPermission("areashop.sell")) {
 			return true;
 		}
-		if(person instanceof Player) {
-			Player player = (Player)person;
+		if(person instanceof Player player) {
 			return region.isOwner(player) && person.hasPermission("areashop.sellown");
 		}
 		return false;
@@ -59,9 +58,9 @@ public class SellCommand extends CommandAreaShop {
 		}
 		BuyRegion buy;
 		if(args.length <= 1) {
-			if(sender instanceof Player) {
+			if(sender instanceof Player player) {
 				// get the region by location
-				List<BuyRegion> regions = Utils.getImportantBuyRegions(((Player)sender).getLocation());
+				List<BuyRegion> regions = Utils.getImportantBuyRegions((player).getLocation());
 				if(regions.isEmpty()) {
 					messageBridge.message(sender, "cmd-noRegionsAtLocation");
 					return;

@@ -93,7 +93,7 @@ public class WorldEditHandler extends WorldEditInterface {
 		BlockVector3 origin = BlockVector3.at(region.getMinimumPoint().getBlockX(), region.getMinimumPoint().getBlockY(), region.getMinimumPoint().getBlockZ());
 
 		// Read the schematic and paste it into the world
-		try(Closer closer = Closer.create()) {
+		try(Closer closer = Closer.create(); editSession) {
 			FileInputStream fis = closer.register(new FileInputStream(file));
 			BufferedInputStream bis = closer.register(new BufferedInputStream(fis));
 			ClipboardReader reader = format.getReader(bis);
@@ -183,7 +183,8 @@ public class WorldEditHandler extends WorldEditInterface {
 		BlockArrayClipboard clipboard = new BlockArrayClipboard(selection);
 		clipboard.setOrigin(regionInterface.getRegion().getMinimumPoint());
 		ForwardExtentCopy copy = new ForwardExtentCopy(editSession, new CuboidRegion(world, regionInterface.getRegion().getMinimumPoint(), regionInterface.getRegion().getMaximumPoint()), clipboard, regionInterface.getRegion().getMinimumPoint());
-		try {
+		copy.setCopyingEntities(false);
+		try(editSession) {
 			Operations.completeLegacy(copy);
 		} catch(MaxChangedBlocksException e) {
 			pluginInterface.getLogger().warning("Exceeded the block limit while saving schematic of " + regionInterface.getName() + ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: " + pluginInterface.getConfig().getInt("maximumBlocks"));

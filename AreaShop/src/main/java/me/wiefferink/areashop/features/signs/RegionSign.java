@@ -95,8 +95,11 @@ public class RegionSign {
 	 * Remove this sign from the region.
 	 */
 	public void remove() {
-		getLocation().getBlock().setType(Material.AIR);
-		this.signsFeature.signManager().removeSign(this);
+		Location location = getLocation();
+		if (location != null && location.getWorld() != null) {
+			location.getBlock().setType(Material.AIR);
+			this.signsFeature.signManager().removeSign(location);
+		}
 		getRegion().setSetting("general.signs." + key, null);
 		// Remove the sign from the region's sign manager
 	}
