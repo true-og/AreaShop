@@ -11,6 +11,7 @@ import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.entity.Entity;
+import com.sk89q.worldedit.entity.metadata.EntityProperties;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -19,6 +20,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
+import com.sk89q.worldedit.function.EntityFunction;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.function.mask.Mask2D;
 import com.sk89q.worldedit.function.mask.RegionMask;
@@ -31,6 +33,8 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.io.Closer;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.entity.EntityType;
+import com.sk89q.worldedit.world.entity.EntityTypes;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionType;
 import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
@@ -39,6 +43,9 @@ import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.bukkit.Tag;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
@@ -152,9 +159,21 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 					.world(world)
 					.build();
 			try (workaroundSession) {
-				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), Entity::remove);
+				EntityFunction function = entity -> {
+					if (entity.getType() == EntityTypes.LEASH_KNOT) {
+						return entity.remove();
+					}
+					EntityProperties properties = entity.getFacet(EntityProperties.class);
+					if (properties == null) {
+						return false;
+					}
+					if (properties.isItemFrame() || properties.isPainting() || properties.isArmorStand()) {
+						return entity.remove();
+					}
+					return false;
+				};
+				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), function);
 				Operations.complete(visitor);
-				pluginInterface.getLogger().info("Wiping the region");
 			} catch (MaxChangedBlocksException e) {
 				pluginInterface.getLogger().warning(
 						"exceeded the block limit while restoring schematic of " + regionInterface.getName()
@@ -365,7 +384,20 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 					.world(world)
 					.build();
 			try (workaroundSession) {
-				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), Entity::remove);
+				EntityFunction function = entity -> {
+					if (entity.getType() == EntityTypes.LEASH_KNOT) {
+						return entity.remove();
+					}
+					EntityProperties properties = entity.getFacet(EntityProperties.class);
+					if (properties == null) {
+						return false;
+					}
+					if (properties.isItemFrame() || properties.isPainting() || properties.isArmorStand()) {
+						return entity.remove();
+					}
+					return false;
+				};
+				EntityVisitor visitor = new EntityVisitor(workaroundSession.getEntities(weRegion).iterator(), function);
 				Operations.complete(visitor);
 			} catch (MaxChangedBlocksException e) {
 				pluginInterface.getLogger().warning(
