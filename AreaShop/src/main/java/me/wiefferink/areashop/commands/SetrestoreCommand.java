@@ -1,9 +1,11 @@
 package me.wiefferink.areashop.commands;
 
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
 import javax.inject.Inject;
@@ -79,7 +81,10 @@ public class SetrestoreCommand extends CommandAreaShop {
 			result.add("false");
 			result.add("general");
 		} else if(toComplete == 4) {
-			result.addAll(plugin.getConfig().getConfigurationSection("schematicProfiles").getKeys(false));
+			ConfigurationSection schemProfiles = fileManager.getConfig().getConfigurationSection("schematicProfiles");
+			if (schemProfiles != null) {
+				result.addAll(schemProfiles.getKeys(false));
+			}
 		}
 		return result;
 	}
