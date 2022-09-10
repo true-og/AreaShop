@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -354,10 +355,10 @@ public class FileManager extends Manager implements IFileManager {
 		}
 		final String key = region.getName().toLowerCase(Locale.ENGLISH);
 		regions.put(key, region);
-		if (region instanceof BuyRegion) {
-			buys.put(key, (BuyRegion) region);
-		} else if (region instanceof RentRegion) {
-			rents.put(key, (RentRegion) region);
+		if (region instanceof BuyRegion buyRegion) {
+			buys.put(key, buyRegion);
+		} else if (region instanceof RentRegion rentRegion) {
+			rents.put(key, rentRegion);
 		}
 		Bukkit.getPluginManager().callEvent(new AddedRegionEvent(region));
 		return event;
@@ -837,8 +838,8 @@ public class FileManager extends Manager implements IFileManager {
 		}
 		// Load default.yml from the plugin folder, and as backup the default one
 		try(
-				InputStreamReader custom = new InputStreamReader(new FileInputStream(defaultFile), Charsets.UTF_8);
-				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.defaultFile), Charsets.UTF_8)
+				InputStreamReader custom = new InputStreamReader(new FileInputStream(defaultFile), StandardCharsets.UTF_8);
+				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.defaultFile), StandardCharsets.UTF_8)
 		) {
 			defaultConfig = YamlConfiguration.loadConfiguration(custom);
 			if(defaultConfig.getKeys(false).isEmpty()) {
@@ -878,9 +879,9 @@ public class FileManager extends Manager implements IFileManager {
 		}
 		// Load config.yml from the plugin folder
 		try(
-                InputStreamReader custom = new InputStreamReader(new FileInputStream(configFile), Charsets.UTF_8);
-                InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.configFile), Charsets.UTF_8);
-                InputStreamReader hidden = new InputStreamReader(plugin.getResource(AreaShop.configFileHidden), Charsets.UTF_8)
+                InputStreamReader custom = new InputStreamReader(new FileInputStream(configFile), StandardCharsets.UTF_8);
+                InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.configFile), StandardCharsets.UTF_8);
+                InputStreamReader hidden = new InputStreamReader(plugin.getResource(AreaShop.configFileHidden), StandardCharsets.UTF_8)
 		) {
 			config = YamlConfiguration.loadConfiguration(custom);
 			if(config.getKeys(false).isEmpty()) {
@@ -917,7 +918,7 @@ public class FileManager extends Manager implements IFileManager {
 		File groupFile = new File(groupsPath);
 		if(groupFile.exists() && groupFile.isFile()) {
 			try(
-					InputStreamReader reader = new InputStreamReader(new FileInputStream(groupFile), Charsets.UTF_8)
+					InputStreamReader reader = new InputStreamReader(new FileInputStream(groupFile), StandardCharsets.UTF_8)
 			) {
 				groupsConfig = YamlConfiguration.loadConfiguration(reader);
 			} catch(IOException e) {
@@ -971,7 +972,7 @@ public class FileManager extends Manager implements IFileManager {
 				// Load the region file from disk in UTF8 mode
 				YamlConfiguration regionConfig;
 				try(
-						InputStreamReader reader = new InputStreamReader(new FileInputStream(regionFile), Charsets.UTF_8)
+						InputStreamReader reader = new InputStreamReader(new FileInputStream(regionFile), StandardCharsets.UTF_8)
 				) {
 					regionConfig = YamlConfiguration.loadConfiguration(reader);
 					if(regionConfig.getKeys(false).isEmpty()) {

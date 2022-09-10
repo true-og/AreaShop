@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
+import java.awt.geom.Area;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -958,7 +959,6 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		if(found) {
 			return result;
 		}
-
 		if(this.getFileManager().getRegionSettings().isString(path)) {
 			return this.getFileManager().getRegionSettings().getString(path).equalsIgnoreCase("true");
 		}

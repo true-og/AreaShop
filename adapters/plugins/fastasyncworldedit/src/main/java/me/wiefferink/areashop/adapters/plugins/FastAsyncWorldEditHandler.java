@@ -16,11 +16,13 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
 import com.sk89q.worldedit.function.EntityFunction;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.function.visitor.EntityVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.entity.EntityTypes;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -53,14 +55,13 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
 
     @Override
     public CompletableFuture<Boolean> restoreRegionBlocksAsync(File rawFile, GeneralRegionInterface regionInterface) {
-        ClipboardFormat format = null;
         File targetFile = null;
         for (ClipboardFormat formatOption : ClipboardFormats.getAll()) {
             for (String extension : formatOption.getFileExtensions()) {
                 File fileOption = new File(rawFile.getAbsolutePath() + "." + extension);
                 if (fileOption.exists()) {
                     targetFile = fileOption;
-                    format = formatOption;
+                    break;
                 }
             }
         }
@@ -68,8 +69,12 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             pluginInterface.getLogger().info("Not restoring region. Schematic not found: " + rawFile);
             return CompletableFuture.completedFuture(false);
         }
+        ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
+        if (format == null) {
+            pluginInterface.getLogger().warning("Could not find a clipboard format for file: " + targetFile.getAbsolutePath());
+            return CompletableFuture.completedFuture(false);
+        }
         File finalFile = targetFile;
-        ClipboardFormat finalFormat = format;
         Region convertedRegion = WorldEditRegionConverter.convertToRegion(regionInterface.getRegion());
         Region region;
         if (convertedRegion == null) {
@@ -80,9 +85,10 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
         }
         final World world = BukkitAdapter.adapt(regionInterface.getWorld());
         if (world == null) {
-            pluginInterface.getLogger().warning("Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+            pluginInterface.getLogger().warning("Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
             return CompletableFuture.completedFuture(false);
         }
+        pluginInterface.debugI(String.format("Attempting to restore using format: %s", format.getName()));
         BlockVector3 dimensions = regionInterface.computeDimensions();
         int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
         if (failedClearEntities(maxBlocks, world, region, regionInterface)) {
@@ -91,8 +97,10 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         FaweAPI.getTaskManager().async(() -> {
             try (InputStream is = new FileInputStream(finalFile);
-                 ClipboardReader reader = finalFormat.getReader(is);
-                 Clipboard clipboard = reader.read()) {
+                 ClipboardReader reader = format.getReader(is);
+                 Clipboard clipboard = reader.read()
+            ) {
+                clipboard.setOrigin(clipboard.getMinimumPoint());
                 if (!clipboard.getDimensions().equals(dimensions)) {
                     pluginInterface.getLogger().warning(() -> "Size of the region " + regionInterface.getName() + " is not the same as the schematic to restore!");
                     pluginInterface.debugI("schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
@@ -101,10 +109,13 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 }
                 final EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
                         .world(world)
+                        .maxBlocks(maxBlocks)
                         .build();
-                try (editSession) {
-                    ForwardExtentCopy copy = new ForwardExtentCopy(clipboard, region, editSession, region.getMinimumPoint());
-                    Operations.complete(copy);
+                try (editSession; clipboard) {
+                    final Operation operation = new ClipboardHolder(clipboard).createPaste(editSession)
+                            .copyEntities(true)
+                            .build();
+                    Operations.complete(operation);
                 }
                 future.complete(true);
             } catch (IOException ex) {
@@ -149,7 +160,9 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                     .maxBlocks(maxBlocks)
                     .build();
             try (Clipboard clipboard = new MemoryOptimizedClipboard(region); editSession) {
-                final ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, clipboard.getMinimumPoint());
+                clipboard.setOrigin(region.getMinimumPoint());
+                final ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
+                copy.setCopyingEntities(true);
                 Operations.complete(copy);
                 try (OutputStream os = new FileOutputStream(targetFile);
                      ClipboardWriter writer = format.getWriter(os)) {
@@ -163,7 +176,6 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
                 pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
                 future.complete(false);
-                ;
             } catch (Exception ex) {
                 pluginInterface.getLogger().warning("crashed during save of " + regionInterface.getName());
                 pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
@@ -183,6 +195,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 if (fileOption.exists()) {
                     targetFile = fileOption;
                     format = formatOption;
+                    break;
                 }
             }
         }
@@ -218,6 +231,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 pluginInterface.debugI("schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
                 return false;
             }
+            clipboard.setOrigin(clipboard.getMinimumPoint());
             final EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
                     .world(world)
                     .maxBlocks(maxBlocks)
@@ -256,7 +270,9 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 .maxBlocks(maxBlocks)
                 .build();
         try (Clipboard clipboard = new MemoryOptimizedClipboard(region); editSession) {
-            final ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, clipboard.getMinimumPoint());
+            clipboard.setOrigin(region.getMinimumPoint());
+            final ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
+            copy.setCopyingEntities(true);
             Operations.complete(copy);
             try (OutputStream os = new FileOutputStream(targetFile);
                  ClipboardWriter writer = format.getWriter(os)) {
