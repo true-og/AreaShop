@@ -619,7 +619,7 @@ greeting-resale: "%region% can be bought for %resellprice% from %player%."
 
 update-playerNotify:
   - "[darkgreen]Update from AreaShop V%0% to AreaShop V%1% available, get the latest version at "
-  - "[bold]Spigot[/bold]"
-  - "    hover: %lang:action|Go to the Spigot AreaShop page|%"
-  - "    link: https://www.spigotmc.org/resources/areashop.2991/"
+  - "[bold]Github[/bold]"
+  - "    hover: %lang:action|Go to the AreaShop Github Releases|%"
+  - "    link: https://github.com/md5sha256/releases"
   - " (and leave a review)."

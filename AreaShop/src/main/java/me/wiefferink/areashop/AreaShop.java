@@ -163,7 +163,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		AreaShop.instance = this;
 		Do.init(this);
 		managers = new HashSet<>();
-		boolean error = false;
 		messageBridge = new SimpleMessageBridge();
 		signErrorLogger = new SignErrorLogger(new File(getDataFolder(), signLogFile));
 
@@ -248,7 +247,10 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		fileManager = injector.getInstance(IFileManager.class);
 		managers.add((FileManager) fileManager);
 		boolean loadFilesResult = fileManager.loadFiles(false);
-		error = error || !loadFilesResult;
+		if (!loadFilesResult) {
+			shutdownOnError();
+			return;
+		}
 
 		setupLanguageManager();
 
