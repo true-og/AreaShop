@@ -30,6 +30,9 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -89,8 +92,9 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             return CompletableFuture.completedFuture(false);
         }
         pluginInterface.debugI(() -> String.format("Attempting to restore using format: %s", format.getName()));
-        // FAWE Bug in which schematic pasting doesn't clear tile entities properly
+        // Bug in which schematic pasting doesn't clear tile entities properly
         // We manually remove tile entities in the destination before we paste the schematic
+        pluginInterface.debugI(() -> "Clearing entities for region: " + regionInterface.getName());
         if (failedClearEntities(world, region, regionInterface)) {
             pluginInterface.getLogger().warning(() -> "Failed to clear tile entities for region:  " + regionInterface.getName() + ". Will attempt to past anyway");
         }
@@ -221,6 +225,14 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             return false;
         }
         pluginInterface.debugI(String.format("Attempting to restore using format: %s", format.getName()));
+        // Bug in which schematic pasting doesn't clear tile entities properly
+        // We manually remove tile entities in the destination before we paste the schematic
+        pluginInterface.debugI(() -> "Clearing entities for region: " + regionInterface.getName());
+        ProtectedRegion wgRegion = regionInterface.getRegion();
+        Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
+        if (failedClearEntities(world, region, regionInterface)) {
+            pluginInterface.getLogger().warning(() -> "Failed to clear tile entities for region:  " + regionInterface.getName() + ". Will attempt to past anyway");
+        }
         BlockVector3 dimensions = regionInterface.computeDimensions();
         try (InputStream is = new FileInputStream(finalFile);
              ClipboardReader reader = format.getReader(is)) {
@@ -237,7 +249,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             Operations.complete(operation);
             return true;
         } catch (IOException | WorldEditException ex) {
-            pluginInterface.getLogger().warning(() ->"An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+            pluginInterface.getLogger().warning(() -> "An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
             pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
         } catch (Exception ex) {
             pluginInterface.getLogger().warning(() -> "crashed during restore of " + regionInterface.getName());
@@ -305,10 +317,10 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 .build()) {
             EntityFunction function = entity -> {
                 EntityType entityType = entity.getType();
-                if (entityType.equals(EntityTypes.ITEM_FRAME)
+                if (entityType != null && (entityType.equals(EntityTypes.ITEM_FRAME)
                         || entityType.equals(EntityTypes.PAINTING)
-                        || entityType.equals(EntityTypes.LEASH_KNOT)) {
-                    return entity.remove();
+                        || entityType.equals(EntityTypes.LEASH_KNOT)) && !entity.remove()) {
+                    pluginInterface.debugI("Could not remove entity: " + entityType.getName());
                 }
                 return false;
             };

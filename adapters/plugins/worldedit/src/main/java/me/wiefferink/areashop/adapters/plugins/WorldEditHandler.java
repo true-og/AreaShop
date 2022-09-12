@@ -1,8 +1,10 @@
 package me.wiefferink.areashop.adapters.plugins;
 
+import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -10,14 +12,18 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.function.EntityFunction;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.function.visitor.EntityVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.entity.EntityType;
+import com.sk89q.worldedit.world.entity.EntityTypes;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
@@ -32,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class WorldEditHandler extends WorldEditInterface {
 
@@ -88,6 +95,14 @@ public class WorldEditHandler extends WorldEditInterface {
 			return false;
 		}
 		pluginInterface.debugI(() -> String.format("Attempting to restore using format: %s", format.getName()));
+		// Bug in which schematic pasting doesn't clear tile entities properly
+		// We manually remove tile entities in the destination before we paste the schematic
+		pluginInterface.debugI(() -> "Clearing entities for region: " + regionInterface.getName());
+		ProtectedRegion wgRegion = regionInterface.getRegion();
+		Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
+		if (failedClearEntities(world, region, regionInterface)) {
+			pluginInterface.getLogger().warning(() -> "Failed to clear tile entities for region:  " + regionInterface.getName() + ". Will attempt to past anyway");
+		}
 		BlockVector3 dimensions = regionInterface.computeDimensions();
 		try (InputStream is = new FileInputStream(finalFile);
 			 ClipboardReader reader = format.getReader(is)) {
@@ -152,6 +167,34 @@ public class WorldEditHandler extends WorldEditInterface {
 			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		}
 		return false;
+	}
+
+	private boolean failedClearEntities(World world, Region region, GeneralRegionInterface regionInterface) {
+		try (EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
+				.world(world)
+				.build()) {
+			EntityFunction function = entity -> {
+				BaseEntity state = entity.getState();
+				if (state == null) {
+					return false;
+				}
+				EntityType entityType = state.getType();
+				if ((entityType.equals(EntityTypes.ITEM_FRAME)
+						|| entityType.equals(EntityTypes.PAINTING)
+						|| entityType.equals(EntityTypes.LEASH_KNOT))
+						&& !entity.remove()) {
+					pluginInterface.debugI("Could not remove entity: " + entityType.getName());
+				}
+				return false;
+			};
+			EntityVisitor visitor = new EntityVisitor(editSession.getEntities(region).iterator(), function);
+			Operations.complete(visitor);
+			return false;
+		} catch (WorldEditException ex) {
+			pluginInterface.getLogger().warning("crashed during save of " + regionInterface.getName());
+			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			return true;
+		}
 	}
 }
 
