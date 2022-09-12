@@ -672,10 +672,10 @@ public class RentRegion extends GeneralRegion {
 		}
 
 		// Broadcast and check event
-		UnrentingRegionEvent event = new UnrentingRegionEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
-		if(event.isCancelled()) {
-			message(executor, "general-cancelled", event.getReason());
+		UnrentingRegionEvent unrentingRegionEvent = new UnrentingRegionEvent(this);
+		Bukkit.getPluginManager().callEvent(unrentingRegionEvent);
+		if(unrentingRegionEvent.isCancelled()) {
+			message(executor, "general-cancelled", unrentingRegionEvent.getReason());
 			return false;
 		}
 
@@ -729,13 +729,17 @@ public class RentRegion extends GeneralRegion {
 		// Remove friends, the owner and renteduntil values
 		getFriendsFeature().clearFriends();
 		UUID oldRenter = getRenter();
-		setRenter(null);
 		setRentedUntil(null);
 		setTimesExtended(-1);
 		removeLastActiveTime();
 
 		// Notify about updates
-		this.notifyAndUpdate(new UnrentedRegionEvent(this, oldRenter, Math.max(0, moneyBack)));
+		Bukkit.getPluginManager().callEvent(new UnrentedRegionEvent(this, oldRenter, Math.max(0, moneyBack)));
+		// Placed here so when event is passed, the player renting can still be accessed
+		setRenter(null);
+		// Update world (has to be after setting renter to null)
+		this.update();
+
 		return true;
 	}
 
