@@ -1,8 +1,7 @@
 package me.wiefferink.areashop.adapters.plugins;
 
-import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -34,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.CompletableFuture;
 
 public class WorldEditHandler extends WorldEditInterface {
 
@@ -78,45 +76,38 @@ public class WorldEditHandler extends WorldEditInterface {
 			return false;
 		}
 		File finalFile = targetFile;
-		ClipboardFormat finalFormat = format;
-		Region region = WorldEditRegionConverter.convertToRegion(regionInterface.getRegion());
-		if (region == null) {
-			ProtectedRegion wgRegion = regionInterface.getRegion();
-			region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
-		}
+		BlockVector3 min = regionInterface.getRegion().getMinimumPoint();
 		final World world = BukkitAdapter.adapt(regionInterface.getWorld());
 		if (world == null) {
 			pluginInterface.getLogger().warning("Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
 			return false;
+
+		}
+		long volume = regionInterface.getRegion().volume();
+		int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
+		if (volume > maxBlocks) {
+			pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
+			return false;
 		}
 		pluginInterface.debugI(String.format("Attempting to restore using format: %s", format.getName()));
 		BlockVector3 dimensions = regionInterface.computeDimensions();
-		int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
 		try (InputStream is = new FileInputStream(finalFile);
-			 ClipboardReader reader = finalFormat.getReader(is)) {
+			 ClipboardReader reader = format.getReader(is)) {
 			Clipboard clipboard = reader.read();
 			if (!clipboard.getDimensions().equals(dimensions)) {
 				pluginInterface.getLogger().warning(() -> "Size of the region " + regionInterface.getName() + " is not the same as the schematic to restore!");
 				pluginInterface.debugI("schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
 				return false;
 			}
-			clipboard.setOrigin(clipboard.getMinimumPoint());
-			final EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
-					.world(world)
-					.maxBlocks(maxBlocks)
+			final Operation operation = new ClipboardHolder(clipboard).createPaste(world)
+					.to(min)
+					.copyEntities(true)
 					.build();
-			try (editSession) {
-				final Operation operation = new ClipboardHolder(clipboard).createPaste(editSession)
-						.copyEntities(true)
-						.build();
-				Operations.complete(operation);
-			}
+			Operations.complete(operation);
 			return true;
-		} catch (IOException ex) {
+		} catch (IOException | WorldEditException ex) {
 			pluginInterface.getLogger().warning("An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
 			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
-		} catch (MaxChangedBlocksException ex) {
-			pluginInterface.getLogger().warning(() -> "exceeded the block limit while restoring schematic of " + regionInterface.getName() + ", limit in exception: " + ex.getBlockLimit() + ", limit passed by AreaShop: " + pluginInterface.getConfig().getInt("maximumBlocks"));
 		} catch (Exception ex) {
 			pluginInterface.getLogger().warning(() -> "crashed during restore of " + regionInterface.getName());
 			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
@@ -128,37 +119,33 @@ public class WorldEditHandler extends WorldEditInterface {
 	public boolean saveRegionBlocks(File file, GeneralRegionInterface regionInterface) {
 		final ClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
 		final File targetFile = new File(file.getAbsolutePath() + "." + format.getPrimaryFileExtension());
-		Region region = WorldEditRegionConverter.convertToRegion(regionInterface.getRegion());
-		if (region == null) {
-			ProtectedRegion wgRegion = regionInterface.getRegion();
-			region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
-		}
+		ProtectedRegion wgRegion = regionInterface.getRegion();
+		Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
 		final World world = BukkitAdapter.adapt(regionInterface.getWorld());
 		if (world == null) {
 			pluginInterface.getLogger().warning("Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
 			return false;
 		}
 		int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
+		long volume = region.getVolume();
+		if (volume > maxBlocks) {
+			pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
+			return false;
+		}
 		pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file", file.getAbsolutePath(), "with format", format.getName());
-		EditSession editSession = pluginInterface.getWorldEdit().getWorldEdit().newEditSessionBuilder()
-				.world(world)
-				.maxBlocks(maxBlocks)
-				.build();
 		Clipboard clipboard = new BlockArrayClipboard(region);
-		clipboard.setOrigin(region.getMinimumPoint());
-		try (editSession) {
-			clipboard.setOrigin(region.getMinimumPoint());
-			final ForwardExtentCopy copy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
-			copy.setCopyingEntities(true);
+		final ForwardExtentCopy copy = new ForwardExtentCopy(world, region, clipboard, region.getMinimumPoint());
+		copy.setCopyingEntities(true);
+		try {
 			Operations.complete(copy);
-			try (OutputStream os = new FileOutputStream(targetFile);
-				 ClipboardWriter writer = format.getWriter(os)) {
-				writer.write(clipboard);
-			}
+		} catch (WorldEditException ex) {
+			pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+		}
+		try (OutputStream os = new FileOutputStream(targetFile);
+			 ClipboardWriter writer = format.getWriter(os)) {
+			writer.write(clipboard);
 			return true;
-		} catch (MaxChangedBlocksException e) {
-			pluginInterface.getLogger().warning("Exceeded the block limit while saving schematic of " + regionInterface.getName() + ", limit in exception: " + e.getBlockLimit() + ", limit passed by AreaShop: " + pluginInterface.getConfig().getInt("maximumBlocks"));
-
 		} catch (IOException ex) {
 			pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
 			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));

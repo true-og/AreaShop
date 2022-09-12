@@ -441,6 +441,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		return worldEdit;
 	}
 
+	@Override
+	public Plugin pluginInstance() {
+		return this;
+	}
+
 	/**
 	 * Function to get WorldGuardInterface for version dependent things.
 	 * @return WorldGuardInterface
