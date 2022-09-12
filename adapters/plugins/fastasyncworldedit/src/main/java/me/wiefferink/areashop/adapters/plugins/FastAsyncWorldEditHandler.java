@@ -95,7 +95,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
         // Bug in which schematic pasting doesn't clear tile entities properly
         // We manually remove tile entities in the destination before we paste the schematic
         pluginInterface.debugI(() -> "Clearing entities for region: " + regionInterface.getName());
-        if (failedClearEntities(world, region, regionInterface)) {
+        if (pluginInterface.getConfig().getBoolean("forceClearEntities", false) && failedClearEntities(world, region, regionInterface)) {
             pluginInterface.getLogger().warning(() -> "Failed to clear tile entities for region:  " + regionInterface.getName() + ". Will attempt to past anyway");
         }
         BlockVector3 dimensions = regionInterface.computeDimensions();
@@ -230,7 +230,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
         pluginInterface.debugI(() -> "Clearing entities for region: " + regionInterface.getName());
         ProtectedRegion wgRegion = regionInterface.getRegion();
         Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
-        if (failedClearEntities(world, region, regionInterface)) {
+        if (pluginInterface.getConfig().getBoolean("forceClearEntities", false) && failedClearEntities(world, region, regionInterface)) {
             pluginInterface.getLogger().warning(() -> "Failed to clear tile entities for region:  " + regionInterface.getName() + ". Will attempt to past anyway");
         }
         BlockVector3 dimensions = regionInterface.computeDimensions();
