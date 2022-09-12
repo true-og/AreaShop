@@ -19,7 +19,6 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.util.WorldEditRegionConverter;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -67,21 +66,20 @@ public class WorldEditHandler extends WorldEditInterface {
 			}
 		}
 		if (targetFile == null || !targetFile.exists() || !targetFile.isFile()) {
-			pluginInterface.getLogger().info("Not restoring region. Schematic not found: " + rawFile);
-			return false;
-		}
-		ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
-		if (format == null) {
-			pluginInterface.getLogger().warning("Could not find a clipboard format for file: " + targetFile.getAbsolutePath());
+			pluginInterface.getLogger().info(() -> "Not restoring region. Schematic not found: " + rawFile);
 			return false;
 		}
 		File finalFile = targetFile;
+		ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
+		if (format == null) {
+			pluginInterface.getLogger().warning(() -> "Could not find a clipboard format for file: " + finalFile.getAbsolutePath());
+			return false;
+		}
 		BlockVector3 min = regionInterface.getRegion().getMinimumPoint();
 		final World world = BukkitAdapter.adapt(regionInterface.getWorld());
 		if (world == null) {
-			pluginInterface.getLogger().warning("Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+			pluginInterface.getLogger().warning(() -> "Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
 			return false;
-
 		}
 		long volume = regionInterface.getRegion().volume();
 		int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
@@ -89,7 +87,7 @@ public class WorldEditHandler extends WorldEditInterface {
 			pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
 			return false;
 		}
-		pluginInterface.debugI(String.format("Attempting to restore using format: %s", format.getName()));
+		pluginInterface.debugI(() -> String.format("Attempting to restore using format: %s", format.getName()));
 		BlockVector3 dimensions = regionInterface.computeDimensions();
 		try (InputStream is = new FileInputStream(finalFile);
 			 ClipboardReader reader = format.getReader(is)) {
@@ -106,11 +104,11 @@ public class WorldEditHandler extends WorldEditInterface {
 			Operations.complete(operation);
 			return true;
 		} catch (IOException | WorldEditException ex) {
-			pluginInterface.getLogger().warning("An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			pluginInterface.getLogger().warning(() ->"An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		} catch (Exception ex) {
 			pluginInterface.getLogger().warning(() -> "crashed during restore of " + regionInterface.getName());
-			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		}
 		return false;
 	}
@@ -123,7 +121,7 @@ public class WorldEditHandler extends WorldEditInterface {
 		Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
 		final World world = BukkitAdapter.adapt(regionInterface.getWorld());
 		if (world == null) {
-			pluginInterface.getLogger().warning("Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+			pluginInterface.getLogger().warning(() -> "Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
 			return false;
 		}
 		int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
@@ -132,26 +130,26 @@ public class WorldEditHandler extends WorldEditInterface {
 			pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
 			return false;
 		}
-		pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file", file.getAbsolutePath(), "with format", format.getName());
+		pluginInterface.debugI(() -> String.format("Trying to save region %s to file %s with format %s", regionInterface.getName(), file.getName(), format.getName()));
 		Clipboard clipboard = new BlockArrayClipboard(region);
 		final ForwardExtentCopy copy = new ForwardExtentCopy(world, region, clipboard, region.getMinimumPoint());
 		copy.setCopyingEntities(true);
 		try {
 			Operations.complete(copy);
 		} catch (WorldEditException ex) {
-			pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			pluginInterface.getLogger().warning(() -> "An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		}
 		try (OutputStream os = new FileOutputStream(targetFile);
 			 ClipboardWriter writer = format.getWriter(os)) {
 			writer.write(clipboard);
 			return true;
 		} catch (IOException ex) {
-			pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			pluginInterface.getLogger().warning(() -> "An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		} catch (Exception ex) {
-			pluginInterface.getLogger().warning("crashed during save of " + regionInterface.getName());
-			pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+			pluginInterface.getLogger().warning(() -> "crashed during save of " + regionInterface.getName());
+			pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
 		}
 		return false;
 	}

@@ -2,7 +2,6 @@ package me.wiefferink.areashop.adapters.plugins;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -65,19 +64,19 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             }
         }
         if (targetFile == null || !targetFile.exists() || !targetFile.isFile()) {
-            pluginInterface.getLogger().info("Not restoring region. Schematic not found: " + rawFile);
-            return CompletableFuture.completedFuture(false);
-        }
-        ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
-        if (format == null) {
-            pluginInterface.getLogger().warning("Could not find a clipboard format for file: " + targetFile.getAbsolutePath());
+            pluginInterface.getLogger().info(() -> "Not restoring region. Schematic not found: " + rawFile);
             return CompletableFuture.completedFuture(false);
         }
         File finalFile = targetFile;
+        ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
+        if (format == null) {
+            pluginInterface.getLogger().warning(() -> "Could not find a clipboard format for file: " + finalFile.getAbsolutePath());
+            return CompletableFuture.completedFuture(false);
+        }
         BlockVector3 min = regionInterface.getRegion().getMinimumPoint();
         final World world = BukkitAdapter.adapt(regionInterface.getWorld());
         if (world == null) {
-            pluginInterface.getLogger().warning("Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+            pluginInterface.getLogger().warning(() -> "Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
             return CompletableFuture.completedFuture(false);
 
         }
@@ -89,7 +88,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
             return CompletableFuture.completedFuture(false);
         }
-        pluginInterface.debugI(String.format("Attempting to restore using format: %s", format.getName()));
+        pluginInterface.debugI(() -> String.format("Attempting to restore using format: %s", format.getName()));
         // FAWE Bug in which schematic pasting doesn't clear tile entities properly
         // We manually remove tile entities in the destination before we paste the schematic
         if (failedClearEntities(world, region, regionInterface)) {
@@ -104,18 +103,18 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 clipboard = reader.read();
                 if (!clipboard.getDimensions().equals(dimensions)) {
                     pluginInterface.getLogger().warning(() -> "Size of the region " + regionInterface.getName() + " is not the same as the schematic to restore!");
-                    pluginInterface.debugI("schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
+                    pluginInterface.debugI(() -> "schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
                     future.complete(false);
                     return;
                 }
             } catch (IOException ex) {
                 pluginInterface.getLogger().warning("An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-                pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+                pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
                 future.complete(false);
                 return;
             } catch (Exception ex) {
                 pluginInterface.getLogger().warning(() -> "crashed during restore of " + regionInterface.getName());
-                pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+                pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
                 future.complete(false);
                 return;
             }
@@ -131,8 +130,8 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 Operations.complete(operation);
                 future.complete(true);
             } catch (WorldEditException ex) {
-                pluginInterface.getLogger().warning("An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-                pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+                pluginInterface.getLogger().warning(() -> "An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+                pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
                 future.complete(false);
             }
         });
@@ -148,7 +147,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
         Region region = new CuboidRegion(wgRegion.getMinimumPoint(), wgRegion.getMaximumPoint());
         final World world = BukkitAdapter.adapt(regionInterface.getWorld());
         if (world == null) {
-            pluginInterface.getLogger().warning("Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+            pluginInterface.getLogger().warning(() -> "Did not save region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
             return CompletableFuture.completedFuture(false);
         }
         int maxBlocks = pluginInterface.getConfig().getInt("maximumBlocks", Integer.MAX_VALUE);
@@ -157,7 +156,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
             return CompletableFuture.completedFuture(false);
         }
-        pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file", file.getName(), "with format", format.getName());
+        pluginInterface.debugI(() -> String.format("Trying to save region %s to file %s with format %s", regionInterface.getName(), file.getName(), format.getName()));
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         Bukkit.getScheduler().runTaskAsynchronously(pluginInterface.pluginInstance(), () -> {
             try (OutputStream os = new FileOutputStream(targetFile);
@@ -175,11 +174,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
                 future.complete(true);
                 return;
             } catch (IOException | WorldEditException ex) {
-                pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-                pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+                pluginInterface.getLogger().warning(() -> "An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+                pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
             } catch (Exception ex) {
-                pluginInterface.getLogger().warning("crashed during save of " + regionInterface.getName());
-                pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+                pluginInterface.getLogger().warning(() -> "crashed during save of " + regionInterface.getName());
+                pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
             }
             future.complete(false);
         });
@@ -199,19 +198,19 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             }
         }
         if (targetFile == null || !targetFile.exists() || !targetFile.isFile()) {
-            pluginInterface.getLogger().info("Not restoring region. Schematic not found: " + rawFile);
-            return false;
-        }
-        ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
-        if (format == null) {
-            pluginInterface.getLogger().warning("Could not find a clipboard format for file: " + targetFile.getAbsolutePath());
+            pluginInterface.getLogger().info(() -> "Not restoring region. Schematic not found: " + rawFile);
             return false;
         }
         File finalFile = targetFile;
+        ClipboardFormat format = ClipboardFormats.findByFile(targetFile);
+        if (format == null) {
+            pluginInterface.getLogger().warning(() -> "Could not find a clipboard format for file: " + finalFile.getAbsolutePath());
+            return false;
+        }
         BlockVector3 min = regionInterface.getRegion().getMinimumPoint();
         final World world = BukkitAdapter.adapt(regionInterface.getWorld());
         if (world == null) {
-            pluginInterface.getLogger().warning("Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
+            pluginInterface.getLogger().warning(() -> "Did not restore region " + regionInterface.getName() + ", world not found: " + regionInterface.getWorldName());
             return false;
 
         }
@@ -228,7 +227,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             Clipboard clipboard = reader.read();
             if (!clipboard.getDimensions().equals(dimensions)) {
                 pluginInterface.getLogger().warning(() -> "Size of the region " + regionInterface.getName() + " is not the same as the schematic to restore!");
-                pluginInterface.debugI("schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
+                pluginInterface.debugI(() -> "schematic|region, x:" + clipboard.getDimensions().getX() + "|" + regionInterface.getWidth() + ", y:" + clipboard.getDimensions().getY() + "|" + regionInterface.getHeight() + ", z:" + clipboard.getDimensions().getZ() + "|" + regionInterface.getDepth());
                 return false;
             }
             final Operation operation = new ClipboardHolder(clipboard).createPaste(world)
@@ -238,11 +237,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             Operations.complete(operation);
             return true;
         } catch (IOException | WorldEditException ex) {
-            pluginInterface.getLogger().warning("An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-            pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+            pluginInterface.getLogger().warning(() ->"An error occurred while restoring schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+            pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
         } catch (Exception ex) {
             pluginInterface.getLogger().warning(() -> "crashed during restore of " + regionInterface.getName());
-            pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+            pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
         }
         return false;
     }
@@ -264,7 +263,7 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             pluginInterface.getLogger().warning((() -> "Region is bigger than the max allowed block change size! Volume: " + volume + " Limit: " + maxBlocks));
             return false;
         }
-        pluginInterface.debugI("Trying to save region", regionInterface.getName(), " to file", file.getName(), "with format", format.getName());
+        pluginInterface.debugI(() -> String.format("Trying to save region %s to file %s with format %s", regionInterface.getName(), file.getName(), format.getName()));
         try (OutputStream os = new FileOutputStream(targetFile);
              ClipboardWriter writer = format.getWriter(os);
              Clipboard clipboard = new BlockArrayClipboard(region)) {
@@ -278,11 +277,11 @@ public class FastAsyncWorldEditHandler extends WorldEditInterface {
             writer.write(clipboard);
             return true;
         } catch (IOException | WorldEditException ex) {
-            pluginInterface.getLogger().warning("An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
-            pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+            pluginInterface.getLogger().warning(() -> "An error occurred while saving schematic of " + regionInterface.getName() + ", enable debug to see the complete stacktrace");
+            pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
         } catch (Exception ex) {
             pluginInterface.getLogger().warning("crashed during save of " + regionInterface.getName());
-            pluginInterface.debugI(ExceptionUtils.getStackTrace(ex));
+            pluginInterface.debugI(() -> ExceptionUtils.getStackTrace(ex));
         }
         return false;
     }

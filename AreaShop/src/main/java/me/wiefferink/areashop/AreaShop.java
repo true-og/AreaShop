@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Main class for the AreaShop plugin.
@@ -686,6 +687,13 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	@Override
 	public void debugI(Object... message) {
 		AreaShop.debug(StringUtils.join(message, " "));
+	}
+
+	@Override
+	public void debugI(Supplier<String> message) {
+		if (debug) {
+			info("Debug: " + message.get());
+		}
 	}
 
 	/**
