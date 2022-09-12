@@ -701,7 +701,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	 * @param message The message to print
 	 */
 	public static void info(Object... message) {
-		AreaShop.getInstance().getLogger().info(StringUtils.join(message, " "));
+		AreaShop.getInstance().getLogger().info(() -> StringUtils.join(message, " "));
 	}
 
 	/**
@@ -709,7 +709,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	 * @param message The message to print
 	 */
 	public static void warn(Object... message) {
-		AreaShop.getInstance().getLogger().warning(StringUtils.join(message, " "));
+		AreaShop.getInstance().getLogger().warning(() -> StringUtils.join(message, " "));
 	}
 
 	/**
@@ -717,7 +717,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	 * @param message The message to print
 	 */
 	public static void error(Object... message) {
-		AreaShop.getInstance().getLogger().severe(StringUtils.join(message, " "));
+		AreaShop.getInstance().getLogger().severe(() -> StringUtils.join(message, " "));
 	}
 
 	/**
