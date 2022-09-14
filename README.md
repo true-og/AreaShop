@@ -35,7 +35,7 @@
 
 ### Optional Dependencies
 * [FastAsyncWorldEdit](https://www.spigotmc.org/resources/fastasyncworldedit.13932/) 2.4.5 or newer (Note: Use either FAWE or WE, not both together) 
-  * AreaShop has a seperate adapter for FAWE which leverages its support for asynchronous edit operations. This adapter is used for region saving and restoring. 
+  * AreaShop has a separate adapter for FAWE which leverages its support for asynchronous edit operations. This adapter is used for region saving and restoring. 
   * Note that schematics created by the FAWE adapter are not compatible with normal WorldEdit; however, schematics created by the normal WorldEdit adapter are compatible with FAWE
   * Due to a bug with FAWE, entities are not saved by the FAWE adapter but are saved in the normal WE adapter
 
