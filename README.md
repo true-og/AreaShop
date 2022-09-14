@@ -17,7 +17,7 @@
 [►Request a feature, report a bug or ask support](https://github.com/md5sha256/AreasShop/issues/new/choose)&nbsp;&nbsp;
 [►Open issues](https://github.com/md5sha256/AreasShop/issues)<br/>
 **Development:**
-[►Compiling](https://github.com/NLthijs48/AreaShop/wiki/Compiling-AreaShop)&nbsp;&nbsp;
+[►Compiling](https://github.com/md5sha256/AreaShop/tree/dev/bleeding/documentation/compiling.md)&nbsp;&nbsp;
 [►Modules/classes overview](https://github.com/NLthijs48/AreaShop/wiki/Modules,-packages-and-classes-overview)
 [►Javadocs](https://wiefferink.me/AreaShop/javadocs/)
 [►Development builds](http://jenkins.wiefferink.me/job/AreaShop)<br/>
