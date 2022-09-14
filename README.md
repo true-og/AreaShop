@@ -28,11 +28,16 @@
 ### Required dependencies
 * Java 17 or higher (latest recommended)
 * Bukkit/Spigot 1.17.2 or newer (hybrids such as Mohist are not supported)
-* [WorldGuard](http://dev.bukkit.org/bukkit-plugins/worldguard/): 7.2.12 or newer
-* [WorldEdit](http://dev.bukkit.org/bukkit-plugins/worldedit/): 7.9.7 or newer
+* [WorldGuard](http://dev.bukkit.org/bukkit-plugins/worldguard/): 7.0.7 or newer
+* [WorldEdit](http://dev.bukkit.org/bukkit-plugins/worldedit/): 7.2.12 or newer
 * [Vault](http://dev.bukkit.org/bukkit-plugins/vault/): 1.7.3 or higher
 * An economy plugin supported by Vault (check the [Vault page](http://dev.bukkit.org/bukkit-plugins/vault/) for a list of these)
-***
+
+### Optional Dependencies
+* [FastAsyncWorldEdit](https://www.spigotmc.org/resources/fastasyncworldedit.13932/) 2.4.5 or newer (Note: Use either FAWE or WE, not both together) 
+  * AreaShop has a seperate adapter for FAWE which leverages its support for asynchronous edit operations. This adapter is used for region saving and restoring. 
+  * Note that schematics created by the FAWE adapter are not compatible with normal WorldEdit; however, schematics created by the normal WorldEdit adapter are compatible with FAWE
+  * Due to a bug with FAWE, entities are not saved by the FAWE adapter but are saved in the normal WE adapter
 
 AreaShop allows you selling and renting regions to players. It could be used to let them rent a jail in your prison server, a shop in the market of the survival server or a plot on a creative server. The player interacts with signs, making it easy to use. It also has a lot of commands to check the status of all regions, manage the renting and buying of a region and also features for admins. A lot of messages send to the player can be clicked, for immediately performing actions (buying the region, selling the region, etc.) or getting more information (for example clicking region name for region information). To setup the renting and selling of the regions exactly as you want AreaShop has a lot of options to custimize it to your liking.
 
