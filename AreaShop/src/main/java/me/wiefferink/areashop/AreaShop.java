@@ -6,6 +6,9 @@ import com.google.inject.Stage;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import io.papermc.lib.PaperLib;
+import me.wiefferink.areashop.adapters.platform.MinecraftPlatform;
+import me.wiefferink.areashop.adapters.platform.paper.PaperPlatform;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -21,9 +24,11 @@ import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.modules.AreaShopModule;
 import me.wiefferink.areashop.modules.BukkitModule;
 import me.wiefferink.areashop.modules.DependencyModule;
+import me.wiefferink.areashop.modules.PlatformModule;
 import me.wiefferink.areashop.nms.NMS;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
 import me.wiefferink.areashop.tools.SimpleMessageBridge;
+import me.wiefferink.areashop.tools.SpigotPlatform;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.source.LanguageManager;
@@ -179,6 +184,15 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			shutdownOnError();
 			return;
 		}
+		final MinecraftPlatform platform;
+		if (PaperLib.isPaper()) {
+			platform = new PaperPlatform(this);
+			info("Detected Paper; using the PaperPlatform impl");
+		} else {
+			platform = new SpigotPlatform(this);
+			info("Detected Spigot; using the SpigotPlatform impl");
+		}
+		final PlatformModule platformModule = new PlatformModule(platform, this.nms);
 
 		// Check if Vault is present
 		if(getServer().getPluginManager().getPlugin("Vault") == null) {
@@ -240,7 +254,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			return;
 		}
 
-		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, worldEditInterface, worldGuardInterface, signErrorLogger, dependencyModule);
+		AreaShopModule asModule = new AreaShopModule(this, messageBridge, nms, worldEditInterface, worldGuardInterface, signErrorLogger, platformModule, dependencyModule);
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
 		// Load all data from files and check versions

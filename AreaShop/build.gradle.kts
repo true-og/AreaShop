@@ -39,6 +39,8 @@ dependencies {
     // Project submodules
     implementation(projects.areashopInterface)
     implementation(projects.areashopNms)
+    implementation(projects.adapters.platform.platformInterface)
+    implementation(projects.adapters.platform.paper)
     // Adapters
     runtimeOnly(projects.adapters.plugins.worldedit)
     runtimeOnly(projects.adapters.plugins.worldguard)

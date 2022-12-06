@@ -23,7 +23,7 @@ public class DelfriendCommand extends CommandAreaShop {
 	private MessageBridge messageBridge;
 	@Inject
 	private IFileManager fileManager;
-	
+
 	@Override
 	public String getCommandStart() {
 		return "areashop delfriend";
@@ -47,8 +47,7 @@ public class DelfriendCommand extends CommandAreaShop {
 		if(person.hasPermission("areashop.delfriendall")) {
 			return true;
 		}
-		if(person instanceof Player) {
-			Player player = (Player)person;
+		if(person instanceof Player player) {
 			return region.isOwner(player) && player.hasPermission("areashop.delfriend");
 		}
 		return false;
