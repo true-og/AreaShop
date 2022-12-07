@@ -44,8 +44,7 @@ public class UnrentCommand extends CommandAreaShop {
 		if(person.hasPermission("areashop.unrent")) {
 			return true;
 		}
-		if(person instanceof Player) {
-			Player player = (Player)person;
+		if(person instanceof Player player) {
 			return region.isOwner(player) && person.hasPermission("areashop.unrentown");
 		}
 		return false;

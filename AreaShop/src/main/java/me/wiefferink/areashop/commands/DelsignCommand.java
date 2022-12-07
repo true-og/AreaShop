@@ -44,11 +44,10 @@ public class DelsignCommand extends CommandAreaShop {
 			messageBridge.message(sender, "delsign-noPermission");
 			return;
 		}
-		if(!(sender instanceof Player)) {
+		if(!(sender instanceof Player player)) {
 			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
-		Player player = (Player)sender;
 
 		// Get the sign
 		Block block = null;

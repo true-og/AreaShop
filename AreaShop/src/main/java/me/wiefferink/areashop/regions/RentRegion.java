@@ -165,43 +165,28 @@ public class RentRegion extends GeneralRegion {
 
 	@Override
 	public Object provideReplacement(String variable) {
-		switch(variable) {
-			case AreaShop.tagPrice:
-				return getFormattedPrice();
-			case AreaShop.tagRawPrice:
-				return getPrice();
-			case AreaShop.tagDuration:
-				return getDurationString();
-			case AreaShop.tagPlayerName:
-				return getPlayerName();
-			case AreaShop.tagPlayerUUID:
-				return getRenter();
-			case AreaShop.tagRentedUntil:
-				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(new Date(getRentedUntil()));
-			case AreaShop.tagRentedUntilShort:
-				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(new Date(getRentedUntil()));
-			case AreaShop.tagTimeLeft:
-				return getTimeLeftString();
-			case AreaShop.tagMoneyBackAmount:
-				return getFormattedMoneyBackAmount();
-			case AreaShop.tagRawMoneyBackAmount:
-				return getMoneyBackAmount();
-			case AreaShop.tagMoneyBackPercentage:
-				return (getMoneyBackPercentage() % 1.0) == 0.0 ? (int)getMoneyBackPercentage() : getMoneyBackPercentage();
-			case AreaShop.tagTimesExtended:
-				return this.getTimesExtended();
-			case AreaShop.tagMaxExtends:
-				return this.getMaxExtends();
-			case AreaShop.tagExtendsLeft:
-				return getMaxExtends() - getTimesExtended();
-			case AreaShop.tagMaxRentTime:
-				return millisToHumanFormat(getMaxRentTime());
-			case AreaShop.tagMaxInactiveTime:
-				return this.getFormattedInactiveTimeUntilUnrent();
-
-			default:
-				return super.provideReplacement(variable);
-		}
+		return switch (variable) {
+			case AreaShop.tagPrice -> getFormattedPrice();
+			case AreaShop.tagRawPrice -> getPrice();
+			case AreaShop.tagDuration -> getDurationString();
+			case AreaShop.tagPlayerName -> getPlayerName();
+			case AreaShop.tagPlayerUUID -> getRenter();
+			case AreaShop.tagRentedUntil ->
+					new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(new Date(getRentedUntil()));
+			case AreaShop.tagRentedUntilShort ->
+					new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(new Date(getRentedUntil()));
+			case AreaShop.tagTimeLeft -> getTimeLeftString();
+			case AreaShop.tagMoneyBackAmount -> getFormattedMoneyBackAmount();
+			case AreaShop.tagRawMoneyBackAmount -> getMoneyBackAmount();
+			case AreaShop.tagMoneyBackPercentage ->
+					(getMoneyBackPercentage() % 1.0) == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
+			case AreaShop.tagTimesExtended -> this.getTimesExtended();
+			case AreaShop.tagMaxExtends -> this.getMaxExtends();
+			case AreaShop.tagExtendsLeft -> getMaxExtends() - getTimesExtended();
+			case AreaShop.tagMaxRentTime -> millisToHumanFormat(getMaxRentTime());
+			case AreaShop.tagMaxInactiveTime -> this.getFormattedInactiveTimeUntilUnrent();
+			default -> super.provideReplacement(variable);
+		};
 	}
 
 	/**

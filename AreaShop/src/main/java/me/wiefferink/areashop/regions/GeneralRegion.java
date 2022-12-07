@@ -630,58 +630,79 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
 	@Override
 	public Object provideReplacement(String variable) {
-		switch(variable) {
+		switch (variable) {
 
 			// Basics
-			case AreaShop.tagRegionName:
+			case AreaShop.tagRegionName -> {
 				return getName();
-			case AreaShop.tagRegionType:
+			}
+			case AreaShop.tagRegionType -> {
 				return getType().getValue().toLowerCase();
-			case AreaShop.tagWorldName:
+			}
+			case AreaShop.tagWorldName -> {
 				return getWorldName();
-			case AreaShop.tagWidth:
+			}
+			case AreaShop.tagWidth -> {
 				return getWidth();
-			case AreaShop.tagDepth:
+			}
+			case AreaShop.tagDepth -> {
 				return getDepth();
-			case AreaShop.tagHeight:
+			}
+			case AreaShop.tagHeight -> {
 				return getHeight();
-			case AreaShop.tagFriends:
+			}
+			case AreaShop.tagFriends -> {
 				return Utils.createCommaSeparatedList(getFriendsFeature().getFriendNames());
-			case AreaShop.tagFriendsUUID:
+			}
+			case AreaShop.tagFriendsUUID -> {
 				return Utils.createCommaSeparatedList(getFriendsFeature().getFriends());
-			case AreaShop.tagLandlord:
+			}
+			case AreaShop.tagLandlord -> {
 				return getLandlordName();
-			case AreaShop.tagLandlordUUID:
+			}
+			case AreaShop.tagLandlordUUID -> {
 				return getLandlord();
-			case AreaShop.tagVolume:
+			}
+			case AreaShop.tagVolume -> {
 				return getVolume();
+			}
 
 			// Date/time
-			case AreaShop.tagEpoch:
+			case AreaShop.tagEpoch -> {
 				return Calendar.getInstance().getTimeInMillis();
-			case AreaShop.tagMillisecond:
+			}
+			case AreaShop.tagMillisecond -> {
 				return Calendar.getInstance().get(Calendar.MILLISECOND);
-			case AreaShop.tagSecond:
+			}
+			case AreaShop.tagSecond -> {
 				return Calendar.getInstance().get(Calendar.SECOND);
-			case AreaShop.tagMinute:
+			}
+			case AreaShop.tagMinute -> {
 				return Calendar.getInstance().get(Calendar.MINUTE);
-			case AreaShop.tagHour:
+			}
+			case AreaShop.tagHour -> {
 				return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-			case AreaShop.tagDay:
+			}
+			case AreaShop.tagDay -> {
 				return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-			case AreaShop.tagMonth:
+			}
+			case AreaShop.tagMonth -> {
 				return Calendar.getInstance().get(Calendar.MONTH) + 1;
-			case AreaShop.tagYear:
+			}
+			case AreaShop.tagYear -> {
 				return Calendar.getInstance().get(Calendar.YEAR);
-			case AreaShop.tagDateTime:
+			}
+			case AreaShop.tagDateTime -> {
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(Calendar.getInstance().getTime());
-			case AreaShop.tagDateTimeShort:
+			}
+			case AreaShop.tagDateTimeShort -> {
 				return new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(Calendar.getInstance().getTime());
+			}
 
 			// Teleport locations
-			default:
+			default -> {
 				Location tp = getTeleportFeature().getTeleportLocation();
-				if(tp == null) {
+				if (tp == null) {
 					return null;
 				}
 				return switch (variable) {
@@ -698,6 +719,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 					case AreaShop.tagTeleportWorld -> tp.getWorld().getName();
 					default -> null;
 				};
+			}
 		}
 	}
 

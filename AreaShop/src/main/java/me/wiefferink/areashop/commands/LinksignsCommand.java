@@ -43,12 +43,11 @@ public class LinksignsCommand extends CommandAreaShop {
 			messageBridge.message(sender, "linksigns-noPermission");
 			return;
 		}
-		if(!(sender instanceof Player)) {
+		if(!(sender instanceof Player player)) {
 			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
 
-		Player player = (Player)sender;
 		if(signLinkerManager.isInSignLinkMode(player)) {
 			signLinkerManager.exitSignLinkMode(player);
 		} else {

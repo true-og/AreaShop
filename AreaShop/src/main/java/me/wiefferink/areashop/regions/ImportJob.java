@@ -393,8 +393,7 @@ public class ImportJob {
 
 		// Set rented until
 		if(from.isLong("info.last-withdrawal")
-				&& region instanceof RentRegion) {
-			RentRegion rentRegion = (RentRegion)region;
+				&& region instanceof RentRegion rentRegion) {
 			long lastWithdrawal = from.getLong("info.last-withdrawal");
 			// Because the rental duration is already imported into the region and its parents this should be correct
 			rentRegion.setRentedUntil(lastWithdrawal + rentRegion.getDuration());
@@ -445,7 +444,7 @@ public class ImportJob {
 		}
 	}
 
-	private static final List<TimeUnit> timeUnitLookup = new ArrayList<TimeUnit>() {
+	private static final List<TimeUnit> timeUnitLookup = new ArrayList<>() {
 		{
 			add(new TimeUnit(60 * 24 * 30 * 12, "year"));
 			add(new TimeUnit(60 * 24 * 30, "month"));

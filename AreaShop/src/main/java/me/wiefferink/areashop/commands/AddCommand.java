@@ -321,8 +321,7 @@ public class AddCommand extends CommandAreaShop {
 				result.add("buy");
 			}
 		} else if(toComplete == 3) {
-			if(sender instanceof Player) {
-				Player player = (Player)sender;
+			if(sender instanceof Player player) {
 				if(sender.hasPermission("areashop.createrent") || sender.hasPermission("areashop.createbuy")) {
 					for(ProtectedRegion region : plugin.getRegionManager(player.getWorld()).getRegions().values()) {
 						result.add(region.getId());

@@ -42,11 +42,10 @@ public class BuyCommand extends CommandAreaShop {
 			messageBridge.message(sender, "buy-noPermission");
 			return;
 		}
-		if(!(sender instanceof Player)) {
+		if(!(sender instanceof Player player)) {
 			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
-		Player player = (Player)sender;
 		if(args.length > 1 && args[1] != null) {
 			BuyRegion region = fileManager.getBuy(args[1]);
 			if(region == null) {

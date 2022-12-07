@@ -5,6 +5,7 @@ import me.wiefferink.areashop.adapters.platform.MinecraftPlatform;
 import me.wiefferink.areashop.adapters.platform.OfflinePlayerHelper;
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.nms.NMS;
+import me.wiefferink.areashop.tools.BukkitSchedulerExecutor;
 import org.jetbrains.annotations.NotNull;
 
 public class PlatformModule extends AbstractModule {
@@ -23,5 +24,6 @@ public class PlatformModule extends AbstractModule {
         bind(OfflinePlayerHelper.class).toInstance(this.minecraftPlatform.offlinePlayerHelper());
         bind(NMS.class).toInstance(this.nms);
         bind(BlockBehaviourHelper.class).toInstance(this.nms.blockBehaviourHelper());
+        bind(BukkitSchedulerExecutor.class).asEagerSingleton();
     }
 }

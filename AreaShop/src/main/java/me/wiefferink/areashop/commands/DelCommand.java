@@ -53,11 +53,10 @@ public class DelCommand extends CommandAreaShop {
 		}
 		if(args.length < 2) {
 			// Only players can have a selection
-			if(!(sender instanceof Player)) {
+			if(!(sender instanceof Player player)) {
 				messageBridge.message(sender, "cmd-weOnlyByPlayer");
 				return;
 			}
-			Player player = (Player)sender;
 			WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
 			if(selection == null) {
 				messageBridge.message(player, "cmd-noSelection");

@@ -39,10 +39,9 @@ public class TeleportCommand extends CommandAreaShop {
 	 * @return true if the person can teleport to it, otherwise false
 	 */
 	public static boolean canUse(CommandSender person, GeneralRegion region) {
-		if(!(person instanceof Player)) {
+		if(!(person instanceof Player player)) {
 			return false;
 		}
-		Player player = (Player)person;
 		return player.hasPermission("areashop.teleportall")
 				|| region.isOwner(player) && player.hasPermission("areashop.teleport")
 				|| region.isAvailable() && player.hasPermission("areashop.teleportavailable")
@@ -55,7 +54,7 @@ public class TeleportCommand extends CommandAreaShop {
 			messageBridge.message(sender, "teleport-noPermission");
 			return;
 		}
-		if(!(sender instanceof Player)) {
+		if(!(sender instanceof Player player)) {
 			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
@@ -63,7 +62,6 @@ public class TeleportCommand extends CommandAreaShop {
 			messageBridge.message(sender, "teleport-help");
 			return;
 		}
-		Player player = (Player)sender;
 		GeneralRegion region = fileManager.getRegion(args[1]);
 		if(region == null) {
 			messageBridge.message(player, "teleport-noRentOrBuy", args[1]);

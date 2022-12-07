@@ -59,11 +59,10 @@ public class GroupaddCommand extends CommandAreaShop {
 			fileManager.addGroup(group);
 		}
 		if(args.length == 2) {
-			if(!(sender instanceof Player)) {
+			if(!(sender instanceof Player player)) {
 				messageBridge.message(sender, "cmd-weOnlyByPlayer");
 				return;
 			}
-			Player player = (Player)sender;
 			WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
 			if(selection == null) {
 				messageBridge.message(player, "cmd-noSelection");

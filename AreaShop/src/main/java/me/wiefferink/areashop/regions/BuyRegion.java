@@ -237,31 +237,20 @@ public class BuyRegion extends GeneralRegion {
 
 	@Override
 	public Object provideReplacement(String variable) {
-		switch(variable) {
-			case AreaShop.tagPrice:
-				return getFormattedPrice();
-			case AreaShop.tagRawPrice:
-				return getPrice();
-			case AreaShop.tagPlayerName:
-				return getPlayerName();
-			case AreaShop.tagPlayerUUID:
-				return getBuyer();
-			case AreaShop.tagResellPrice:
-				return getFormattedResellPrice();
-			case AreaShop.tagRawResellPrice:
-				return getResellPrice();
-			case AreaShop.tagMoneyBackAmount:
-				return getFormattedMoneyBackAmount();
-			case AreaShop.tagRawMoneyBackAmount:
-				return getMoneyBackAmount();
-			case AreaShop.tagMoneyBackPercentage:
-				return getMoneyBackPercentage() % 1.0 == 0.0 ? (int)getMoneyBackPercentage() : getMoneyBackPercentage();
-			case AreaShop.tagMaxInactiveTime:
-				return this.getFormattedInactiveTimeUntilSell();
-
-			default:
-				return super.provideReplacement(variable);
-		}
+        return switch (variable) {
+            case AreaShop.tagPrice -> getFormattedPrice();
+            case AreaShop.tagRawPrice -> getPrice();
+            case AreaShop.tagPlayerName -> getPlayerName();
+            case AreaShop.tagPlayerUUID -> getBuyer();
+            case AreaShop.tagResellPrice -> getFormattedResellPrice();
+            case AreaShop.tagRawResellPrice -> getResellPrice();
+            case AreaShop.tagMoneyBackAmount -> getFormattedMoneyBackAmount();
+            case AreaShop.tagRawMoneyBackAmount -> getMoneyBackAmount();
+            case AreaShop.tagMoneyBackPercentage ->
+                    getMoneyBackPercentage() % 1.0 == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
+            case AreaShop.tagMaxInactiveTime -> this.getFormattedInactiveTimeUntilSell();
+            default -> super.provideReplacement(variable);
+        };
 	}
 
 	/**

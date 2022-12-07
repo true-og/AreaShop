@@ -39,11 +39,10 @@ public class RentCommand extends CommandAreaShop {
 			messageBridge.message(sender, "rent-noPermission");
 			return;
 		}
-		if(!(sender instanceof Player)) {
+		if(!(sender instanceof Player player)) {
 			messageBridge.message(sender, "cmd-onlyByPlayer");
 			return;
 		}
-		Player player = (Player)sender;
 		if(args.length > 1 && args[1] != null) {
 			RentRegion rent = fileManager.getRent(args[1]);
 			if(rent == null) {

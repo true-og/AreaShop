@@ -95,8 +95,7 @@ public class SetownerCommand extends CommandAreaShop {
 			return;
 		}
 
-		if(region instanceof RentRegion) {
-			RentRegion rent = (RentRegion)region;
+		if(region instanceof RentRegion rent) {
 			if(rent.isRenter(uuid)) {
 				// extend
 				rent.setRentedUntil(rent.getRentedUntil() + rent.getDuration());
@@ -111,8 +110,7 @@ public class SetownerCommand extends CommandAreaShop {
 				messageBridge.message(sender, "setowner-succesRent", region);
 			}
 		}
-		if(region instanceof BuyRegion) {
-			BuyRegion buy = (BuyRegion)region;
+		if(region instanceof BuyRegion buy) {
 			buy.setBuyer(uuid);
 			messageBridge.message(sender, "setowner-succesBuy", region);
 		}
