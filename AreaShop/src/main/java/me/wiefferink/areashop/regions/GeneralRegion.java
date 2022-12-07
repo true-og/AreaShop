@@ -480,7 +480,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		if(landlordName != null && !landlordName.isEmpty()) {
 			@SuppressWarnings("deprecation")
 			OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(landlordName);
-			if(offlinePlayer != null) {
+			if(offlinePlayer.hasPlayedBefore()) {
 				return offlinePlayer.getUniqueId();
 			}
 		}
@@ -493,7 +493,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 */
 	public String getLandlordName() {
 		String result = Utils.toName(getLandlord());
-		if(result == null || result.isEmpty()) {
+		if(result.isEmpty()) {
 			result = config.getString("general.landlordName");
 			if(result == null || result.isEmpty()) {
 				result = null;
@@ -512,7 +512,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			setSetting("general.landlord", landlord.toString());
 		}
 		String properName = Utils.toName(landlord);
-		if(properName == null) {
+		if(properName.isBlank()) {
 			properName = name;
 		}
 		setSetting("general.landlordName", properName);
