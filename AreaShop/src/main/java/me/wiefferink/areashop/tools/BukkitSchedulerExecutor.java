@@ -5,6 +5,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Inject;
 import java.util.concurrent.Executor;
 
 public class BukkitSchedulerExecutor implements Executor {
@@ -12,10 +13,10 @@ public class BukkitSchedulerExecutor implements Executor {
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
 
-    public BukkitSchedulerExecutor(Plugin plugin) {
+    @Inject
+    public BukkitSchedulerExecutor(@NotNull Plugin plugin, @NotNull BukkitScheduler scheduler) {
         this.plugin = plugin;
-        this.scheduler = plugin.getServer().getScheduler();
-
+        this.scheduler = scheduler;
     }
 
     @Override
