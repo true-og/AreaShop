@@ -46,7 +46,6 @@ public class AddfriendCommand extends CommandAreaShop {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void execute(CommandSender sender, String[] args) {
         if (!sender.hasPermission("areashop.addfriend") && !sender.hasPermission("areashop.addfriendall")) {
