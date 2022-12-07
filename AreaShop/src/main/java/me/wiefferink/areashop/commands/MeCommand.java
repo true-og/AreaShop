@@ -1,10 +1,12 @@
 package me.wiefferink.areashop.commands;
 
 import me.wiefferink.areashop.MessageBridge;
+import me.wiefferink.areashop.adapters.platform.OfflinePlayerHelper;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
+import me.wiefferink.areashop.tools.BukkitSchedulerExecutor;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +27,12 @@ public class MeCommand extends CommandAreaShop {
 	private MessageBridge messageBridge;
 	@Inject
 	private IFileManager fileManager;
+
+	@Inject
+	private OfflinePlayerHelper offlinePlayerHelper;
+
+	@Inject
+	private BukkitSchedulerExecutor executor;
 
 	@Override
 	public String getCommandStart() {
@@ -55,11 +63,13 @@ public class MeCommand extends CommandAreaShop {
 			player = (OfflinePlayer)sender;
 		}
 		if(args.length > 1) {
-			player = Bukkit.getOfflinePlayer(args[1]);
-			if(!player.hasPlayedBefore()) {
-				messageBridge.message(sender, "me-noPlayer", args[1]);
-				return;
-			}
+			// Lookup offline players async
+			this.offlinePlayerHelper.lookupOfflinePlayerAsync(args[1]).thenAcceptAsync(offlinePlayer -> {
+				if (!offlinePlayer.hasPlayedBefore()) {
+					messageBridge.message(sender, "me-noPlayer", args[1]);
+				}
+			}, this.executor);
+			return;
 		}
 		if(!player.hasPlayedBefore()) {
 			return;
