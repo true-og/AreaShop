@@ -48,6 +48,7 @@ dependencies {
     runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))
+    runtimeOnly(project(":adapters:platform:bukkit-1-19-3", "reobf"))
 }
 
 repositories {
