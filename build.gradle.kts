@@ -2,7 +2,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.papermc.paperweight.userdev") version "1.4.0" apply false
+    id("io.papermc.paperweight.userdev") version "1.5.1" apply false
     idea
     eclipse
 }
@@ -41,9 +41,10 @@ subprojects {
         maven("https://maven.enginehub.org/repo/")
     }
 
+    java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+
     tasks {
         withType(JavaCompile::class) {
-            java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
             options.release.set(17)
             options.encoding = Charsets.UTF_8.name()
             options.isFork = true
