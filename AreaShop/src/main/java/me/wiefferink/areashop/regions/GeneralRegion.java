@@ -435,33 +435,18 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param player Player to check ownership for
 	 * @return true if the player currently rents or buys this region
 	 */
-	public boolean isOwner(UUID player) {
-		return (this instanceof RentRegion && ((RentRegion)this).isRenter(player)) || (this instanceof BuyRegion && ((BuyRegion)this).isBuyer(player));
-	}
+	public abstract boolean isOwner(UUID player);
 
 	/**
 	 * Get the player that is currently the owner of this region (either bought or rented it).
 	 * @return The UUID of the owner of this region
 	 */
-	public UUID getOwner() {
-		if(this instanceof RentRegion) {
-			return ((RentRegion)this).getRenter();
-		} else {
-			return ((BuyRegion)this).getBuyer();
-		}
-	}
-
+	public abstract UUID getOwner();
 	/**
 	 * Change the owner of the region.
 	 * @param player The player that should be the owner
 	 */
-	public void setOwner(UUID player) {
-		if(this instanceof RentRegion) {
-			((RentRegion)this).setRenter(player);
-		} else {
-			((BuyRegion)this).setBuyer(player);
-		}
-	}
+	public abstract void setOwner(UUID player);
 
 	/**
 	 * Get the landlord of this region (the player that receives any revenue from this region).

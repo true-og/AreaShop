@@ -72,6 +72,22 @@ public class RentRegion extends GeneralRegion {
 		this.economy = economy;
 	}
 
+
+	@Override
+	public boolean isOwner(UUID player) {
+		return isRenter(player);
+	}
+
+	@Override
+	public UUID getOwner() {
+		return getRenter();
+	}
+
+	@Override
+	public void setOwner(UUID player) {
+		setRenter(player);
+	}
+
 	@Override
 	public RegionType getType() {
 		return RegionType.RENT;

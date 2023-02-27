@@ -59,6 +59,21 @@ public class BuyRegion extends GeneralRegion {
 	}
 
 	@Override
+	public boolean isOwner(UUID player) {
+		return isBuyer(player);
+	}
+
+	@Override
+	public UUID getOwner() {
+		return getBuyer();
+	}
+
+	@Override
+	public void setOwner(UUID player) {
+		setBuyer(player);
+	}
+
+	@Override
 	public RegionType getType() {
 		return RegionType.BUY;
 	}
