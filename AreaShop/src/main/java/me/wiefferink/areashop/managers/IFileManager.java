@@ -96,9 +96,9 @@ public interface IFileManager {
     Collection<RentRegion> getRents();
 
     /**
-     * Get all rental regions.
+     * Get all rental regions (readonly)
      *
-     * @return List of all rental regions
+     * @return Unmodifiable collection of all rental regions
      */
     Collection<RentRegion> getRentsRef();
 
@@ -109,6 +109,10 @@ public interface IFileManager {
      */
     List<BuyRegion> getBuys();
 
+    /**
+     * Get all buy regions (readonly)
+     * @return Unmodifiable collection of all buy regions
+     */
     Collection<BuyRegion> getBuysRef();
 
     /**
@@ -119,9 +123,9 @@ public interface IFileManager {
     List<GeneralRegion> getRegions();
 
     /**
-     * Get all regions.
+     * Get all regions (readonly)
      *
-     * @return List of all regions (it is safe to modify the list)
+     * @return Unmodifiable collection of all regions
      */
     Collection<GeneralRegion> getRegionsRef();
 
