@@ -67,40 +67,44 @@ public class MeCommand extends CommandAreaShop {
 			this.offlinePlayerHelper.lookupOfflinePlayerAsync(args[1]).thenAcceptAsync(offlinePlayer -> {
 				if (!offlinePlayer.hasPlayedBefore()) {
 					messageBridge.message(sender, "me-noPlayer", args[1]);
+				} else {
+					sendMessageAboutRegions(sender, offlinePlayer);
 				}
 			}, this.executor);
 			return;
 		}
-		if(!player.hasPlayedBefore()) {
-			return;
-		}
+		sendMessageAboutRegions(sender, player);
+	}
 
+	private void sendMessageAboutRegions(CommandSender sender, OfflinePlayer target) {
 		// Get the regions owned by the player
 		Set<RentRegion> rentRegions = new HashSet<>();
 		for(RentRegion region : fileManager.getRentsRef()) {
-			if(region.isOwner(player)) {
+			if(region.isOwner(target)) {
 				rentRegions.add(region);
 			}
 		}
 		Set<BuyRegion> buyRegions = new HashSet<>();
 		for(BuyRegion region : fileManager.getBuysRef()) {
-			if(region.isOwner(player)) {
+			if(region.isOwner(target)) {
 				buyRegions.add(region);
 			}
 		}
 		// Get the regions the player is added as friend
 		Set<GeneralRegion> friendRegions = new HashSet<>();
 		for(GeneralRegion region : fileManager.getRegionsRef()) {
-			if(region.getFriendsFeature().getFriends().contains(player.getUniqueId())) {
+			if(region.getFriendsFeature().getFriends().contains(target.getUniqueId())) {
 				friendRegions.add(region);
 			}
 		}
 
 		// Send messages
 		boolean foundSome = !rentRegions.isEmpty() || !buyRegions.isEmpty() || !friendRegions.isEmpty();
-		if(foundSome) {
-			messageBridge.message(sender, "me-header", player.getName());
+		if(!foundSome) {
+			messageBridge.message(sender, "me-nothing", target.getName());
+			return;
 		}
+		messageBridge.message(sender, "me-header", target.getName());
 		if(!rentRegions.isEmpty()) {
 			for(RentRegion region : rentRegions) {
 				messageBridge.messageNoPrefix(sender, "me-rentLine", region);
@@ -116,12 +120,7 @@ public class MeCommand extends CommandAreaShop {
 				messageBridge.messageNoPrefix(sender, "me-friendLine", region);
 			}
 		}
-
-		if(!foundSome) {
-			messageBridge.message(sender, "me-nothing", player.getName());
-		} else {
-			messageBridge.messageNoPrefix(sender, "me-clickHint");
-		}
+		messageBridge.messageNoPrefix(sender, "me-clickHint");
 	}
 
 	@Override
