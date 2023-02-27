@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "me.wiefferink"
-version = "2.7.10"
+version = "2.7.11-SNAPSHOT"
 
 subprojects {
 
