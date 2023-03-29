@@ -1,4 +1,4 @@
-package me.wiefferink.areashop.adapters.platform.v1_19_R2;
+package me.wiefferink.areashop.adapters.platform.v1_19_R3;
 
 import me.wiefferink.areashop.nms.BlockBehaviourHelper;
 import me.wiefferink.areashop.nms.NMS;
