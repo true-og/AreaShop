@@ -25,10 +25,10 @@ dependencies {
 
     // 3rd party libraries
     implementation(libs.findbugs)
-    implementation("io.papermc:paperlib:1.0.7")
+    implementation("io.papermc:paperlib:1.0.8")
     implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")
-    implementation("io.github.baked-libs:dough-data:1.0.3")
+    implementation("io.github.baked-libs:dough-data:1.2.0")
     implementation("com.google.inject:guice:5.1.0") {
         exclude("com.google.guava", "guava")
     }
@@ -48,6 +48,7 @@ dependencies {
     runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))
+    runtimeOnly(project(":adapters:platform:bukkit-1-20", "reobf"))
 }
 
 repositories {

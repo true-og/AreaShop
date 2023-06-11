@@ -2,7 +2,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.papermc.paperweight.userdev") version "1.5.1" apply false
+    id("io.papermc.paperweight.userdev") version "1.5.5" apply false
     idea
     eclipse
 }
