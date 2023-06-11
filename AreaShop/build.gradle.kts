@@ -29,10 +29,10 @@ dependencies {
     implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")
     implementation("io.github.baked-libs:dough-data:1.2.0")
-    implementation("com.google.inject:guice:5.1.0") {
+    implementation("com.google.inject:guice:7.0.0") {
         exclude("com.google.guava", "guava")
     }
-    implementation("com.google.inject.extensions:guice-assistedinject:5.1.0") {
+    implementation("com.google.inject.extensions:guice-assistedinject:7.0.0") {
         exclude("com.google.guava", "guava")
     }
 

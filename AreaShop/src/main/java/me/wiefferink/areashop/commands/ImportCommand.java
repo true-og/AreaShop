@@ -1,13 +1,12 @@
 package me.wiefferink.areashop.commands;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.areashop.regions.ImportJob;
 import me.wiefferink.areashop.regions.ImportJobFactory;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 

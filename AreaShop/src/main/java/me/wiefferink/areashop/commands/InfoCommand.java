@@ -1,6 +1,8 @@
 package me.wiefferink.areashop.commands;
 
 import io.github.bakedlibs.dough.blocks.BlockPosition;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -12,8 +14,6 @@ import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;

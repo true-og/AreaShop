@@ -1,11 +1,10 @@
 package me.wiefferink.areashop.commands;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import org.bukkit.command.CommandSender;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 @Singleton
 public class ReloadCommand extends CommandAreaShop {

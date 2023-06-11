@@ -2,6 +2,8 @@ package me.wiefferink.areashop.managers;
 
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.CommandsFeature;
 import me.wiefferink.areashop.features.DebugFeature;
@@ -14,8 +16,6 @@ import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
