@@ -117,6 +117,10 @@ public class FileManager extends Manager implements IFileManager {
 	public void shutdown() {
 		// Update lastactive time for players that are online now
 		for(GeneralRegion region : this.regions.values()) {
+			if (region.getOwner() == null) {
+				AreaShop.warn(String.format("%s has no owner", region.getName()));
+				continue;
+			}
 			Player player = Bukkit.getPlayer(region.getOwner());
 			if(player != null) {
 				region.updateLastActiveTime();

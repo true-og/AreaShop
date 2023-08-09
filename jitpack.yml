@@ -1,0 +1,6 @@
+jdk:
+  - temurin17
+before_install:
+  - sdk install java 17-zulu
+install:
+  - ./gradlew build publishToMavenLocal
