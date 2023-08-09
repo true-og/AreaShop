@@ -10,6 +10,8 @@ plugins {
 group = "me.wiefferink"
 version = "2.7.13-SNAPSHOT"
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+
 subprojects {
 
     group = rootProject.group
