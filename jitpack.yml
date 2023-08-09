@@ -1,6 +1,6 @@
 jdk:
   - temurin17
 before_install:
-  - sdk install java 17-amzn
+  - sdk install java 17.0.8-amzn
 install:
   - ./gradlew build publishToMavenLocal -Dorg.gradle.java.installations.auto-download=true
