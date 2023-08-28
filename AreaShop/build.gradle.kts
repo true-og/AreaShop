@@ -41,7 +41,7 @@ dependencies {
     implementation(projects.adapters.platform.platformInterface)
     implementation(projects.adapters.platform.paper)
     // Adapters
-    if (!providers.systemProperty("JITPACK").isPresent) {
+    if (!providers.environmentVariable("JITPACK").isPresent) {
         runtimeOnly(projects.adapters.plugins.worldedit)
         runtimeOnly(projects.adapters.plugins.worldguard)
         runtimeOnly(projects.adapters.plugins.fastasyncworldedit)

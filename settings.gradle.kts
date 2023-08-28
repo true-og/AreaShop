@@ -21,7 +21,7 @@ include(":areashop-nms")
 include(":adapters:platform:paper")
 include(":adapters:platform:platform-interface")
 
-if (!providers.systemProperty("JITPACK").isPresent) {
+if (!providers.environmentVariable("JITPACK").isPresent) {
     include(":adapters:platform:bukkit-1-17")
     include(":adapters:platform:bukkit-1-18")
     include(":adapters:platform:bukkit-1-19")
