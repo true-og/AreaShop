@@ -41,6 +41,7 @@ dependencies {
     implementation(projects.adapters.platform.platformInterface)
     implementation(projects.adapters.platform.paper)
     // Adapters
+<<<<<<< Updated upstream
     runtimeOnly(projects.adapters.plugins.worldedit)
     runtimeOnly(projects.adapters.plugins.worldguard)
     runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
@@ -48,7 +49,24 @@ dependencies {
     runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))
     runtimeOnly(project(":adapters:platform:bukkit-1-20", "reobf"))
+=======
+    if (!providers.systemProperty("JITPACK").isPresent) {
+        runtimeOnly(projects.adapters.plugins.worldedit)
+        runtimeOnly(projects.adapters.plugins.worldguard)
+        runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
+        runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
+        runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
+        runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))
+        runtimeOnly(project(":adapters:platform:bukkit-1-20", "reobf"))
+    }
+
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+>>>>>>> Stashed changes
 }
+
+
 
 repositories {
     mavenCentral()
@@ -62,7 +80,9 @@ tasks {
     }
 
     assemble {
-        dependsOn(shadowJar)
+        if (!providers.systemProperty("JITPACK").isPresent) {
+            dependsOn(shadowJar)
+        }
     }
 
     jar {
