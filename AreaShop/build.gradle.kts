@@ -40,11 +40,12 @@ dependencies {
     implementation(projects.areashopNms)
     implementation(projects.adapters.platform.platformInterface)
     implementation(projects.adapters.platform.paper)
+
+    runtimeOnly(projects.adapters.plugins.worldedit)
+    runtimeOnly(projects.adapters.plugins.worldguard)
+    runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
     // Adapters
     if (!providers.environmentVariable("JITPACK").isPresent) {
-        runtimeOnly(projects.adapters.plugins.worldedit)
-        runtimeOnly(projects.adapters.plugins.worldguard)
-        runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
         runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
         runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
         runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))

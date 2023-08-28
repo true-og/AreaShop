@@ -21,15 +21,16 @@ include(":areashop-nms")
 include(":adapters:platform:paper")
 include(":adapters:platform:platform-interface")
 
+include(":adapters:plugins:worldedit")
+include(":adapters:plugins:worldguard")
+include(":adapters:plugins:fastasyncworldedit")
+
 if (!providers.environmentVariable("JITPACK").isPresent) {
     include(":adapters:platform:bukkit-1-17")
     include(":adapters:platform:bukkit-1-18")
     include(":adapters:platform:bukkit-1-19")
     include(":adapters:platform:bukkit-1-20")
 
-    include(":adapters:plugins:worldedit")
-    include(":adapters:plugins:worldguard")
-    include(":adapters:plugins:fastasyncworldedit")
 }
 
 // Main project
