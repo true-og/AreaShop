@@ -102,6 +102,7 @@ public class SignManager extends Manager {
 
 
     public void shutdown() {
+        update();
         this.signCacheMap.values().forEach(SignCache::clear);
         this.signCacheMap.clear();
     }
