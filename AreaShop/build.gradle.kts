@@ -24,7 +24,6 @@ dependencies {
     }
 
     // 3rd party libraries
-    implementation(libs.findbugs)
     implementation("io.papermc:paperlib:1.0.8")
     implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")

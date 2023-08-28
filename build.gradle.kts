@@ -1,8 +1,12 @@
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsPlugin
+
 plugins {
     java
     `java-library`
     `maven-publish`
     id("io.papermc.paperweight.userdev") version "1.5.5" apply false
+    id("com.github.spotbugs") version "5.1.3"
     idea
     eclipse
 }
@@ -25,8 +29,9 @@ subprojects {
         }
         plugin<IdeaPlugin>()
         plugin<EclipsePlugin>()
+        // plugin<SpotBugsPlugin>()
     }
-
+    
     repositories {
         mavenCentral()
         maven("https://oss.sonatype.org/content/groups/public/")
