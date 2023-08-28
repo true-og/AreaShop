@@ -4,9 +4,9 @@ minecraft = "1.17.1-R0.1-SNAPSHOT"
 findbugs = "3.0.2"
 
 # Minecraft Plugins
-worldedit = "7.2.14"
-worldguard = "7.0.8"
-fawe = "2.6.2"
+worldedit = "7.2.15"
+worldguard = "7.0.9"
+fawe = "2.7.1"
 
 [libraries]
 # Platform
