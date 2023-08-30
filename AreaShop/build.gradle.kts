@@ -47,10 +47,10 @@ dependencies {
     // Adapters
     if (!providers.environmentVariable("JITPACK").isPresent) {
         runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
-        runtimeOnly(project(":adapters:platform:bukkit-1-18", "reobf"))
-        runtimeOnly(project(":adapters:platform:bukkit-1-19", "reobf"))
-        runtimeOnly(project(":adapters:platform:bukkit-1-20", "reobf"))
     }
+    runtimeOnly(projects.adapters.platform.bukkit118)
+    runtimeOnly(projects.adapters.platform.bukkit119)
+    runtimeOnly(projects.adapters.platform.bukkit120)
 
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
