@@ -100,8 +100,9 @@ tasks {
         relocate("io.papermc.lib", "${base}.paperlib")
         relocate("io.github.bakedlibs.dough", "${base}.dough")
         relocate("com.google.inject", "${base}.inject")
+        relocate("com.google.errorprone", "${base}.errorprone")
         relocate("org.aopalliance", "${base}.aopalliance")
         relocate("javax.annotation", "${base}.javax.annotation")
-        relocate("javax.inject", "${base}.javax.inject")
+        relocate("jakarta.inject", "${base}.jakarta.inject")
     }
 }
