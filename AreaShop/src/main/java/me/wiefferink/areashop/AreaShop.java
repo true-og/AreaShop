@@ -304,7 +304,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 					return;
 				}
 
-				AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://github.com/md5sha256/releases");
+				AreaShop.info("Update from AreaShop V" + cleanVersion(result.getCurrentVersion()) + " to AreaShop V" + cleanVersion(result.getLatestVersion()) + " available, get the latest version at https://github.com/md5sha256/AreaShop/releases");
 				for(Player player : Utils.getOnlinePlayers()) {
 					notifyUpdate(player);
 				}
