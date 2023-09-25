@@ -51,6 +51,7 @@ dependencies {
     runtimeOnly(projects.adapters.platform.bukkit118)
     runtimeOnly(projects.adapters.platform.bukkit119)
     runtimeOnly(projects.adapters.platform.bukkit120)
+    runtimeOnly(projects.adapters.platform.bukkit1202)
 
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
