@@ -12,6 +12,8 @@ import me.wiefferink.areashop.events.ask.AddingRegionEvent;
 import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
 import me.wiefferink.areashop.events.notify.AddedRegionEvent;
 import me.wiefferink.areashop.events.notify.DeletedRegionEvent;
+import me.wiefferink.areashop.features.signs.SignManager;
+import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -77,6 +79,8 @@ public class FileManager extends Manager implements IFileManager {
 	private HashMap<String, Integer> versions = null;
 	private final String versionPath;
 	private final String schemFolder;
+
+	private final SignManager signManager;
 	private final WorldGuardInterface worldGuardInterface;
 	private final MessageBridge messageBridge;
 	private final RegionFactory regionFactory;
@@ -89,12 +93,14 @@ public class FileManager extends Manager implements IFileManager {
 			@Nonnull AreaShop plugin,
 			@Nonnull WorldGuardInterface worldGuardInterface,
 			@Nonnull MessageBridge messageBridge,
-			@Nonnull RegionFactory regionFactory
+			@Nonnull RegionFactory regionFactory,
+			@Nonnull SignManager signManager
 	) {
 		this.plugin = plugin;
 		this.worldGuardInterface = worldGuardInterface;
 		this.messageBridge = messageBridge;
 		this.regionFactory = regionFactory;
+		this.signManager = signManager;
 		regions = new HashMap<>();
 		buys = new HashMap<>();
 		rents = new HashMap<>();
@@ -469,8 +475,11 @@ public class FileManager extends Manager implements IFileManager {
 
 		// Delete the signs
 		if(region.getWorld() != null) {
-			for(BlockPosition sign : region.getSignsFeature().signManager().allSignLocations()) {
+			SignManager regionSignManager = region.getSignsFeature().signManager();
+			for(BlockPosition sign : regionSignManager.allSignLocations()) {
 				sign.getBlock().setType(Material.AIR);
+				regionSignManager.removeSign(sign);
+				this.signManager.removeSign(sign);
 			}
 		}
 

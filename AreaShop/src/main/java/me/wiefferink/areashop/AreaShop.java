@@ -271,7 +271,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		featureManager = injector.getInstance(FeatureManager.class);
 		featureManager.initializeFeatures(injector);
 		managers.add(featureManager);
-		signManager = new SignManager();
+		signManager = injector.getInstance(SignManager.class);
 		managers.add(signManager);
 
 		// Register the event listeners

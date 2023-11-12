@@ -6,6 +6,7 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.features.FeatureFactory;
+import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.features.signs.SignsModule;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
@@ -58,6 +59,7 @@ public class AreaShopModule extends AbstractModule {
         bind(AreaShop.class).toInstance(this.instance);
         bind(MessageBridge.class).toInstance(this.messageBridge);
         bind(WorldGuardInterface.class).toInstance(this.worldGuardInterface);
+        bind(SignManager.class).asEagerSingleton();
         bind(WorldEditInterface.class).toInstance(this.worldEditInterface);
         bind(SignErrorLogger.class).toInstance(this.signErrorLogger);
         // Setup managers

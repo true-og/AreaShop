@@ -64,7 +64,11 @@ public class SignManager extends Manager {
         if (location == null || location.getWorld() == null) {
             return Optional.empty();
         }
-        return getCacheForWorld(location.getWorld()).flatMap(cache -> cache.removeSign(location));
+        return removeSign(new BlockPosition(location));
+    }
+
+    public Optional<RegionSign> removeSign(BlockPosition blockPosition) {
+        return getCacheForWorld(blockPosition.getWorld()).flatMap(cache -> cache.removeSign(blockPosition));
     }
 
     /**
