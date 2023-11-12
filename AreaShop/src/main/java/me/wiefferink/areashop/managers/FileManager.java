@@ -943,7 +943,9 @@ public class FileManager extends Manager implements IFileManager {
 	 */
 	@Override
 	public void loadRegionFiles() {
-		regions.clear();
+		this.regions.clear();
+		this.buys.clear();
+		this.rents.clear();
 		final File file = new File(regionsPath);
 		if(!file.exists()) {
 			if(!file.mkdirs()) {

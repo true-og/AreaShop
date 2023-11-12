@@ -73,8 +73,8 @@ public class SignListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void regionUpdate(UpdateRegionEvent event) {
-        Optional<SignsFeature> signsFeature = event.getRegion().getFeature(SignsFeature.class);
-        signsFeature.map(SignsFeature::signManager).ifPresent(SignManager::update);
+        SignsFeature signsFeature = event.getRegion().getSignsFeature();
+        signsFeature.signManager().update();
     }
 
 

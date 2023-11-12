@@ -73,9 +73,10 @@ public class SignManager extends Manager {
      */
     public boolean update() {
         boolean result = true;
-        for (SignCache signCache : this.signCacheMap.values())
-        for(RegionSign sign : signCache.allSigns()) {
-            result &= sign.update();
+        for (SignCache signCache : this.signCacheMap.values()) {
+            for (RegionSign sign : signCache.allSigns()) {
+                result &= sign.update();
+            }
         }
         return result;
     }
