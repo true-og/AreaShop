@@ -32,7 +32,6 @@ if (!providers.environmentVariable("JITPACK").isPresent) {
 include(":adapters:platform:bukkit-1-18")
 include(":adapters:platform:bukkit-1-19")
 include(":adapters:platform:bukkit-1-20")
-include(":adapters:platform:bukkit-1-20-2")
 
 
 // Main project
