@@ -157,7 +157,7 @@ sell-noPermission: "You don't have permission to sell a region."
 sell-noPermissionOther: "You don't have permission to sell another region."
 sell-disabled: "Selling has been disabled for this region."
 
-transfer-help: "/as transfer [region] <player>, the region you stand in will be used if not specified."
+transfer-help: "/as transfer <player> [region], the region you stand in will be used if not specified."
 transfer-noPermission: "You don't have permission to transfer a region."
 transfer-disabled: "Transferring has been disabled for this region."
 transfer-transferred: "%lang:region% has been transferred to %lang:player%."

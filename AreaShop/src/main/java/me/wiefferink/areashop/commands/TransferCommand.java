@@ -59,18 +59,18 @@ public class TransferCommand extends CommandAreaShop {
     }
 
     private void handlePlayer(Player player, String[] args) {
-        if (args.length < 1) {
-            this.messageBridge.message(player, "help-transfer");
+        if (args.length < 2) {
+            this.messageBridge.message(player, "transfer-help");
             return;
         }
-        String targetPlayerName = args[0];
+        String targetPlayerName = args[1];
         if (targetPlayerName.equals(player.getName())) {
             this.messageBridge.message(player, "transfer-transferSelf");
             return;
         }
         GeneralRegion region;
-        if (args.length > 1) {
-            String targetRegionName = args[1];
+        if (args.length > 2) {
+            String targetRegionName = args[2];
             region = this.fileManager.getRegion(targetRegionName);
             if (region == null) {
                 messageBridge.message(player, "cmd-noRegion");
@@ -111,7 +111,7 @@ public class TransferCommand extends CommandAreaShop {
 
     @Override
     public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
-        if (toComplete == 1) {
+        if (toComplete == 2) {
             Collection<? extends Player> players = this.server.getOnlinePlayers();
             List<String> ret = players.stream()
                     .map(Player::getName)
@@ -120,7 +120,7 @@ public class TransferCommand extends CommandAreaShop {
                 ret.remove(player.getName());
             }
             return ret;
-        } else if (toComplete == 2) {
+        } else if (toComplete == 3) {
             if (!(sender instanceof Player player)) {
                 return this.fileManager.getRegionNames();
             }
