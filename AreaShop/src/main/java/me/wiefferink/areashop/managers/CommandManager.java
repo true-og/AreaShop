@@ -38,6 +38,7 @@ import me.wiefferink.areashop.commands.SetteleportCommand;
 import me.wiefferink.areashop.commands.StackCommand;
 import me.wiefferink.areashop.commands.StopresellCommand;
 import me.wiefferink.areashop.commands.TeleportCommand;
+import me.wiefferink.areashop.commands.TransferCommand;
 import me.wiefferink.areashop.commands.UnrentCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -70,6 +71,7 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 		commands.add(injector.getInstance(UnrentCommand.class));
 		commands.add(injector.getInstance(BuyCommand.class));
 		commands.add(injector.getInstance(SellCommand.class));
+		commands.add(injector.getInstance(TransferCommand.class));
 		commands.add(injector.getInstance(MeCommand.class));
 		commands.add(injector.getInstance(InfoCommand.class));
 		commands.add(injector.getInstance(TeleportCommand.class));
