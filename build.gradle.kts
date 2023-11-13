@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "me.wiefferink"
-version = "2.7.14"
+version = "2.7.15-SNAPSHOT"
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
