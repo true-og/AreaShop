@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
+import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
@@ -95,10 +96,11 @@ public class TransferCommand extends CommandAreaShop {
             this.messageBridge.message(player, "transfer-noPlayer", targetPlayerName);
             return;
         }
-        if (player.getUniqueId().equals(region.getLandlord())) {
+        if (region.isLandlord(targetPlayer.getUniqueId())) {
             // Transfer ownership if same as landlord
             region.setOwner(targetPlayer.getUniqueId());
-            this.messageBridge.message(player, "transfer-transferred-owner", targetPlayerName);
+            region.setLandlord(targetPlayer.getUniqueId(), targetPlayerName);
+            this.messageBridge.message(player, "transfer-transferred-owner", targetPlayerName, region);
             if (targetPlayer.isOnline()) {
                 this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-owner", targetPlayerName);
             }
@@ -134,11 +136,11 @@ public class TransferCommand extends CommandAreaShop {
                 return this.fileManager.getRegionNames();
             }
             UUID uuid = player.getUniqueId();
-            return this.fileManager.getRegions()
+            return new ArrayList<>(this.fileManager.getRegions()
                     .stream()
                     .filter(region -> region.isOwner(uuid) || region.isLandlord(uuid))
                     .map(GeneralRegion::getName)
-                    .toList();
+                    .toList());
         }
         return Collections.emptyList();
     }
