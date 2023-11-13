@@ -42,6 +42,12 @@ public record VersionData(int major, int minor, int patch, PreReleaseType preRel
         if (patchComp != 0) {
             return patchComp;
         }
+        if (this.preReleaseType == null && o.preReleaseType == null) {
+            return 0;
+        }
+        if (this.preReleaseType == null) {
+            return 1;
+        }
         return this.preReleaseType.compareTo(o.preReleaseType);
     }
 }
