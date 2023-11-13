@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -121,9 +122,9 @@ public class TransferCommand extends CommandAreaShop {
     public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
         if (toComplete == 2) {
             Collection<? extends Player> players = this.server.getOnlinePlayers();
-            List<String> ret = players.stream()
+            List<String> ret = new ArrayList<>(players.stream()
                     .map(Player::getName)
-                    .collect(Collectors.toCollection(ArrayList::new));
+                    .toList());
             if (sender instanceof Player player) {
                 ret.remove(player.getName());
             }
