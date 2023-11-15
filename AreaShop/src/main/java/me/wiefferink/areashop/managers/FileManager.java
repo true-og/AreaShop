@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,11 +124,11 @@ public class FileManager extends Manager implements IFileManager {
 	public void shutdown() {
 		// Update lastactive time for players that are online now
 		for(GeneralRegion region : this.regions.values()) {
-			if (region.getOwner() == null) {
-				AreaShop.warn(String.format("%s has no owner", region.getName()));
+			UUID ownerUuid = region.getOwner();
+			if (ownerUuid == null) {
 				continue;
 			}
-			Player player = Bukkit.getPlayer(region.getOwner());
+			Player player = Bukkit.getPlayer(ownerUuid);
 			if(player != null) {
 				region.updateLastActiveTime();
 			}
