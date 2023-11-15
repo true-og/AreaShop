@@ -89,6 +89,10 @@ public class TransferCommand extends CommandAreaShop {
             }
             region = regions.get(0);
         }
+        if (!region.isTransferEnabled()) {
+            this.messageBridge.message(player, "transfer-disabled");
+            return;
+        }
         @SuppressWarnings("deprecation")
         OfflinePlayer targetPlayer = this.server.getOfflinePlayer(targetPlayerName);
         if (!targetPlayer.hasPlayedBefore()) {
