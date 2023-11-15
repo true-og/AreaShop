@@ -96,26 +96,27 @@ public class TransferCommand extends CommandAreaShop {
             this.messageBridge.message(player, "transfer-noPlayer", targetPlayerName);
             return;
         }
-        if (region.isLandlord(targetPlayer.getUniqueId())) {
+        if (region.isLandlord(player.getUniqueId())) {
             // Transfer ownership if same as landlord
             region.setOwner(targetPlayer.getUniqueId());
             region.setLandlord(targetPlayer.getUniqueId(), targetPlayerName);
             this.messageBridge.message(player, "transfer-transferred-owner", targetPlayerName, region);
             if (targetPlayer.isOnline()) {
-                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-owner", targetPlayerName);
+                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-owner", targetPlayerName, region);
             }
-
-        } else if (region instanceof RentRegion rentRegion) {
-            if (!player.getUniqueId().equals(rentRegion.getOwner())) {
+            return;
+        }
+        if (region instanceof RentRegion rentRegion) {
+            if (!rentRegion.isRenter(player.getUniqueId())) {
                 // Cannot transfer tenant if we aren't the current tenant
                 this.messageBridge.message(player, "transfer-notCurrentTenant");
                 return;
             }
             // Don't restart the rent, just swap the renter
             rentRegion.setRenter(targetPlayer.getUniqueId());
-            this.messageBridge.message(player, "transfer-transferred-tenant", targetPlayerName);
+            this.messageBridge.message(player, "transfer-transferred-tenant", targetPlayerName, region);
             if (targetPlayer.isOnline()) {
-                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-tenant", targetPlayerName);
+                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-tenant", targetPlayerName, region);
             }
         }
     }
