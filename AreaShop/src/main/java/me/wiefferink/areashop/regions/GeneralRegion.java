@@ -1590,6 +1590,22 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	}
 
 	/**
+	 * Whether region transfers are enabled
+	 * @return Returns true if region transfers are enabled, false otherwise
+	 */
+	public boolean isTransferEnabled() {
+		return getBooleanSetting("general.transferMode");
+	}
+
+	/**
+	 * Se whether region transfers are enabled
+	 * @param enabled Whether region transfers should be enabled, false otherwise
+	 */
+	public void setTransferEnabled(boolean enabled) {
+		setSetting("general.transferMode", enabled);
+	}
+
+	/**
 	 * Calculate the volume of the region (could be expensive for polygon regions).
 	 * @return Number of blocks in the region
 	 */
