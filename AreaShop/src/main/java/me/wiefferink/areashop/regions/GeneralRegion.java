@@ -1594,7 +1594,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return Returns true if region transfers are enabled, false otherwise
 	 */
 	public boolean isTransferEnabled() {
-		return getBooleanSetting("transferMode");
+		return getBooleanSetting("general.transferMode");
 	}
 
 	/**
@@ -1602,7 +1602,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param enabled Whether region transfers should be enabled, false otherwise
 	 */
 	public void setTransferEnabled(boolean enabled) {
-		setSetting("transferMode", enabled);
+		setSetting("general.transferMode", enabled);
 	}
 
 	/**

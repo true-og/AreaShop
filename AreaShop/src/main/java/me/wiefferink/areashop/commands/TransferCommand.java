@@ -110,18 +110,16 @@ public class TransferCommand extends CommandAreaShop {
             }
             return;
         }
-        if (region instanceof RentRegion rentRegion) {
-            if (!rentRegion.isRenter(player.getUniqueId())) {
-                // Cannot transfer tenant if we aren't the current tenant
-                this.messageBridge.message(player, "transfer-notCurrentTenant");
-                return;
-            }
-            // Don't restart the rent, just swap the renter
-            rentRegion.setRenter(targetPlayer.getUniqueId());
-            this.messageBridge.message(player, "transfer-transferred-tenant", targetPlayerName, region);
-            if (targetPlayer.isOnline()) {
-                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-tenant", targetPlayerName, region);
-            }
+        if (!region.isOwner(player.getUniqueId())) {
+            // Cannot transfer tenant if we aren't the current tenant
+            this.messageBridge.message(player, "transfer-notCurrentTenant");
+            return;
+        }
+        // Swap the owner/occupant (renter or buyer)
+        region.setOwner(targetPlayer.getUniqueId());
+        this.messageBridge.message(player, "transfer-transferred-tenant", targetPlayerName, region);
+        if (targetPlayer.isOnline()) {
+            this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-tenant", targetPlayerName, region);
         }
     }
 

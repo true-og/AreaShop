@@ -162,9 +162,9 @@ transfer-help: "/as transfer <player> [region], the region you stand in will be 
 transfer-noPermission: "You don't have permission to transfer a region."
 transfer-disabled: "Transferring has been disabled for this region."
 transfer-transferred-owner: "%lang:region% has been transferred and is now owned by %0%."
-transfer-transferred-tenant: "%lang:region% has been transferred and is now rented by %0%."
+transfer-transferred-tenant: "%lang:region% has been transferred and is now occupied by %0%."
 transfer-noPlayer: "Unknown player: %0%"
-transfer-notCurrentTenant: "You are not the current tenant/renter of this region."
+transfer-notCurrentTenant: "You are not the current tenant of this region."
 transfer-transferSelf: "You cannot transfer a region to yourself."
 
 reload-reloading: "Reloaded all configuration and region files."
