@@ -75,7 +75,7 @@ subprojects {
         }
     }
 
-    if (project.path.contains("platform").not() || project.name == "platform-adapter") {
+    if (project.name != "platform-bukkit-1-17") {
         publishing {
             publications {
                 create<MavenPublication>(project.name) {

@@ -39,10 +39,10 @@ dependencies {
     implementation(projects.areashopInterface)
     implementation(projects.areashopNms)
     implementation(projects.adapters.platform.platformInterface)
+    implementation(projects.adapters.platform.paper)
 
     if (!providers.environmentVariable("JITPACK").isPresent) {
         // We don't need these adapters if we are only publishing an api jar
-        implementation(projects.adapters.platform.paper)
         runtimeOnly(projects.adapters.plugins.worldedit)
         runtimeOnly(projects.adapters.plugins.worldguard)
         runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
