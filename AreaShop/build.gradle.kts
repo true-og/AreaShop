@@ -113,5 +113,6 @@ tasks {
         relocate("org.aopalliance", "${base}.aopalliance")
         relocate("javax.annotation", "${base}.javax.annotation")
         relocate("jakarta.inject", "${base}.jakarta.inject")
+        relocate("org.jetbrains.annotations", "${base}.jetbrains.annotations")
     }
 }

@@ -52,6 +52,10 @@ subprojects {
         maven("https://maven.enginehub.org/repo/")
     }
 
+    dependencies {
+        implementation("org.jetbrains:annotations:24.0.1")
+    }
+
     java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
     tasks {
