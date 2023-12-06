@@ -68,17 +68,23 @@ tasks {
     }
 
     assemble {
-        if (!providers.systemProperty("JITPACK").isPresent) {
+        if (!providers.environmentVariable("JITPACK").isPresent) {
             dependsOn(shadowJar)
         }
     }
 
     jar {
-        if (!providers.systemProperty("JITPACK").isPresent) {
+        archiveBaseName.set("AreaShop")
+        if (!providers.environmentVariable("JITPACK").isPresent) {
             archiveClassifier.set("original")
         } else {
             archiveClassifier.set("")
-            archiveBaseName.set("AreaShop")
+        }
+    }
+
+    if (providers.environmentVariable("JITPACK").isPresent) {
+        artifacts {
+            archives(jar)
         }
     }
 
