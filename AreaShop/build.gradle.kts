@@ -76,6 +76,9 @@ tasks {
     jar {
         if (!providers.systemProperty("JITPACK").isPresent) {
             archiveClassifier.set("original")
+        } else {
+            archiveClassifier.set("")
+            archiveBaseName.set("AreaShop")
         }
     }
 
