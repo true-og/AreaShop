@@ -71,7 +71,7 @@ subprojects {
         }
     }
 
-    if (project.path.contains("platform").not() && project != projects.adapters.platform.platformInterface) {
+    if (project.path.contains("platform").not() && project.name != "platform-adapter") {
         publishing {
             publications {
                 create<MavenPublication>(project.name) {
