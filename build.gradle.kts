@@ -28,7 +28,7 @@ subprojects {
     apply {
         plugin<JavaPlugin>()
         plugin<JavaLibraryPlugin>()
-        if (project.path.contains("platform").not()) {
+        if (project.name != "platform-bukkit-1-17") {
             plugin<MavenPublishPlugin>()
         }
         plugin<IdeaPlugin>()
