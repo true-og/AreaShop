@@ -38,17 +38,19 @@ dependencies {
     // Project submodules
     implementation(projects.areashopInterface)
     implementation(projects.areashopNms)
-    implementation(projects.adapters.platform.platformInterface)
-    implementation(projects.adapters.platform.paper)
 
-    runtimeOnly(projects.adapters.plugins.worldedit)
-    runtimeOnly(projects.adapters.plugins.worldguard)
-    runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
-    // Adapters
     if (!providers.environmentVariable("JITPACK").isPresent) {
+        // We don't need these adapters if we are only publishing an api jar
+        implementation(projects.adapters.platform.platformInterface)
+        implementation(projects.adapters.platform.paper)
+
+        runtimeOnly(projects.adapters.plugins.worldedit)
+        runtimeOnly(projects.adapters.plugins.worldguard)
+        runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
         runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
+        runtimeOnly(projects.adapters.platform.bukkitModern)
     }
-    runtimeOnly(projects.adapters.platform.bukkitModern)
+
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.57.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
