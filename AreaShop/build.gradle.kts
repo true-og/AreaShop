@@ -74,7 +74,9 @@ tasks {
     }
 
     jar {
-        archiveClassifier.set("original")
+        if (!providers.systemProperty("JITPACK").isPresent) {
+            archiveClassifier.set("original")
+        }
     }
 
     java {
