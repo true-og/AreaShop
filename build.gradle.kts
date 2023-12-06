@@ -5,7 +5,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.papermc.paperweight.userdev") version "1.5.5" apply false
+    id("io.papermc.paperweight.userdev") version "1.5.10" apply false
     id("com.github.spotbugs") version "5.1.3"
     idea
     eclipse
@@ -14,7 +14,11 @@ plugins {
 group = "me.wiefferink"
 version = "2.7.16-SNAPSHOT"
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+val targetJavaVersion = 17
+val encoding = Charsets.UTF_8
+val encodingName: String = encoding.name()
+
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 
 subprojects {
 
@@ -52,18 +56,18 @@ subprojects {
 
     tasks {
         withType(JavaCompile::class) {
-            options.release.set(17)
-            options.encoding = Charsets.UTF_8.name()
+            options.release.set(targetJavaVersion)
+            options.encoding = encodingName
             options.isFork = true
             options.isDeprecation = true
         }
 
         withType(Javadoc::class) {
-            options.encoding = Charsets.UTF_8.name()
+            options.encoding = encodingName
         }
 
         withType(ProcessResources::class) {
-            filteringCharset = Charsets.UTF_8.name()
+            filteringCharset = encodingName
         }
     }
 

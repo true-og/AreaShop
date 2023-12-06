@@ -3,9 +3,9 @@
 minecraft = "1.17.1-R0.1-SNAPSHOT"
 
 # Minecraft Plugins
-worldedit = "7.2.15"
+worldedit = "7.2.17"
 worldguard = "7.0.9"
-fawe = "2.7.1"
+fawe = "2.8.1"
 
 [libraries]
 # Platform
