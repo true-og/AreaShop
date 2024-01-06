@@ -24,22 +24,22 @@ dependencies {
     }
 
     // 3rd party libraries
-    implementation("io.papermc:paperlib:1.0.8")
-    implementation("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
-    implementation("com.github.NLthijs48:BukkitDo:819d51ec2b")
-    implementation("io.github.baked-libs:dough-data:1.2.0")
-    implementation("com.google.inject:guice:7.0.0") {
+    api("io.papermc:paperlib:1.0.8")
+    api("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
+    api("com.github.NLthijs48:BukkitDo:819d51ec2b")
+    api("io.github.baked-libs:dough-data:1.2.0")
+    api("com.google.inject:guice:7.0.0") {
         exclude("com.google.guava", "guava")
     }
-    implementation("com.google.inject.extensions:guice-assistedinject:7.0.0") {
+    api("com.google.inject.extensions:guice-assistedinject:7.0.0") {
         exclude("com.google.guava", "guava")
     }
 
     // Project submodules
-    implementation(projects.areashopInterface)
-    implementation(projects.areashopNms)
-    implementation(projects.adapters.platform.platformInterface)
-    implementation(projects.adapters.platform.paper)
+    api(projects.areashopInterface)
+    api(projects.areashopNms)
+    api(projects.adapters.platform.platformInterface)
+    api(projects.adapters.platform.paper)
 
     if (!providers.environmentVariable("JITPACK").isPresent) {
         // We don't need these adapters if we are only publishing an api jar
