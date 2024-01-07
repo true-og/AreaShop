@@ -5,7 +5,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.papermc.paperweight.userdev") version "1.5.10" apply false
+    id("io.papermc.paperweight.userdev") version "1.5.11" apply false
     id("com.github.spotbugs") version "5.1.3"
     idea
     eclipse
@@ -56,7 +56,7 @@ subprojects {
         implementation("org.jetbrains:annotations:24.0.1")
     }
 
-    java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 
     tasks {
         withType(JavaCompile::class) {
