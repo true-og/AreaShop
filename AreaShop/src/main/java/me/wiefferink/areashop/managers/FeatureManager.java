@@ -60,6 +60,10 @@ public class FeatureManager extends Manager {
 		}
 	}
 
+	public <T extends RegionFeature> void registerNonGlobalFeature(@Nonnull Class<T> clazz, @Nonnull Function<GeneralRegion, T> constructor) {
+		this.regionFeatureConstructors.put(clazz, constructor);
+	}
+
 	private <T extends RegionFeature> Function<GeneralRegion, T> wrapInstantiator(Class<T> clazz, Function<GeneralRegion, T> function
 	) {
 		return region -> {
