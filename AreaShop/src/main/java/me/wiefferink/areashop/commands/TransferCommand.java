@@ -102,12 +102,15 @@ public class TransferCommand extends CommandAreaShop {
         }
         if (region.isLandlord(player.getUniqueId())) {
             // Transfer ownership if same as landlord
+            region.getFriendsFeature().deleteFriend(region.getOwner(), null);
             region.setOwner(targetPlayer.getUniqueId());
             region.setLandlord(targetPlayer.getUniqueId(), targetPlayerName);
             this.messageBridge.message(player, "transfer-transferred-owner", targetPlayerName, region);
             if (targetPlayer.isOnline()) {
                 this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-owner", targetPlayerName, region);
             }
+            region.update();
+            region.saveRequired();
             return;
         }
         if (!region.isOwner(player.getUniqueId())) {
@@ -115,12 +118,16 @@ public class TransferCommand extends CommandAreaShop {
             this.messageBridge.message(player, "transfer-notCurrentTenant");
             return;
         }
+        region.getFriendsFeature().deleteFriend(region.getOwner(), null);
         // Swap the owner/occupant (renter or buyer)
         region.setOwner(targetPlayer.getUniqueId());
+
         this.messageBridge.message(player, "transfer-transferred-tenant", targetPlayerName, region);
         if (targetPlayer.isOnline()) {
             this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-tenant", targetPlayerName, region);
         }
+        region.update();
+        region.saveRequired();
     }
 
     @Override
