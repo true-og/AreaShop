@@ -19,9 +19,6 @@ import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.processing.Message;
 import me.wiefferink.interactivemessenger.processing.ReplacementProvider;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -35,7 +32,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
-import java.awt.geom.Area;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -289,7 +285,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
 	@Override
 	public boolean equals(Object region) {
-		return region instanceof GeneralRegion && ((GeneralRegion)region).getName().equals(getName());
+		return region instanceof GeneralRegion generalRegion && generalRegion.getName().equals(getName());
 	}
 
 	@Override
@@ -317,7 +313,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * Broadcast the given event and update the region status.
 	 * @param event The update event that should be broadcasted
 	 */
-	public void notifyAndUpdate(NotifyRegionEvent event) {
+	public void notifyAndUpdate(NotifyRegionEvent<?> event) {
 		Bukkit.getPluginManager().callEvent(event);
 		update();
 	}
@@ -1233,8 +1229,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		// Either result is a ConfigurationSection or is used as key in the plugin config to get a ConfigurationSection
 		if(result == null) {
 			return null;
-		} else if(result instanceof ConfigurationSection) {
-			return (ConfigurationSection)result;
+		} else if(result instanceof ConfigurationSection configurationSection) {
+			return configurationSection;
 		} else {
 			return plugin.getConfig().getConfigurationSection(translateProfileName + "." + result.toString());
 		}

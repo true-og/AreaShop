@@ -345,7 +345,7 @@ public class RentRegion extends GeneralRegion {
 	 * @return The amount of money the player should get back
 	 */
 	public double getMoneyBackAmount() {
-		Long currentTime = Calendar.getInstance().getTimeInMillis();
+		long currentTime = Calendar.getInstance().getTimeInMillis();
 		Double timeLeft = (double)(getRentedUntil() - currentTime);
 		double percentage = (getMoneyBackPercentage()) / 100.0;
 		Double timePeriod = (double)(getDuration());
@@ -449,7 +449,7 @@ public class RentRegion extends GeneralRegion {
 		}
 
 		OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(getRenter());
-		return offlinePlayer != null && rent(offlinePlayer);
+		return rent(offlinePlayer);
 	}
 
 	/**
