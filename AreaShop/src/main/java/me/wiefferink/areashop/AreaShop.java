@@ -32,7 +32,6 @@ import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.SpigotPlatform;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.areashop.tools.version.Version;
-import me.wiefferink.areashop.tools.version.VersionData;
 import me.wiefferink.areashop.tools.version.VersionUtil;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.source.LanguageManager;
@@ -55,7 +54,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -180,31 +178,20 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
 		// Setup NMS Impl
 		Version currentServerVersion = VersionUtil.parseMinecraftVersion(Bukkit.getBukkitVersion());
-		if (currentServerVersion.versionData().isOlderThan(VersionUtil.MC_1_17_1)) {
-			error("Unsupported minecraft version: " + currentServerVersion + "! Minimum is 1.17.1");
+		if (currentServerVersion.versionData().isOlderThan(VersionUtil.MC_1_18_2)) {
+			error("Unsupported minecraft version: " + currentServerVersion + "! Minimum is 1.18.2");
 			shutdownOnError();
 			return;
 		}
-		if (currentServerVersion.versionData().equals(VersionUtil.MC_1_17_1)) {
-			try {
-				Class<?> adapterImpl = Class.forName("me.wiefferink.areashop.adapters.platform.legacy.LegacyPlatformAdapter");
-				this.platformAdapter = adapterImpl.asSubclass(PlatformAdapter.class).getConstructor().newInstance();
-			} catch (ReflectiveOperationException ex) {
-				ex.printStackTrace();
-				error("Failed to initialize legacy PlatformAdapter implementation!");
-				shutdownOnError();
-				return;
-			}
-		} else {
-			try {
-				Class<?> adapterImpl = Class.forName("me.wiefferink.areashop.adapters.platform.modern.ModernPlatformAdapter");
-				this.platformAdapter = adapterImpl.asSubclass(PlatformAdapter.class).getConstructor().newInstance();
-			} catch (ReflectiveOperationException ex) {
-				ex.printStackTrace();
-				error("Failed to initialize modern PlatformAdapter implementation!");
-				shutdownOnError();
-				return;
-			}
+
+		try {
+			Class<?> adapterImpl = Class.forName("me.wiefferink.areashop.adapters.platform.modern.ModernPlatformAdapter");
+			this.platformAdapter = adapterImpl.asSubclass(PlatformAdapter.class).getConstructor().newInstance();
+		} catch (ReflectiveOperationException ex) {
+			ex.printStackTrace();
+			error("Failed to initialize modern PlatformAdapter implementation!");
+			shutdownOnError();
+			return;
 		}
 
 		final MinecraftPlatform platform;

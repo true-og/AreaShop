@@ -49,7 +49,6 @@ dependencies {
         runtimeOnly(projects.adapters.plugins.worldedit)
         runtimeOnly(projects.adapters.plugins.worldguard)
         runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
-        runtimeOnly(project(":adapters:platform:bukkit-1-17", "reobf"))
         runtimeOnly(projects.adapters.platform.bukkitModern)
     }
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.57.1")

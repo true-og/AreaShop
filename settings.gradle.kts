@@ -25,10 +25,6 @@ include(":adapters:plugins:worldedit")
 include(":adapters:plugins:worldguard")
 include(":adapters:plugins:fastasyncworldedit")
 
-if (!providers.environmentVariable("JITPACK").isPresent) {
-    include(":adapters:platform:bukkit-1-17")
-}
-
 include(":adapters:platform:bukkit-modern")
 
 

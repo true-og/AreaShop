@@ -28,11 +28,9 @@ subprojects {
     apply {
         plugin<JavaPlugin>()
         plugin<JavaLibraryPlugin>()
-        if (project.name != "platform-bukkit-1-17") {
-            plugin<MavenPublishPlugin>()
-        }
         plugin<IdeaPlugin>()
         plugin<EclipsePlugin>()
+        plugin<MavenPublishPlugin>()
         // plugin<SpotBugsPlugin>()
     }
     
@@ -75,22 +73,20 @@ subprojects {
         }
     }
 
-    if (project.name != "platform-bukkit-1-17") {
-        publishing {
-            publications {
-                create<MavenPublication>(project.name) {
-                    from(components["java"])
-                    pom {
-                        scm {
-                            connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
-                            developerConnection.set("scm:git:ssh://github.com/md5sha256/AreaShop.git")
-                            url.set("https://github.com/md5sha256/AreaShop/tree/dev/bleeding")
-                        }
-                        licenses {
-                            license {
-                                name.set("GNU General Public License v3.0")
-                                url.set("https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE")
-                            }
+    publishing {
+        publications {
+            create<MavenPublication>(project.name) {
+                from(components["java"])
+                pom {
+                    scm {
+                        connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
+                        developerConnection.set("scm:git:ssh://github.com/md5sha256/AreaShop.git")
+                        url.set("https://github.com/md5sha256/AreaShop/tree/dev/bleeding")
+                    }
+                    licenses {
+                        license {
+                            name.set("GNU General Public License v3.0")
+                            url.set("https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE")
                         }
                     }
                 }
