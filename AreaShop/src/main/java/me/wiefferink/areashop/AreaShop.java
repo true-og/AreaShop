@@ -456,11 +456,11 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		for (File file : langFiles) {
 			String name = file.getName();
 			String langName = name.substring(0, name.length() - 4);
-			File toMigrate = new File(existingLanguages, langName + "-MM.yml");
-			if (toMigrate.exists()) {
+			if (langName.endsWith("-MM")) {
 				debug("Skipping migration for " + langName + " as it already exists.");
 				continue;
 			}
+			File toMigrate = new File(existingLanguages, langName + "-MM.yml");
 			try {
 				LanguageConverter.performConversion(file, toMigrate);
 			} catch (IOException ex) {

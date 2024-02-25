@@ -18,6 +18,9 @@ chatPrefix:
 # WorldGuard doesn't support MiniMessage, so when setting WorldGuard Greetings, this prefix is used instead. (Bukkit color codes)
 wgPrefix: '&2[AreaShop] &r'
 
+# Whether languages should be migrated to MiniMessage
+migrateLanguages: false
+
 # The language file that should be used, check the 'lang' folder for build-in languages (use the filename without .yml here).
 # More information can be found here: https://github.com/NLthijs48/AreaShop/wiki/Language-support.
 # NOTE: If you want to use MiniMessage, make sure you're using mmLanguage below.
