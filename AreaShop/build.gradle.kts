@@ -1,5 +1,6 @@
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("xyz.jpenilla.run-paper") version "2.2.3"
 }
 
 description = "AreaShop"
@@ -7,33 +8,19 @@ description = "AreaShop"
 dependencies {
     // Platform
     compileOnlyApi(libs.spigot)
-    compileOnlyApi(libs.worldeditCore) {
-        exclude("com.google.guava", "guava")
-    }
-    compileOnlyApi(libs.worldeditBukkit) {
-        exclude("com.google.guava", "guava")
-    }
-    compileOnlyApi(libs.worldguardCore) {
-        exclude("com.google.guava", "guava")
-    }
-    compileOnlyApi(libs.worldguardBukkit) {
-        exclude("com.google.guava", "guava")
-    }
-    compileOnlyApi("com.github.MilkBowl:VaultAPI:1.7") {
-        exclude("com.google.guava", "guava")
-    }
+    compileOnlyApi(libs.worldeditCore)
+    compileOnlyApi(libs.worldeditBukkit)
+    compileOnlyApi(libs.worldguardCore)
+    compileOnlyApi(libs.worldguardBukkit)
+    compileOnlyApi("com.github.MilkBowl:VaultAPI:1.7")
 
     // 3rd party libraries
     api("io.papermc:paperlib:1.0.8")
     api("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     api("com.github.NLthijs48:BukkitDo:819d51ec2b")
     api("io.github.baked-libs:dough-data:1.2.0")
-    api("com.google.inject:guice:7.0.0") {
-        exclude("com.google.guava", "guava")
-    }
-    api("com.google.inject.extensions:guice-assistedinject:7.0.0") {
-        exclude("com.google.guava", "guava")
-    }
+    api("com.google.inject:guice:7.0.0")
+    api("com.google.inject.extensions:guice-assistedinject:7.0.0")
     implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-platform-bukkit:4.3.0")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
@@ -49,6 +36,7 @@ dependencies {
         runtimeOnly(projects.adapters.plugins.worldedit)
         runtimeOnly(projects.adapters.plugins.worldguard)
         runtimeOnly(projects.adapters.plugins.fastasyncworldedit)
+        runtimeOnly(projects.adapters.plugins.essentials)
         runtimeOnly(projects.adapters.platform.bukkitModern)
     }
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.57.1")
@@ -115,5 +103,26 @@ tasks {
         relocate("javax.annotation", "${base}.javax.annotation")
         relocate("jakarta.inject", "${base}.jakarta.inject")
         relocate("org.jetbrains.annotations", "${base}.jetbrains.annotations")
+        relocate("io.leangen.geantyref", "${base}.geantyref")
+        relocate("net.kyori", "${base}.kyori")
+        relocate("org.checkerframework", "${base}.checkerframework")
+        relocate("org.intellij", "${base}.intellij")
+        relocate("org.spongepowered", "${base}.spongepowered")
+        relocate("org.yaml.snakeyaml", "${base}.snakeyaml")
+    }
+    runServer {
+        // Configure the Minecraft version for our task.
+        // This is the only required configuration besides applying the plugin.
+        // Your plugin's jar (or shadowJar if present) will be used automatically.
+        minecraftVersion("1.18.2")
+
+        downloadPlugins {
+            github("EssentialsX", "essentials", "2.20.1", "EssentialsX-2.20.1.jar")
+            github("MilkBowl", "Vault", "1.7.3", "Vault.jar")
+            // WorldEdit 7.2.19
+            url("https://mediafilez.forgecdn.net/files/5077/477/worldedit-bukkit-7.2.19.jar")
+            // WorldGuard 7.0.7
+            url("https://mediafilez.forgecdn.net/files/3677/516/worldguard-bukkit-7.0.7-dist.jar")
+        }
     }
 }

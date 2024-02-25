@@ -25,6 +25,8 @@ include(":adapters:plugins:worldedit")
 include(":adapters:plugins:worldguard")
 include(":adapters:plugins:fastasyncworldedit")
 
+include(":adapters:plugins:essentials")
+
 include(":adapters:platform:bukkit-modern")
 
 

@@ -9,6 +9,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import io.papermc.lib.PaperLib;
 import me.wiefferink.areashop.adapters.platform.MinecraftPlatform;
 import me.wiefferink.areashop.adapters.platform.paper.PaperPlatform;
+import me.wiefferink.areashop.extensions.AreashopExtension;
 import me.wiefferink.areashop.features.signs.SignManager;
 import me.wiefferink.areashop.interfaces.AreaShopInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -56,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -286,6 +288,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		signManager = injector.getInstance(SignManager.class);
 		managers.add(signManager);
 
+		loadExtensions();
+
 		// Register the event listeners
 		getServer().getPluginManager().registerEvents(new PlayerLoginLogoutListener(this, messageBridge), this);
 
@@ -340,6 +344,25 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	private void shutdownOnError() {
 		error("The plugin has not started, fix the errors listed above");
 		getServer().getPluginManager().disablePlugin(this);
+	}
+
+	private void loadExtensions() {
+		if (this.getServer().getPluginManager().isPluginEnabled("Essentials")) {
+			loadEssentialsExt().ifPresent(ext -> ext.init(this, this.injector));
+		}
+	}
+
+	private Optional<AreashopExtension> loadEssentialsExt() {
+		try {
+			Class<?> clazz = Class.forName("me.wiefferink.areashop.adapters.plugins.essentials.EssentialsExtension");
+			Class<? extends AreashopExtension> extClass = clazz.asSubclass(AreashopExtension.class);
+			AreashopExtension extension = extClass.getConstructor().newInstance();
+			return Optional.of(extension);
+		} catch (ReflectiveOperationException ex) {
+			error("Failed to initialize the essentials extension!");
+			ex.printStackTrace();
+		}
+		return Optional.empty();
 	}
 
 	/**

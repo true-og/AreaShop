@@ -12,6 +12,7 @@ import me.wiefferink.areashop.features.FriendsFeature;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.features.TeleportFeature;
 import me.wiefferink.areashop.features.WorldGuardRegionFlagsFeature;
+import me.wiefferink.areashop.features.homeaccess.HomeAccessFeature;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
 
@@ -45,6 +46,7 @@ public class FeatureManager extends Manager {
 		regionFeatureConstructors.put(SignsFeature.class, wrapInstantiator(SignsFeature.class, featureFactory::createSignsFeature));
 		regionFeatureConstructors.put(TeleportFeature.class, wrapInstantiator(TeleportFeature.class, featureFactory::createTeleportFeature));
 		regionFeatureConstructors.put(FriendsFeature.class, wrapInstantiator(FriendsFeature.class, featureFactory::createFriendsFeature));
+		regionFeatureConstructors.put(HomeAccessFeature.class, wrapInstantiator(HomeAccessFeature.class, featureFactory::createHomeAccessFeature));
 	}
 
 	public void initializeFeatures(@Nonnull Injector injector) {

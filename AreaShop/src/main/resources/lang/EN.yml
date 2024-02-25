@@ -104,6 +104,7 @@ help-stack: "%lang:helpCommand|/as stack|% Create multiple regions and add them.
 help-setlandlord: "%lang:helpCommand|/as setlandlord|% Set the landlord of a region."
 help-import: "%lang:helpCommand|/as import|% Import region from RegionForSale."
 help-transfer: "%lang:helpCommand|/as transfer|% Transfer a region to another player."
+help-togglehome: "%lang:helpcommand|/as toogglehome|% Toggle whether players can set homes in a region."
 
 rent-help: "/as rent [region], the region you stand in will be used if not specified."
 rent-noPermission: "You don't have permission to rent a region."
@@ -166,6 +167,13 @@ transfer-transferred-tenant: "%lang:region% has been transferred and is now occu
 transfer-noPlayer: "Unknown player: %0%"
 transfer-notCurrentTenant: "You are not the current tenant of this region."
 transfer-transferSelf: "You cannot transfer a region to yourself."
+
+togglehome-noPermission: "You do not have permission to toggle sethome access."
+togglehome-noPermissionOther: "You do not have permission to toggle sethome access of others."
+togglehome-unknownAccessType: "Unknown HomeAccessType: %0%"
+togglehome-success: "Access type changed to %0%!"
+togglehome-help: "/areashop togglehome <region> <access type>"
+togglehome-sethomeDenied: "You cannot set a home in this region."
 
 reload-reloading: "Reloaded all configuration and region files."
 reload-updateStart: ""
