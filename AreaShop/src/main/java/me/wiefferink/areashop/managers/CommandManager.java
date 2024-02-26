@@ -39,6 +39,7 @@ import me.wiefferink.areashop.commands.SetteleportCommand;
 import me.wiefferink.areashop.commands.StackCommand;
 import me.wiefferink.areashop.commands.StopresellCommand;
 import me.wiefferink.areashop.commands.TeleportCommand;
+import me.wiefferink.areashop.commands.TogglehomeControlCommand;
 import me.wiefferink.areashop.commands.TransferCommand;
 import me.wiefferink.areashop.commands.UnrentCommand;
 import org.bukkit.command.Command;
@@ -102,6 +103,7 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 		commands.add(injector.getInstance(SetlandlordCommand.class));
 		commands.add(injector.getInstance(MessageCommand.class));
 		commands.add(injector.getInstance(ImportCommand.class));
+		commands.add(injector.getInstance(TogglehomeControlCommand.class));
 
 		// Register commands in bukkit
 		plugin.getCommand("AreaShop").setExecutor(this);
