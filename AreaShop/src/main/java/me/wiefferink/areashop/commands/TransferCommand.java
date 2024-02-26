@@ -107,9 +107,7 @@ public class TransferCommand extends CommandAreaShop {
             region.setOwner(targetPlayer.getUniqueId());
             region.setLandlord(targetPlayer.getUniqueId(), targetPlayerName);
             this.messageBridge.message(player, "transfer-transferred-owner", targetPlayerName, region);
-            if (targetPlayer.isOnline()) {
-                this.messageBridge.message(targetPlayer.getPlayer(), "transfer-transferred-owner", targetPlayerName, region);
-            }
+            this.messageBridge.messagePersistent(targetPlayer, "transfer-transferred-owner", targetPlayerName, region);
             region.update();
             region.saveRequired();
             return;
