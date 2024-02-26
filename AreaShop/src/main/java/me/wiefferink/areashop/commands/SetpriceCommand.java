@@ -11,16 +11,21 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class SetpriceCommand extends CommandAreaShop {
 
+
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	public SetpriceCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+	}
 	
 	@Override
 	public String getCommandStart() {

@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockIterator;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,15 +25,22 @@ import java.util.Set;
 
 @Singleton
 public class AddsignCommand extends CommandAreaShop {
+	private final IFileManager fileManager;
+	private final SignManager signManager;
+	private final Plugin plugin;
 
-	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
-	@Inject
-	private SignManager signManager;
-	@Inject
-	private Plugin plugin;
+    @Inject
+    public AddsignCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager,
+            @Nonnull SignManager signManager,
+            @Nonnull Plugin plugin
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+        this.signManager = signManager;
+        this.plugin = plugin;
+    }
 
 	@Override
 	public String getCommandStart() {

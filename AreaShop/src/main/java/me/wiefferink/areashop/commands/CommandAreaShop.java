@@ -1,16 +1,12 @@
 package me.wiefferink.areashop.commands;
 
-import me.wiefferink.areashop.AreaShop;
-import me.wiefferink.areashop.tools.SimpleMessageBridge;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.interactivemessenger.processing.Message;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,9 +18,11 @@ import java.util.Map;
 public abstract class CommandAreaShop {
 
 	private final Map<String, CommandTime> lastUsed;
+	protected final MessageBridge messageBridge;
 
-	protected CommandAreaShop() {
+	protected CommandAreaShop(@Nonnull MessageBridge messageBridge) {
 		lastUsed = new HashMap<>();
+		this.messageBridge = messageBridge;
 	}
 
 	/**
@@ -87,20 +85,12 @@ public abstract class CommandAreaShop {
 			return true;
 		}
 
-		Message m = message.prefix().append(Message.fromKey("confirm-yes").replacements(command));
-		SimpleMessageBridge.send(m, sender);
+		this.messageBridge.message(sender, "confirm-yes", command);
 		lastUsed.put(sender.getName(), new CommandTime(command, now));
 		return false;
 	}
 
-	private static class CommandTime {
-		public final String command;
-		public final long time;
-
-		CommandTime(String command, long time) {
-			this.command = command;
-			this.time = time;
-		}
+	private record CommandTime(String command, long time) {
 	}
 
 }

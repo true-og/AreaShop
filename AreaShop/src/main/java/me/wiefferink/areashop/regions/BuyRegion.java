@@ -3,6 +3,7 @@ package me.wiefferink.areashop.regions;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.ask.BuyingRegionEvent;
 import me.wiefferink.areashop.events.ask.ResellingRegionEvent;
 import me.wiefferink.areashop.events.ask.SellingRegionEvent;
@@ -37,10 +38,11 @@ public class BuyRegion extends GeneralRegion {
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull MessageBridge messageBridge,
 			@Nullable Economy economy,
 			@Assisted @Nonnull YamlConfiguration config
 	) {
-		super(plugin, featureManager, worldEditInterface, worldGuardInterface, config);
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, config);
 		this.economy = economy;
 	}
 
@@ -50,11 +52,12 @@ public class BuyRegion extends GeneralRegion {
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull MessageBridge messageBridge,
 			@Nullable Economy economy,
 			@Assisted @Nonnull String name,
 			@Assisted @Nonnull World world
 	) {
-		super(plugin, featureManager, worldEditInterface, worldGuardInterface, name, world);
+		super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, name, world);
 		this.economy = economy;
 	}
 

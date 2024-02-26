@@ -4,35 +4,36 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
-import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
-import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Singleton
 public class TransferCommand extends CommandAreaShop {
 
+    private final IFileManager fileManager;
+    private final Server server;
+
     @Inject
-    private MessageBridge messageBridge;
-    @Inject
-    private IFileManager fileManager;
-    @Inject
-    private Plugin plugin;
-    @Inject
-    private Server server;
+    public TransferCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager,
+            @Nonnull Server server
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+        this.server = server;
+    }
 
     @Override
     public String getCommandStart() {

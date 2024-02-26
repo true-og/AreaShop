@@ -13,22 +13,29 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Singleton
 public class FindCommand extends CommandAreaShop {
 
+	private final Economy economy;
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private Economy economy;
-	@Inject
-	private IFileManager fileManager;
+	public FindCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull Economy economy,
+			@Nonnull IFileManager fileManager
+	) {
+		super(messageBridge);
+		this.economy = economy;
+		this.fileManager = fileManager;
+	}
 
 	@Override
 	public String getCommandStart() {

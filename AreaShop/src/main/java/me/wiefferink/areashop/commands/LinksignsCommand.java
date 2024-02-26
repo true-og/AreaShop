@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -17,12 +18,20 @@ import java.util.Set;
 @Singleton
 public class LinksignsCommand extends CommandAreaShop {
 
+	private final SignLinkerManager signLinkerManager;
+
+	private final AreaShop plugin;
+
 	@Inject
-	private SignLinkerManager signLinkerManager;
-	@Inject
-	private AreaShop plugin;
-	@Inject
-	private MessageBridge messageBridge;
+	public LinksignsCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull SignLinkerManager signLinkerManager,
+			@Nonnull AreaShop plugin
+	) {
+		super(messageBridge);
+		this.signLinkerManager = signLinkerManager;
+		this.plugin = plugin;
+	}
 
 	@Override
 	public String getCommandStart() {

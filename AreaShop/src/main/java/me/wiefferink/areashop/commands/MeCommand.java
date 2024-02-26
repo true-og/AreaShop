@@ -14,6 +14,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,16 +23,22 @@ import java.util.Set;
 @Singleton
 public class MeCommand extends CommandAreaShop {
 
-	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	private final IFileManager fileManager;
+	private final OfflinePlayerHelper offlinePlayerHelper;
+	private final BukkitSchedulerExecutor executor;
 
 	@Inject
-	private OfflinePlayerHelper offlinePlayerHelper;
-
-	@Inject
-	private BukkitSchedulerExecutor executor;
+	public MeCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull IFileManager fileManager,
+			@Nonnull OfflinePlayerHelper offlinePlayerHelper,
+			@Nonnull BukkitSchedulerExecutor executor
+	) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+		this.offlinePlayerHelper = offlinePlayerHelper;
+		this.executor = executor;
+	}
 
 	@Override
 	public String getCommandStart() {
@@ -40,7 +47,7 @@ public class MeCommand extends CommandAreaShop {
 
 	@Override
 	public String getHelp(CommandSender target) {
-		if(target.hasPermission("areashop.me")) {
+		if (target.hasPermission("areashop.me")) {
 			return "help-me";
 		}
 		return null;

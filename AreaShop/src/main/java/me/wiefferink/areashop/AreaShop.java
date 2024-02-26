@@ -27,6 +27,7 @@ import me.wiefferink.areashop.modules.BukkitModule;
 import me.wiefferink.areashop.modules.DependencyModule;
 import me.wiefferink.areashop.modules.PlatformModule;
 import me.wiefferink.areashop.platform.adapter.PlatformAdapter;
+import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
 import me.wiefferink.areashop.tools.LanguageConverter;
 import me.wiefferink.areashop.tools.SimpleMessageBridge;
@@ -51,6 +52,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -91,6 +93,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	private List<String> chatprefix = null;
 	private boolean ready = false;
 	private GithubUpdateCheck githubUpdateCheck = null;
+
+	private final ServiceManager serviceManager = new ServiceManager();
 
 	// Folders and file names
 	public static final String languageFolder = "lang";
@@ -175,7 +179,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		AreaShop.instance = this;
 		Do.init(this);
 		managers = new HashSet<>();
-		messageBridge = new SimpleMessageBridge();
+		messageBridge = new SimpleMessageBridge(this.serviceManager);
 		signErrorLogger = new SignErrorLogger(new File(getDataFolder(), signLogFile));
 
 		// Setup NMS Impl
@@ -266,8 +270,16 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			return;
 		}
 
-		AreaShopModule asModule = new AreaShopModule(this, messageBridge,
-				platformAdapter, worldEditInterface, worldGuardInterface, signErrorLogger, platformModule, dependencyModule);
+		AreaShopModule asModule = new AreaShopModule(this,
+				this.messageBridge,
+				this.platformAdapter,
+				this.worldEditInterface,
+				this.worldGuardInterface,
+				this.signErrorLogger,
+				this.serviceManager,
+				platformModule,
+				dependencyModule
+		);
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
 		// Load all data from files and check versions
@@ -592,6 +604,12 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	@Override
 	public FeatureManager getFeatureManager() {
 		return featureManager;
+	}
+
+	@NotNull
+	@Override
+	public ServiceManager getServiceManager() {
+		return this.serviceManager;
 	}
 
 	/**

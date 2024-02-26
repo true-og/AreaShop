@@ -6,13 +6,18 @@ import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
+
 @Singleton
 public class ReloadCommand extends CommandAreaShop {
 
+	private final AreaShop plugin;
+
 	@Inject
-	private AreaShop plugin;
-	@Inject
-	private MessageBridge messageBridge;
+	public ReloadCommand(@Nonnull MessageBridge messageBridge, @Nonnull AreaShop plugin) {
+		super(messageBridge);
+		this.plugin = plugin;
+	}
 	
 	@Override
 	public String getCommandStart() {

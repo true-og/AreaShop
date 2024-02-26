@@ -10,6 +10,7 @@ import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,10 +18,13 @@ import java.util.List;
 @Singleton
 public class SchematiceventCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	public SchematiceventCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+	}
 	
 	@Override
 	public String getCommandStart() {

@@ -14,24 +14,32 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class AddfriendCommand extends CommandAreaShop {
 
-    @Inject
-    private MessageBridge messageBridge;
-    @Inject
-    private IFileManager fileManager;
-    @Inject
-    private Plugin plugin;
+    private final IFileManager fileManager;
+    private final Plugin plugin;
+    private final OfflinePlayerHelper offlinePlayerHelper;
+    private final BukkitSchedulerExecutor executor;
 
     @Inject
-    private OfflinePlayerHelper offlinePlayerHelper;
-
-    @Inject
-    private BukkitSchedulerExecutor executor;
+    public AddfriendCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager,
+            @Nonnull Plugin plugin,
+            @Nonnull OfflinePlayerHelper offlinePlayerHelper,
+            @Nonnull BukkitSchedulerExecutor executor
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+        this.plugin = plugin;
+        this.offlinePlayerHelper = offlinePlayerHelper;
+        this.executor = executor;
+    }
 
     @Override
     public String getCommandStart() {

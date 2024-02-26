@@ -26,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -38,17 +39,29 @@ import java.util.stream.Collectors;
 @Singleton
 public class AddCommand extends CommandAreaShop {
 
+	private final AreaShop plugin;
+
+	private final WorldEditInterface worldEditInterface;
+
+	private final WorldGuardInterface worldGuardInterface;
+	private final RegionFactory regionFactory;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private AreaShop plugin;
-	@Inject
-	private WorldEditInterface worldEditInterface;
-	@Inject
-	private WorldGuardInterface worldGuardInterface;
-	@Inject
-	private RegionFactory regionFactory;
-	
+	public AddCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull AreaShop plugin,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull RegionFactory regionFactory
+
+	) {
+		super(messageBridge);
+		this.plugin = plugin;
+		this.worldEditInterface = worldEditInterface;
+		this.worldGuardInterface = worldGuardInterface;
+		this.regionFactory = regionFactory;
+	}
+
 	@Override
 	public String getCommandStart() {
 		return "areashop add";

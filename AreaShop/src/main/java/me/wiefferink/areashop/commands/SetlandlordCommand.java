@@ -11,20 +11,29 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class SetlandlordCommand extends CommandAreaShop {
 
+    private final IFileManager fileManager;
+    private final OfflinePlayerHelper offlinePlayerHelper;
+    private final BukkitSchedulerExecutor executor;
+
     @Inject
-    private MessageBridge messageBridge;
-    @Inject
-    private IFileManager fileManager;
-    @Inject
-    private OfflinePlayerHelper offlinePlayerHelper;
-    @Inject
-    private BukkitSchedulerExecutor executor;
+    public SetlandlordCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager,
+            @Nonnull OfflinePlayerHelper offlinePlayerHelper,
+            @Nonnull BukkitSchedulerExecutor executor
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+        this.offlinePlayerHelper = offlinePlayerHelper;
+        this.executor = executor;
+    }
 
     @Override
     public String getCommandStart() {

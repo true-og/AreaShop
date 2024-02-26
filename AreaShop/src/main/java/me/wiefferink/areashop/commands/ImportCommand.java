@@ -7,6 +7,7 @@ import me.wiefferink.areashop.regions.ImportJobFactory;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +19,13 @@ public class ImportCommand extends CommandAreaShop {
 	   1: Settings from /worlds/<world>/config.yml
 	   2: Settings from /worlds/<world>/parent-regions.yml (if their priority is set it is added to this value)
 	 */
+	private final ImportJobFactory importJobFactory;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private ImportJobFactory importJobFactory;
+	public ImportCommand(@Nonnull MessageBridge messageBridge, @Nonnull ImportJobFactory importJobFactory) {
+		super(messageBridge);
+		this.importJobFactory = importJobFactory;
+	}
 
 	@Override
 	public String getCommandStart() {

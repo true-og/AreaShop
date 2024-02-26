@@ -3,6 +3,7 @@ package me.wiefferink.areashop.regions;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.wiefferink.areashop.AreaShop;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.events.NotifyRegionEvent;
 import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.FriendsFeature;
@@ -57,6 +58,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	protected final WorldGuardInterface worldGuardInterface;
 
 	protected final YamlConfiguration config;
+
+	protected final MessageBridge messageBridge;
 	private boolean saveRequired = false;
 	private boolean deleted = false;
 	private long volume = -1;
@@ -165,12 +168,14 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			@Nonnull FeatureManager featureManager,
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
+            @Nonnull MessageBridge messageBridge,
 			@Nonnull YamlConfiguration config
 	) {
 		this.plugin = plugin;
 		this.featureManager = featureManager;
 		this.worldEditInterface = worldEditInterface;
 		this.worldGuardInterface = worldGuardInterface;
+        this.messageBridge = messageBridge;
 		this.config = config;
 		setup();
 	}
@@ -184,6 +189,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 							@Nonnull FeatureManager featureManager,
 							@Nonnull WorldEditInterface worldEditInterface,
 							@Nonnull WorldGuardInterface worldGuardInterface,
+							@Nonnull MessageBridge messageBridge,
 							@Nonnull String name,
 							@Nonnull World world) {
 		this.config = new YamlConfiguration();
@@ -191,6 +197,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		this.featureManager = featureManager;
 		this.worldGuardInterface = worldGuardInterface;
 		this.worldEditInterface = worldEditInterface;
+		this.messageBridge = messageBridge;
 		setSetting("general.name", name);
 		setSetting("general.world", world.getName());
 		setSetting("general.type", getType().getValue().toLowerCase());
@@ -741,12 +748,20 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @param params The parameters to inject into the message string
 	 */
 	public void configurableMessage(Object target, String key, boolean prefix, Object... params) {
-		Object[] newParams = new Object[params.length + 1];
-		newParams[0] = this;
-		System.arraycopy(params, 0, newParams, 1, params.length);
-		Message m = Message.fromKey(key).prefix(prefix).replacements(newParams);
-		SimpleMessageBridge.send(m, target);
+		@Nonnull Object[] newParams = getParams(params);
+		if (prefix) {
+			this.messageBridge.message(target, key, newParams);
+		} else {
+			this.messageBridge.messageNoPrefix(target, key, newParams);
+		}
 	}
+
+    private @Nonnull Object[] getParams(Object... params) {
+        Object[] newParams = new Object[params.length + 1];
+        newParams[0] = this;
+        System.arraycopy(params, 0, newParams, 1, params.length);
+        return newParams;
+    }
 
 	public void messageNoPrefix(Object target, String key, Object... params) {
 		configurableMessage(target, key, false, params);
@@ -755,6 +770,16 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	public void message(Object target, String key, Object... params) {
 		configurableMessage(target, key, true, params);
 	}
+
+    public void messagePersistent(@Nonnull Object target, @Nonnull String key, Object... params) {
+        @Nonnull Object[] newParams = getParams(params);
+        this.messageBridge.message(target, key, newParams);
+    }
+
+    public void messagePersistentNoPrefix(@Nonnull Object target, @Nonnull String key, Object... params) {
+        @Nonnull Object[] newParams = getParams(params);
+        this.messageBridge.messageNoPrefix(target, key, newParams);
+    }
 
 	/**
 	 * Check if a sign needs periodic updating.

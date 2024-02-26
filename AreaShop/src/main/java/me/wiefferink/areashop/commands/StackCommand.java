@@ -24,25 +24,38 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class StackCommand extends CommandAreaShop {
 
+	private final Plugin plugin;
+
+	private final WorldEditInterface worldEditInterface;
+
+	private final WorldGuardInterface worldGuardInterface;
+	private final RegionFactory regionFactory;
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
-	@Inject
-	private WorldEditInterface worldEditInterface;
-	@Inject
-	private WorldGuardInterface worldGuardInterface;
-	@Inject
-	private RegionFactory regionFactory;
-	@Inject
-	private Plugin plugin;
-	
+	public StackCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull Plugin plugin,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull WorldGuardInterface worldGuardInterface,
+			@Nonnull RegionFactory regionFactory,
+			@Nonnull IFileManager fileManager
+
+	) {
+		super(messageBridge);
+		this.plugin = plugin;
+		this.worldEditInterface = worldEditInterface;
+		this.worldGuardInterface = worldGuardInterface;
+		this.regionFactory = regionFactory;
+		this.fileManager = fileManager;
+	}
 	@Override
 	public String getCommandStart() {
 		return "areashop stack";

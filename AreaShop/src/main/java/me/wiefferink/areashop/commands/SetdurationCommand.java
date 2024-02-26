@@ -10,18 +10,25 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class SetdurationCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+	private final Plugin plugin;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
-	@Inject
-	private Plugin plugin;
+	public SetdurationCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull IFileManager fileManager,
+			@Nonnull Plugin plugin) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+		this.plugin = plugin;
+	}
 	
 	@Override
 	public String getCommandStart() {

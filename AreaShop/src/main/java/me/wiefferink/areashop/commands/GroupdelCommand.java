@@ -7,12 +7,12 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
-import me.wiefferink.areashop.regions.RegionFactory;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -20,15 +20,21 @@ import java.util.TreeSet;
 @Singleton
 public class GroupdelCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+	private final WorldEditInterface worldEditInterface;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
-	@Inject
-	private RegionFactory regionFactory;
-	@Inject
-	private WorldEditInterface worldEditInterface;
-	
+	public GroupdelCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull IFileManager fileManager,
+			@Nonnull WorldEditInterface worldEditInterface
+	) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+		this.worldEditInterface = worldEditInterface;
+	}
+
+
 	@Override
 	public String getCommandStart() {
 		return "areashop groupdel";

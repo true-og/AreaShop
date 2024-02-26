@@ -8,16 +8,20 @@ import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class TeleportCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	public TeleportCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+	}
 	
 	@Override
 	public String getCommandStart() {

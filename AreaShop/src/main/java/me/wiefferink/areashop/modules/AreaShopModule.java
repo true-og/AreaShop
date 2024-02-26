@@ -20,6 +20,7 @@ import me.wiefferink.areashop.managers.SignLinkerManager;
 import me.wiefferink.areashop.platform.adapter.PlatformAdapter;
 import me.wiefferink.areashop.regions.ImportJobFactory;
 import me.wiefferink.areashop.regions.RegionModule;
+import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.areashop.tools.Utils;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.plugin.Plugin;
@@ -37,12 +38,15 @@ public class AreaShopModule extends AbstractModule {
     private final SignErrorLogger signErrorLogger;
     private final AbstractModule[] extras;
 
+    private final ServiceManager serviceManager;
+
     public AreaShopModule(@Nonnull AreaShop instance,
                           @Nonnull MessageBridge messageBridge,
                           @Nonnull PlatformAdapter platformAdapter,
                           @Nonnull WorldEditInterface worldEditInterface,
                           @Nonnull WorldGuardInterface worldGuardInterface,
                           @Nonnull SignErrorLogger signErrorLogger,
+                          @Nonnull ServiceManager serviceManager,
                           @Nonnull AbstractModule... extras
     ) {
         this.instance = instance;
@@ -51,6 +55,7 @@ public class AreaShopModule extends AbstractModule {
         this.signErrorLogger = signErrorLogger;
         this.worldEditInterface = worldEditInterface;
         this.worldGuardInterface = worldGuardInterface;
+        this.serviceManager = serviceManager;
         this.extras = extras;
     }
 
@@ -69,6 +74,7 @@ public class AreaShopModule extends AbstractModule {
         bind(FeatureManager.class).in(Singleton.class);
         bind(CommandManager.class).in(Singleton.class);
         bind(SignLinkerManager.class).in(Singleton.class);
+        bind(ServiceManager.class).toInstance(this.serviceManager);
         install(new SignsModule());
         install(new RegionModule());
         install(new FactoryModuleBuilder().build(FeatureFactory.class));

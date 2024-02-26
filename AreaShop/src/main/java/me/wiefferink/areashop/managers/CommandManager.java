@@ -68,7 +68,7 @@ public class CommandManager extends Manager implements CommandExecutor, TabCompl
 		this.plugin = plugin;
 		this.messageBridge = messageBridge;
 		commands = new ArrayList<>(34);
-		commands.add(new HelpCommand(this));
+		commands.add(new HelpCommand(messageBridge, this));
 		commands.add(injector.getInstance(RentCommand.class));
 		commands.add(injector.getInstance(UnrentCommand.class));
 		commands.add(injector.getInstance(BuyCommand.class));

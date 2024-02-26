@@ -7,16 +7,20 @@ import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class GrouplistCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	public GrouplistCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+	}
 	
 	@Override
 	public String getCommandStart() {

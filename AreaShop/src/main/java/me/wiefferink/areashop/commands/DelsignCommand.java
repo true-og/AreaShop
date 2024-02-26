@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockIterator;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +20,12 @@ import java.util.Optional;
 @Singleton
 public class DelsignCommand extends CommandAreaShop {
 
+	private final SignManager signManager;
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private SignManager signManager;
-	
+	public DelsignCommand(@Nonnull MessageBridge messageBridge, @Nonnull SignManager signManager) {
+		super(messageBridge);
+		this.signManager = signManager;
+	}
 	@Override
 	public String getCommandStart() {
 		return "areashop delsign";

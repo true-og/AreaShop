@@ -2,19 +2,16 @@ package me.wiefferink.areashop.commands;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +19,9 @@ import java.util.List;
 public class MessageCommand extends CommandAreaShop {
 
 	@Inject
-	private MessageBridge messageBridge;
+	public MessageCommand(@Nonnull MessageBridge messageBridge) {
+		super(messageBridge);
+	}
 	
 	@Override
 	public String getCommandStart() {

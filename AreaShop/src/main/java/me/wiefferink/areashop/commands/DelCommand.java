@@ -14,6 +14,7 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -21,13 +22,20 @@ import java.util.TreeSet;
 @Singleton
 public class DelCommand extends CommandAreaShop {
 
+	private final WorldEditInterface worldEditInterface;
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private WorldEditInterface worldEditInterface;
-	@Inject
-	private IFileManager fileManager;
-	
+	public DelCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull IFileManager fileManager
+	) {
+		super(messageBridge);
+		this.worldEditInterface = worldEditInterface;
+		this.fileManager = fileManager;
+	}
+
 	@Override
 	public String getCommandStart() {
 		return "areashop del";

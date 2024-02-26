@@ -6,20 +6,24 @@ import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class SetTransferCommand extends CommandAreaShop {
 
+    private final IFileManager fileManager;
+
     @Inject
-    private MessageBridge messageBridge;
-    @Inject
-    private IFileManager fileManager;
-    @Inject
-    private Plugin plugin;
+    public SetTransferCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+    }
 
     @Override
     public String getCommandStart() {

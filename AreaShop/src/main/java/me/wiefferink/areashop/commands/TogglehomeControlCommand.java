@@ -22,12 +22,11 @@ import java.util.stream.Stream;
 public final class TogglehomeControlCommand extends CommandAreaShop {
 
     private final IFileManager fileManager;
-    private final MessageBridge messageBridge;
 
     @Inject
-    public TogglehomeControlCommand(@Nonnull IFileManager fileManager, @Nonnull MessageBridge messageBridge) {
+    public TogglehomeControlCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+        super(messageBridge);
         this.fileManager = fileManager;
-        this.messageBridge = messageBridge;
     }
 
     @Override

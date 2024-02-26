@@ -3,7 +3,6 @@ package me.wiefferink.areashop.commands;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -13,14 +12,10 @@ import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.apache.logging.log4j.message.SimpleMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,10 +27,13 @@ import java.util.Set;
 @Singleton
 public class InfoCommand extends CommandAreaShop {
 
+	private final IFileManager fileManager;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
+	public InfoCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+	}
 	
 	@Override
 	public String getCommandStart() {

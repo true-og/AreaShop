@@ -1,7 +1,6 @@
 package me.wiefferink.areashop.commands;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.managers.CommandManager;
 import org.bukkit.command.CommandSender;
 
@@ -11,7 +10,8 @@ public class HelpCommand extends CommandAreaShop {
 
 	private final CommandManager commandManager;
 
-	public HelpCommand(@Nonnull CommandManager commandManager) {
+	public HelpCommand(@Nonnull MessageBridge messageBridge, @Nonnull CommandManager commandManager) {
+		super(messageBridge);
 		this.commandManager = commandManager;
 	}
 

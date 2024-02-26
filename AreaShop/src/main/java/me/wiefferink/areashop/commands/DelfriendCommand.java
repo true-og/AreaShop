@@ -13,34 +13,28 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class DelfriendCommand extends CommandAreaShop {
 
-    @Inject
-    private MessageBridge messageBridge;
-    @Inject
-    private IFileManager fileManager;
+    private final IFileManager fileManager;
+    private final OfflinePlayerHelper offlinePlayerHelper;
+    private final BukkitSchedulerExecutor executor;
 
     @Inject
-    private OfflinePlayerHelper offlinePlayerHelper;
-
-    @Inject
-    private BukkitSchedulerExecutor executor;
-
-    @Override
-    public String getCommandStart() {
-        return "areashop delfriend";
-    }
-
-    @Override
-    public String getHelp(CommandSender target) {
-        if (target.hasPermission("areashop.delfriendall") || target.hasPermission("areashop.delfriend")) {
-            return "help-delFriend";
-        }
-        return null;
+    public DelfriendCommand(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager,
+            @Nonnull OfflinePlayerHelper offlinePlayerHelper,
+            @Nonnull BukkitSchedulerExecutor executor
+    ) {
+        super(messageBridge);
+        this.fileManager = fileManager;
+        this.offlinePlayerHelper = offlinePlayerHelper;
+        this.executor = executor;
     }
 
     /**
@@ -58,6 +52,19 @@ public class DelfriendCommand extends CommandAreaShop {
             return region.isOwner(player) && player.hasPermission("areashop.delfriend");
         }
         return false;
+    }
+
+    @Override
+    public String getCommandStart() {
+        return "areashop delfriend";
+    }
+
+    @Override
+    public String getHelp(CommandSender target) {
+        if (target.hasPermission("areashop.delfriendall") || target.hasPermission("areashop.delfriend")) {
+            return "help-delFriend";
+        }
+        return null;
     }
 
     @Override
@@ -130,18 +137,18 @@ public class DelfriendCommand extends CommandAreaShop {
         }, this.executor);
     }
 
-	@Override
-	public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
-		ArrayList<String> result = new ArrayList<>();
-		if(toComplete == 2) {
-			for(Player player : Utils.getOnlinePlayers()) {
-				result.add(player.getName());
-			}
-		} else if(toComplete == 3) {
-			result.addAll(fileManager.getRegionNames());
-		}
-		return result;
-	}
+    @Override
+    public List<String> getTabCompleteList(int toComplete, String[] start, CommandSender sender) {
+        ArrayList<String> result = new ArrayList<>();
+        if (toComplete == 2) {
+            for (Player player : Utils.getOnlinePlayers()) {
+                result.add(player.getName());
+            }
+        } else if (toComplete == 3) {
+            result.addAll(fileManager.getRegionNames());
+        }
+        return result;
+    }
 }
 
 

@@ -1,33 +1,84 @@
 package me.wiefferink.areashop.tools;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.interactivemessenger.Log;
-import me.wiefferink.interactivemessenger.generators.ConsoleGenerator;
-import me.wiefferink.interactivemessenger.generators.TellrawGenerator;
-import me.wiefferink.interactivemessenger.parsers.YamlParser;
+import me.wiefferink.areashop.features.mail.MailService;
+import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.interactivemessenger.processing.Message;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import java.util.Optional;
 
 @Singleton
 public class SimpleMessageBridge implements MessageBridge {
+    private final ServiceManager serviceManager;
+
+    @Inject
+    public SimpleMessageBridge(@Nonnull ServiceManager serviceManager) {
+        this.serviceManager = serviceManager;
+    }
+
+    public static void send(Message message, Object target) {
+        if (!AreaShop.useMiniMessage()) {
+            message.send(target);
+            return;
+        }
+
+        if (target instanceof Audience audience) {
+            if (message.get() == null || message.get().isEmpty() || (message.get().size() == 1 && message.get()
+                    .get(0)
+                    .isEmpty())) {
+                return;
+            }
+            audience.sendMessage(convertMessage(message));
+        } else {
+            AreaShop.error("AreaShop sent a non-supported Object as the Audience for a Message!");
+        }
+    }
+
+    private static Component convertMessage(@Nonnull Message message) {
+        message.doReplacements();
+
+        StringBuilder messageStr = new StringBuilder();
+        for (String line : message.get()) {
+            messageStr.append(line);
+        }
+
+        MiniMessage mm = MiniMessage.miniMessage();
+        return mm.deserialize(messageStr.toString());
+    }
+
+    @Override
+    public void messagePersistent(@Nonnull OfflinePlayer target,
+                                  @Nonnull String key,
+                                  @Nonnull Object... replacements) {
+        Message message = Message.fromKey(key).replacements(replacements);
+        messagePersistent(target, message);
+    }
+
+
+    public void messagePersistent(@Nonnull OfflinePlayer target, @Nonnull Message message) {
+        if (target.isOnline()) {
+            send(message, target.getPlayer());
+            return;
+        }
+        Optional<MailService> optional = this.serviceManager.getService(MailService.class);
+        if (optional.isEmpty()) {
+            return;
+        }
+        MailService mailService = optional.get();
+        mailService.sendMail(target, message.getPlain());
+    }
 
     /**
      * Send a message to a target without a prefix.
+     *
      * @param target       The target to send the message to
      * @param key          The key of the language string
      * @param replacements The replacements to insert in the message
@@ -38,36 +89,9 @@ public class SimpleMessageBridge implements MessageBridge {
         send(m, target);
     }
 
-    public static void send(Message message, Object target) {
-        if(AreaShop.useMiniMessage()) {
-
-            if(target instanceof Audience audience) {
-                if(message.get() == null || message.get().isEmpty() || (message.get().size() == 1 && message.get()
-                        .get(0)
-                        .isEmpty())) {
-                    return;
-                }
-                message.doReplacements();
-
-                StringBuilder messageStr = new StringBuilder();
-                for(String line : message.get()) {
-                    messageStr.append(line);
-                }
-
-                MiniMessage mm = MiniMessage.miniMessage();
-                Component parsed = mm.deserialize(messageStr.toString());
-                audience.sendMessage(parsed);
-            }
-            else {
-                AreaShop.error("AreaShop sent a non-supported Object as the Audience for a Message!");
-            }
-        } else {
-            message.send(target);
-        }
-    }
-
     /**
      * Send a message to a target, prefixed by the default chat prefix.
+     *
      * @param target       The target to send the message to
      * @param key          The key of the language string
      * @param replacements The replacements to insert in the message

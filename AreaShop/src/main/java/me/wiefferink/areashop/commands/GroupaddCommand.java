@@ -13,6 +13,7 @@ import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -20,16 +21,27 @@ import java.util.TreeSet;
 @Singleton
 public class GroupaddCommand extends CommandAreaShop {
 
+
+	private final IFileManager fileManager;
+
+	private final RegionFactory regionFactory;
+
+	private final WorldEditInterface worldEditInterface;
+
 	@Inject
-	private MessageBridge messageBridge;
-	@Inject
-	private IFileManager fileManager;
-	@Inject
-	private RegionFactory regionFactory;
-	@Inject
-	private WorldEditInterface worldEditInterface;
-	
-	
+	public GroupaddCommand(
+			@Nonnull MessageBridge messageBridge,
+			@Nonnull IFileManager fileManager,
+			@Nonnull WorldEditInterface worldEditInterface,
+			@Nonnull RegionFactory regionFactory
+
+	) {
+		super(messageBridge);
+		this.fileManager = fileManager;
+		this.worldEditInterface = worldEditInterface;
+		this.regionFactory = regionFactory;
+	}
+
 	@Override
 	public String getCommandStart() {
 		return "areashop groupadd";
