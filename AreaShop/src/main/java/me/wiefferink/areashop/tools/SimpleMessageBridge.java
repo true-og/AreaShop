@@ -13,6 +13,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
 
 @Singleton
@@ -73,7 +74,15 @@ public class SimpleMessageBridge implements MessageBridge {
             return;
         }
         MailService mailService = optional.get();
-        mailService.sendMail(target, message.getPlain());
+        List<String> serializedMessages;
+        if (AreaShop.useMiniMessage()) {
+            // The lang file we are using will already provide languages in MiniMessage format
+            serializedMessages = message.get();
+        } else {
+            // We need to manually convert the messages into MiniMessage first
+            serializedMessages = LanguageConverter.convertRawList(message.get());
+        }
+        serializedMessages.forEach(msg -> mailService.sendMail(target, msg));
     }
 
     /**
