@@ -10,6 +10,7 @@ import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
 import org.incendo.cloud.parser.ArgumentParseResult;
 import org.incendo.cloud.parser.ArgumentParser;
+import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.parser.flag.CommandFlag;
 import org.incendo.cloud.suggestion.SuggestionProvider;
 
@@ -26,6 +27,13 @@ public class WorldGuardRegionParser<C extends Entity> implements ArgumentParser<
     ) {
         this.worldFlag = worldFlag;
         this.worldGuardInterface = worldGuardInterface;
+    }
+
+    public static <C extends Entity> ParserDescriptor<C, ProtectedRegion> worldGuardRegionParser(
+            @Nonnull CommandFlag<World> worldFlag,
+            @Nonnull WorldGuardInterface worldGuardInterface
+    ) {
+        return ParserDescriptor.of(new WorldGuardRegionParser<>(worldFlag, worldGuardInterface), ProtectedRegion.class);
     }
 
     @Override

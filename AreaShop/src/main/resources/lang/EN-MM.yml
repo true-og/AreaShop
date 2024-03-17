@@ -394,6 +394,7 @@ setup-couldNotDetect: 'Found multiple regions with the same priority and/or pare
 setup-blacklisted: '%0% is on the blacklist and cannot be added to AreaShop.'
 setup-noPermission: You cannot add the region '%0%', you are not an owner/member or
   don't have the permission for it.
+setup-selectionWorldMismatch: "Your selection is in a different world!"
 
 destroy-noPermissionRent: You don't have permission for deregistering a rental region.
 destroy-noPermissionBuy: You don't have permission for deregistering a buy region.
