@@ -24,10 +24,9 @@ import org.incendo.cloud.exception.CommandExecutionException;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.standard.DoubleParser;
 import org.incendo.cloud.parser.standard.StringParser;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @Singleton
 public class QuickRentCommand extends AreashopCommandBean {
@@ -63,9 +62,9 @@ public class QuickRentCommand extends AreashopCommandBean {
         return null;
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
+    protected Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
         return builder.literal("quickrent")
                 .permission("permission")
                 .senderType(Player.class)
@@ -119,7 +118,7 @@ public class QuickRentCommand extends AreashopCommandBean {
 
     @Nullable
     @Override
-    public String getHelpKey(@NotNull CommandSender target) {
+    public String getHelpKey(@Nonnull CommandSender target) {
         if (target.hasPermission("areashop.quickrent")) {
             return "help-quickrent";
         }

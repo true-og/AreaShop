@@ -23,6 +23,7 @@ import me.wiefferink.areashop.commands.LinkSignsCommand;
 import me.wiefferink.areashop.commands.MeCommand;
 import me.wiefferink.areashop.commands.MessageCommand;
 import me.wiefferink.areashop.commands.QuickBuyCommand;
+import me.wiefferink.areashop.commands.QuickDeleteCommand;
 import me.wiefferink.areashop.commands.QuickRentCommand;
 import me.wiefferink.areashop.commands.ReloadCommand;
 import me.wiefferink.areashop.commands.RentCommand;
@@ -83,6 +84,7 @@ public class AreashopCommands {
             MeCommand.class,
             MessageCommand.class,
             QuickBuyCommand.class,
+            QuickDeleteCommand.class,
             QuickRentCommand.class,
             ReloadCommand.class,
             RentCommand.class,
