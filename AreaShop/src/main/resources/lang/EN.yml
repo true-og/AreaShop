@@ -603,6 +603,8 @@ import-invalidSignLocation: "[red]Failed to import a sign of region '%0%', inval
 import-signAlreadyAdded: "[red]Skipped adding sign at location '%1%' to region '%0%', it is already added to region '%2%'."
 import-moneyBackFailed: "[red]Failed to parse buy price '%0%' and sell price '%1%' to set the money back percentage."
 
+quickadd-failedCreateWGRegion: "Failed to create the worldguard region!";
+
 confirm-rent:
   - "%lang:prefix%Are you sure you want to rent %lang:tRegion|%0%|%?[break]"
   - "[darkgreen][bold]►[reset] %lang:button|Click to rent %0%|%"

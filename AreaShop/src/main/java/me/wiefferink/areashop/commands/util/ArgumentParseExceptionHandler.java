@@ -1,12 +1,13 @@
 package me.wiefferink.areashop.commands.util;
 
 import me.wiefferink.areashop.MessageBridge;
+import org.bukkit.command.CommandSender;
 import org.incendo.cloud.exception.handling.ExceptionContext;
 import org.incendo.cloud.exception.handling.ExceptionHandler;
 
 import javax.annotation.Nonnull;
 
-public class ArgumentParseExceptionHandler<C> implements ExceptionHandler<C, AreaShopCommandException> {
+public class ArgumentParseExceptionHandler<C extends CommandSender> implements ExceptionHandler<C, AreaShopCommandException> {
 
     private final MessageBridge messageBridge;
 
@@ -14,16 +15,23 @@ public class ArgumentParseExceptionHandler<C> implements ExceptionHandler<C, Are
         this.messageBridge = messageBridge;
     }
 
-    @Override
-    public void handle(@Nonnull ExceptionContext<C, AreaShopCommandException> context) {
-        AreaShopCommandException parseException = context.exception();
-        String key = parseException.messageKey();
-        Object[] replacements = parseException.replacements();
+    public static void handleException(
+            @Nonnull MessageBridge messageBridge,
+            @Nonnull CommandSender sender,
+            @Nonnull AreaShopCommandException exception
+    ) {
+        String key = exception.messageKey();
+        Object[] replacements = exception.replacements();
         if (replacements.length == 0) {
-            this.messageBridge.message(context.context().sender(), key);
+            messageBridge.message(sender, key);
             return;
         }
         // Pass the values as a var-args and not as a string[]
-        this.messageBridge.message(context.context().sender(), key, replacements);
+        messageBridge.message(sender, key, replacements);
+    }
+
+    @Override
+    public void handle(@Nonnull ExceptionContext<C, AreaShopCommandException> context) {
+        handleException(this.messageBridge, context.context().sender(), context.exception());
     }
 }

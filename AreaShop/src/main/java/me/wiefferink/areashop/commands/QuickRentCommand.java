@@ -9,9 +9,10 @@ import me.wiefferink.areashop.commands.util.ArgumentParseExceptionHandler;
 import me.wiefferink.areashop.commands.util.RegionCreationUtil;
 import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
 import me.wiefferink.areashop.managers.IFileManager;
-import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
+import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.BukkitSchedulerExecutor;
+import me.wiefferink.areashop.tools.DurationInput;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -29,10 +30,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 
 @Singleton
-public class QuickBuyCommand extends AreashopCommandBean {
+public class QuickRentCommand extends AreashopCommandBean {
 
     private static final CloudKey<String> KEY_REGION = CloudKey.of("region", String.class);
     private static final CloudKey<Double> KEY_PRICE = CloudKey.of("price", Double.class);
+
+    private static final CloudKey<DurationInput> KEY_DURATION = CloudKey.of("duration", DurationInput.class);
     private static final CloudKey<OfflinePlayer> KEY_LANDLORD = CloudKey.of("landlord", OfflinePlayer.class);
     private final RegionFactory regionFactory;
     private final IFileManager fileManager;
@@ -41,7 +44,7 @@ public class QuickBuyCommand extends AreashopCommandBean {
     private final BukkitSchedulerExecutor executor;
 
     @Inject
-    public QuickBuyCommand(
+    public QuickRentCommand(
             @Nonnull MessageBridge messageBridge,
             @Nonnull RegionFactory regionFactory,
             @Nonnull IFileManager fileManager,
@@ -63,7 +66,7 @@ public class QuickBuyCommand extends AreashopCommandBean {
     @NotNull
     @Override
     protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("quickbuy")
+        return builder.literal("quickrent")
                 .permission("permission")
                 .senderType(Player.class)
                 .required(KEY_REGION, StringParser.stringParser())
@@ -72,11 +75,11 @@ public class QuickBuyCommand extends AreashopCommandBean {
                 .handler(this::handleCommand);
     }
 
-    // /as quickbuy <name> <price> <duration> <landlord>
+    // /as quickrent <name> <price> <duration> <landlord>
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
         Player player = context.sender();
-        if (!player.hasPermission("areashop.quickbuy")) {
+        if (!player.hasPermission("areashop.quickrent")) {
             player.sendMessage("Insufficient permission");
             return;
         }
@@ -95,6 +98,7 @@ public class QuickBuyCommand extends AreashopCommandBean {
                         return;
                     }
                     double price = context.get(KEY_PRICE);
+                    DurationInput duration = context.get(KEY_DURATION);
 
                     OfflinePlayer landlord = context.get(KEY_LANDLORD);
                     if (!landlord.hasPlayedBefore()) {
@@ -104,25 +108,26 @@ public class QuickBuyCommand extends AreashopCommandBean {
                     String regionName = region.getId();
                     World world = player.getWorld();
 
-                    BuyRegion buyRegion = this.regionFactory.createBuyRegion(regionName, world);
-                    buyRegion.setPrice(price);
-                    buyRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
-                    this.fileManager.addRegion(buyRegion);
-                    this.messageBridge.message(player, "add-success", "buy", regionName);
+                    RentRegion rentRegion = this.regionFactory.createRentRegion(regionName, world);
+                    rentRegion.setPrice(price);
+                    rentRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
+                    rentRegion.setDuration(duration.toTinySpacedString());
+                    this.fileManager.addRegion(rentRegion);
+                    this.messageBridge.message(player, "add-success", "rent", regionName);
                 }, this.executor);
     }
 
     @Nullable
     @Override
     public String getHelpKey(@NotNull CommandSender target) {
-        if (target.hasPermission("areashop.quickbuy")) {
-            return "help-quickbuy";
+        if (target.hasPermission("areashop.quickrent")) {
+            return "help-quickrent";
         }
         return null;
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
-        return CommandProperties.of("quickbuy");
+        return CommandProperties.of("quickrent");
     }
 }
