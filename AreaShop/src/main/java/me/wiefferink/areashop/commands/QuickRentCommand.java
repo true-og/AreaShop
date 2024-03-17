@@ -6,6 +6,7 @@ import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.ArgumentParseExceptionHandler;
+import me.wiefferink.areashop.commands.util.DurationInputParser;
 import me.wiefferink.areashop.commands.util.RegionCreationUtil;
 import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
 import me.wiefferink.areashop.managers.IFileManager;
@@ -70,6 +71,7 @@ public class QuickRentCommand extends AreashopCommandBean {
                 .senderType(Player.class)
                 .required(KEY_REGION, StringParser.stringParser())
                 .required(KEY_PRICE, DoubleParser.doubleParser(0))
+                .required(KEY_DURATION, DurationInputParser.durationInputParser())
                 .required(KEY_LANDLORD, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .handler(this::handleCommand);
     }
