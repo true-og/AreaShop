@@ -106,6 +106,9 @@ help-setlandlord: "%lang:helpCommand|/as setlandlord|% Set the landlord of a reg
 help-import: "%lang:helpCommand|/as import|% Import region from RegionForSale."
 help-transfer: "%lang:helpCommand|/as transfer|% Transfer a region to another player."
 help-togglehome: "%lang:helpCommand|/as toogglehome|% Toggle whether players can set homes in a region."
+help-quickbuy: "%lang:helpCommand|/as quickbuy|% Create a worldguard region and import it as a buy region."
+help-quickrent: "%lang:helpCommand|/as quickrent|% Create a worldguard region and import it as a rent region."
+help-quickdelete: "%lang:helpCommand|/as quickdelete|% Delete an AreaShop region and its associated WorldGuard region(s)."
 
 rent-help: "/as rent [region], the region you stand in will be used if not specified."
 rent-noPermission: "You don't have permission to rent a region."
