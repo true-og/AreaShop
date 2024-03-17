@@ -73,7 +73,7 @@ public class QuickDeleteCommand extends AreashopCommandBean {
             throw new AreaShopCommandException("general-cancelled", event.getReason());
         }
         RegionManager regionManager = this.worldGuardInterface.getRegionManager(region.getWorld());
-        regionManager.removeRegion(regionManager.getName());
+        regionManager.removeRegion(region.getRegion().getId());
         this.messageBridge.message(player, "destroy-successRent", region);
     }
 
