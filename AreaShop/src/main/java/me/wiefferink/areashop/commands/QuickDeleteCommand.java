@@ -1,5 +1,6 @@
 package me.wiefferink.areashop.commands;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import me.wiefferink.areashop.MessageBridge;
@@ -37,6 +38,7 @@ public class QuickDeleteCommand extends AreashopCommandBean {
     private final WorldGuardInterface worldGuardInterface;
     private final MessageBridge messageBridge;
 
+    @Inject
     public QuickDeleteCommand(
             @Nonnull MessageBridge messageBridge,
             @Nonnull IFileManager fileManager,
