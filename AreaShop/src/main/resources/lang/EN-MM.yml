@@ -696,6 +696,7 @@ import-moneyBackFailed: <red>Failed to parse buy price '%0%' and sell price '%1%
   to set the money back percentage.
 
 quickadd-failedCreateWGRegion: "Failed to create the worldguard region!"
+quickdelete-WGRegionDeleted: "Successfully removed %0%!"
 
 confirm-rent:
   - '%lang:prefix%Are you sure you want to rent %lang:tRegion|%0%|%?'
