@@ -43,7 +43,6 @@ public class DurationInputParser<C> implements ArgumentParser<C, DurationInput>,
         try {
             durationInt = Integer.parseInt(duration);
         } catch (NumberFormatException ex) {
-            ex.printStackTrace();
             return ArgumentParseResult.failure(new AreaShopCommandException("setduration-wrongAmount", duration));
         }
         Optional<TimeUnit> timeUnit = DurationInput.getTimeUnit(durationUnit.toLowerCase(Locale.ENGLISH));
