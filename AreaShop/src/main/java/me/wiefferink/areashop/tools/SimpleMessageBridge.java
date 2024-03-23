@@ -61,7 +61,7 @@ public class SimpleMessageBridge implements MessageBridge {
         message.doReplacements();
 
         StringBuilder messageStr = new StringBuilder();
-        for (String line : message.get()) {
+        for (String line : message.getRaw()) {
             messageStr.append(line);
         }
 

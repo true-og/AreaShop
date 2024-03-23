@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
@@ -59,7 +60,7 @@ public final class TogglehomeControlCommand extends CommandAreaShop {
         try {
             accessType = HomeAccessType.valueOf(rawAccessType.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException ex) {
-            this.messageBridge.message(sender, "togglehome-unknownAccessType");
+            this.messageBridge.message(sender, "togglehome-unknownAccessType", rawAccessType);
             return;
         }
         final GeneralRegion region;
@@ -101,6 +102,13 @@ public final class TogglehomeControlCommand extends CommandAreaShop {
             return Collections.emptyList();
         }
         if (start.length == 1) {
+            return Stream.of(HomeAccessType.values())
+                    .map(HomeAccessType::name)
+                    .filter(name -> name.startsWith(start[0]))
+                    .sorted(Comparator.reverseOrder())
+                    .collect(Collectors.toList());
+        }
+        if (start.length == 2) {
             Stream<GeneralRegion> stream = this.fileManager.getRegions().stream();
             if (!sender.hasPermission("sethome.control.other") && sender instanceof Player player) {
                 stream = stream.filter(region -> region.isOwner(player.getUniqueId()));
@@ -108,15 +116,15 @@ public final class TogglehomeControlCommand extends CommandAreaShop {
             return stream.map(GeneralRegion::getName)
                     .filter(name -> name.startsWith(start[0]))
                     .sorted(Comparator.reverseOrder())
-                    .toList();
+                    .collect(Collectors.toList());
         }
-        if (start.length == 2 && sender instanceof Player player) {
+        if (start.length == 3 && sender instanceof Player player) {
             return this.fileManager.getRegions().stream()
                     .filter(region -> region.isOwner(player.getUniqueId()))
                     .map(GeneralRegion::getName)
                     .filter(name -> name.startsWith(start[0]))
                     .sorted(Comparator.reverseOrder())
-                    .toList();
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
