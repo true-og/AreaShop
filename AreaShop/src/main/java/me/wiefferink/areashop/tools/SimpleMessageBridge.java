@@ -8,9 +8,11 @@ import me.wiefferink.areashop.features.mail.MailService;
 import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.interactivemessenger.processing.Message;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -18,11 +20,27 @@ import java.util.Optional;
 
 @Singleton
 public class SimpleMessageBridge implements MessageBridge {
+    private static final BukkitAudiences AUDIENCE_ADAPTER = BukkitAudiences.create(AreaShop.getInstance());
     private final ServiceManager serviceManager;
 
     @Inject
     public SimpleMessageBridge(@Nonnull ServiceManager serviceManager) {
         this.serviceManager = serviceManager;
+    }
+
+    public static void send(Message message, CommandSender target) {
+        if (!AreaShop.useMiniMessage()) {
+            message.send(target);
+            return;
+        }
+
+        if (message.get() == null || message.get().isEmpty() || (message.get().size() == 1 && message.get()
+                .get(0)
+                .isEmpty())) {
+            return;
+        }
+        Audience audience = AUDIENCE_ADAPTER.sender(target);
+        audience.sendMessage(convertMessage(message));
     }
 
     public static void send(Message message, Object target) {
@@ -31,15 +49,11 @@ public class SimpleMessageBridge implements MessageBridge {
             return;
         }
 
-        if (target instanceof Audience audience) {
-            if (message.get() == null || message.get().isEmpty() || (message.get().size() == 1 && message.get()
-                    .get(0)
-                    .isEmpty())) {
-                return;
-            }
-            audience.sendMessage(convertMessage(message));
+        if (target instanceof CommandSender sender) {
+            send(message, sender);
         } else {
-            AreaShop.error("AreaShop sent a non-supported Object as the Audience for a Message!");
+            String error = "AreaShop sent a non-supported Object. %s is not a CommandSender!";
+            AreaShop.error(String.format(error, target.getClass().getName()));
         }
     }
 
@@ -47,7 +61,7 @@ public class SimpleMessageBridge implements MessageBridge {
         message.doReplacements();
 
         StringBuilder messageStr = new StringBuilder();
-        for (String line : message.get()) {
+        for (String line : message.getRaw()) {
             messageStr.append(line);
         }
 
