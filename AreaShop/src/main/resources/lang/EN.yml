@@ -104,7 +104,7 @@ help-stack: "%lang:helpCommand|/as stack|% Create multiple regions and add them.
 help-setlandlord: "%lang:helpCommand|/as setlandlord|% Set the landlord of a region."
 help-import: "%lang:helpCommand|/as import|% Import region from RegionForSale."
 help-transfer: "%lang:helpCommand|/as transfer|% Transfer a region to another player."
-help-togglehome: "%lang:helpcommand|/as toogglehome|% Toggle whether players can set homes in a region."
+help-togglehome: "%lang:helpCommand|/as togglehome|% Toggle whether players can set homes in a region."
 
 rent-help: "/as rent [region], the region you stand in will be used if not specified."
 rent-noPermission: "You don't have permission to rent a region."
