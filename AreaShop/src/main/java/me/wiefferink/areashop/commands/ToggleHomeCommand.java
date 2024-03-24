@@ -19,6 +19,7 @@ import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.description.Description;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.flag.CommandFlag;
 import org.incendo.cloud.parser.standard.EnumParser;
@@ -45,6 +46,9 @@ public final class ToggleHomeCommand extends AreashopCommandBean {
         this.regionFlag = CommandFlag.builder("region")
                 .withComponent(
                         new CommandComponent.Builder<CommandSender, GeneralRegion>()
+                                .name("region")
+                                .description(Description.EMPTY)
+                                .valueType(GeneralRegion.class)
                                 .parser(GeneralRegionParser.generalRegionParser(fileManager))
                                 .suggestionProvider(this::suggestRegions)
                                 .build()
