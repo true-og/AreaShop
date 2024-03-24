@@ -26,7 +26,7 @@ public final class RegionFlagUtil {
     @Nonnull
     public static CommandFlag<GeneralRegion> createDefault(@Nonnull IFileManager fileManager) {
         return CommandFlag.builder("region")
-                .withComponent(ParserDescriptor.of(new GeneralRegionParser<>(fileManager), GeneralRegion.class))
+                .withComponent(GeneralRegionParser.generalRegionParser(fileManager))
                 .build();
     }
 

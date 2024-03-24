@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
+import me.wiefferink.areashop.commands.util.GeneralRegionParser;
 import me.wiefferink.areashop.commands.util.RegionFlagUtil;
 import me.wiefferink.areashop.features.homeaccess.HomeAccessFeature;
 import me.wiefferink.areashop.features.homeaccess.HomeAccessType;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bean.CommandProperties;
+import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
 import org.incendo.cloud.key.CloudKey;
@@ -40,7 +42,13 @@ public final class ToggleHomeCommand extends AreashopCommandBean {
     public ToggleHomeCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = CommandFlag.builder("region")
+                .withComponent(
+                        new CommandComponent.Builder<CommandSender, GeneralRegion>()
+                                .parser(GeneralRegionParser.generalRegionParser(fileManager))
+                                .suggestionProvider(this::suggestRegions)
+                                .build()
+                ).build();
     }
 
 
@@ -88,7 +96,7 @@ public final class ToggleHomeCommand extends AreashopCommandBean {
         this.messageBridge.message(sender, "togglehome-success", accessType.name());
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestionRegions(
+    private CompletableFuture<Iterable<Suggestion>> suggestRegions(
             @Nonnull CommandContext<CommandSender> context,
             @Nonnull CommandInput input
     ) {

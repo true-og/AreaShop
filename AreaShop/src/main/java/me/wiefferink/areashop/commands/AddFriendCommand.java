@@ -41,13 +41,6 @@ public class AddFriendCommand extends AreashopCommandBean {
         this.regionFlag = RegionFlagUtil.createDefault(fileManager);
     }
 
-    public String getHelp(CommandSender target) {
-        if (target.hasPermission("areashop.addfriendall") || target.hasPermission("areashop.addfriend")) {
-            return "help-addFriend";
-        }
-        return null;
-    }
-
     @Override
     public String stringDescription() {
         return "Allows you to add friends to your regions";
