@@ -7,6 +7,7 @@ import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.GeneralRegionParser;
 import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.OfflinePlayer;
@@ -69,6 +70,8 @@ public class TransferCommand extends AreashopCommandBean {
     protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
         return builder.literal("transfer")
                 .senderType(Player.class)
+                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
+                .flag(this.regionFlag)
                 .handler(this::handleCommand);
     }
 
