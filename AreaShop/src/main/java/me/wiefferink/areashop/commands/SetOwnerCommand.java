@@ -59,7 +59,6 @@ public class SetOwnerCommand extends AreashopCommandBean {
     @Override
     protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
         return builder.literal("setowner")
-                .permission(Permission.anyOf(Permission.of("areashop.setownerrent"), Permission.of("setownerbuy")))
                 .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .flag(this.regionFlag)
                 .handler(this::handleCommand);
