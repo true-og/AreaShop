@@ -35,8 +35,7 @@ import java.util.concurrent.TimeUnit;
 @Singleton
 public class SetDurationCommand extends AreashopCommandBean {
 
-    private static final CloudKey<String> KEY_DURATION = CloudKey.of("amount", String.class);
-    private static final DurationInputParser<CommandSender> DURATION_PARSER = new DurationInputParser<>();
+    private static final CloudKey<String> KEY_DURATION = CloudKey.of("duration", String.class);
     private final MessageBridge messageBridge;
     private final CommandFlag<RentRegion> regionFlag;
 
@@ -66,7 +65,7 @@ public class SetDurationCommand extends AreashopCommandBean {
     @Override
     protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
         return builder.literal("setduration")
-                .optional(KEY_DURATION, StringParser.stringParser())
+                .required(KEY_DURATION, StringParser.stringParser())
                 .flag(this.regionFlag)
                 .handler(this::handleCommand);
     }
