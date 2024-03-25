@@ -165,7 +165,7 @@ public class InfoCommand extends AreashopCommandBean {
             case RENTED -> "info-rentedHeader";
             case FORRENT -> "info-forrentHeader";
             case FORSALE -> "info-forsaleHeader";
-            case RESELLING -> "info-reselling";
+            case RESELLING -> "info-resellingHeader";
             case NOGROUP -> "info-nogroupHeader";
             default -> "";
         };
