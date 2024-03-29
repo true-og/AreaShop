@@ -45,7 +45,7 @@ public class RentRegionParser<C> implements ArgumentParser<C, RentRegion> {
             commandInput.readString();
             return ArgumentParseResult.success(region);
         }
-        AreaShopCommandException exception = new AreaShopCommandException("rent-noRentable", input);
+        AreaShopCommandException exception = new AreaShopCommandException("rent-notRentable", input);
         return ArgumentParseResult.failure(exception);
     }
 

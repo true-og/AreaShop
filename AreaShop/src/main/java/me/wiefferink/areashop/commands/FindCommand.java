@@ -10,6 +10,7 @@ import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
+import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
 import net.milkbowl.vault.economy.Economy;
@@ -109,7 +110,7 @@ public class FindCommand extends AreashopCommandBean {
         }
         switch (regionType) {
             case BUY -> handleBuy(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
-            case RENT -> handleRent(sender, balance, maxPrice, maxPriceSet, onlyInGroup);
+            case RENT -> handleRent(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
         }
     }
 
@@ -133,7 +134,9 @@ public class FindCommand extends AreashopCommandBean {
             }
         }
         if (results.isEmpty()) {
-            return;
+            double currency = maxPriceSet ? maxPrice : balance;
+            String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
+            throw new AreaShopCommandException(key, "buy", Utils.formatCurrency(currency), onlyInGroup);
         }
         // Draw a random one
         BuyRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
@@ -151,15 +154,43 @@ public class FindCommand extends AreashopCommandBean {
     }
 
     private void handleRent(
-            @Nonnull CommandSender sender,
+            @Nonnull Player sender,
             double balance,
             double maxPrice,
             boolean maxPriceSet,
-            @Nonnull Message onlyInGroup
+            @Nonnull Message onlyInGroup,
+            RegionGroup group
     ) {
+        Collection<RentRegion> regions = fileManager.getRentsRef();
+        List<RentRegion> results = new LinkedList<>();
+        for (RentRegion region : regions) {
+            if (!region.isRented()
+                    && ((region.getPrice() <= balance && !maxPriceSet) || (region.getPrice() <= maxPrice && maxPriceSet))
+                    && (group == null || group.isMember(region))
+                    && (region.getBooleanSetting("general.findCrossWorld") || sender.getWorld()
+                    .equals(region.getWorld()))
+            ) {
+                results.add(region);
+            }
+        }
+        if (results.isEmpty()) {
+            double currency = maxPriceSet ? maxPrice : balance;
+            String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
+            throw new AreaShopCommandException(key, "rent", Utils.formatCurrency(currency), onlyInGroup);
+        }
+        // Draw a random one
+        RentRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
+        // Teleport
         double currency = maxPriceSet ? maxPrice : balance;
-        String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
-        this.messageBridge.message(sender, key, "buy", Utils.formatCurrency(currency), onlyInGroup);
+        String key = maxPriceSet ? "find-successMax" : "find-success";
+        this.messageBridge.message(sender,
+                key,
+                "rent",
+                Utils.formatCurrency(currency),
+                onlyInGroup,
+                region);
+        boolean tpToSign = region.getBooleanSetting("general.findTeleportToSign");
+        region.getTeleportFeature().teleportPlayer(sender, tpToSign, false);
     }
 
 }

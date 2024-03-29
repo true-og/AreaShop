@@ -36,7 +36,7 @@ mmChatPrefix:
 
 # The language file that should be used, check the 'lang' folder for build-in languages (use the filename without .yml here).
 # **THIS IS ONLY APPLICABLE IF UseMiniMessage IS SET TO TRUE**
-mmLanguage: ENMM
+mmLanguage: EN-MM
 
 # The tags that need to be written on the first line of a sign to add it to AreaShop.
 signTags:

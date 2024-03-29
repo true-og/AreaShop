@@ -97,6 +97,7 @@ public class SetDurationCommand extends AreashopCommandBean {
             return;
         }
         DurationInput duration = parseInternalDuration(rawDuration);
+        sender.sendMessage(duration.toTinySpacedString());
         rent.setDuration(duration.toTinySpacedString());
         rent.update();
         this.messageBridge.message(sender, "setduration-success", rent);
@@ -110,8 +111,11 @@ public class SetDurationCommand extends AreashopCommandBean {
                 break;
             }
         }
-        String duration = rawDuration.substring(0, start - 1);
-        String durationUnit = rawDuration.substring(start, duration.length() - 1);
+        if (start == 0) {
+            throw new AreaShopCommandException("setduration-wrongFormat", rawDuration);
+        }
+        String duration = rawDuration.substring(0, start);
+        String durationUnit = rawDuration.substring(start);
         int durationInt;
         try {
             durationInt = Integer.parseInt(duration);
