@@ -149,7 +149,7 @@ public class InfoCommand extends AreashopCommandBean {
             case RENTED -> fileManager.getRentsRef().stream().filter(RentRegion::isRented);
             case FORRENT -> fileManager.getRentsRef().stream().filter(RentRegion::isAvailable);
             case FORSALE -> fileManager.getBuysRef().stream().filter(BuyRegion::isAvailable);
-            case RESELLING -> fileManager.getBuysRef().stream().filter(Predicate.not(BuyRegion::isInResellingMode));
+            case RESELLING -> fileManager.getBuysRef().stream().filter(BuyRegion::isInResellingMode);
             case NOGROUP -> {
                 List<GeneralRegion> regions = new LinkedList<>(fileManager.getRegions());
                 for (RegionGroup group : fileManager.getGroups()) {
