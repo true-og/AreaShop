@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
 public class SetPriceCommand extends AreashopCommandBean {
 
 
-    private static final CloudKey<String> KEY_PRICE = CloudKey.of("player", String.class);
+    private static final CloudKey<String> KEY_PRICE = CloudKey.of("price", String.class);
     private final CommandFlag<GeneralRegion> regionFlag;
     private final MessageBridge messageBridge;
 
