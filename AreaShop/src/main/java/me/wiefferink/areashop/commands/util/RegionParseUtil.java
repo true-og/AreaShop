@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.parser.flag.CommandFlag;
 
@@ -17,9 +18,9 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 
-public final class RegionFlagUtil {
+public final class RegionParseUtil {
 
-    private RegionFlagUtil() {
+    private RegionParseUtil() {
         throw new IllegalStateException("Cannot instantiate static utility class");
     }
 
@@ -58,6 +59,32 @@ public final class RegionFlagUtil {
             @Nonnull CommandFlag<GeneralRegion> flag
     ) throws AreaShopCommandException {
         GeneralRegion region = context.flags().get(flag);
+        if (region != null) {
+            return region;
+        }
+        C sender = context.sender();
+        if (!(sender instanceof Entity entity)) {
+            throw new AreaShopCommandException("cmd-automaticRegionOnlyByPlayer");
+        }
+        Location location = entity.getLocation();
+        List<GeneralRegion> regions = Utils.getImportantRegions(location);
+        String errorMessageKey;
+        if (regions.isEmpty()) {
+            errorMessageKey = "cmd-noRegionsAtLocation";
+        } else if (regions.size() > 1) {
+            errorMessageKey = "cmd-moreRegionsAtLocation";
+        } else {
+            return regions.get(0);
+        }
+        throw new AreaShopCommandException(errorMessageKey);
+    }
+
+    @Nonnull
+    public static <C> GeneralRegion getOrParseRegion(
+            @Nonnull CommandContext<C> context,
+            @Nonnull CloudKey<GeneralRegion> key
+    ) throws AreaShopCommandException {
+        GeneralRegion region = context.getOrDefault(key, null);
         if (region != null) {
             return region;
         }

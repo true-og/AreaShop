@@ -6,7 +6,7 @@ import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.GeneralRegionParser;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -85,7 +85,7 @@ public class TransferCommand extends AreashopCommandBean {
         if (!sender.hasPermission("areashop.transfer")) {
             throw new AreaShopCommandException("transfer-noPermission");
         }
-        GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!region.isTransferEnabled()) {
             throw new AreaShopCommandException("transfer-disabled");
         }

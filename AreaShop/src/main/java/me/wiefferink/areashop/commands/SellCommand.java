@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.BuyRegionParser;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -90,7 +90,7 @@ public class SellCommand extends AreashopCommandBean {
             this.messageBridge.message(sender, "sell-noPermission");
             return;
         }
-        BuyRegion buy = RegionFlagUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
+        BuyRegion buy = RegionParseUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
         if (!buy.isSold()) {
             messageBridge.message(sender, "sell-notBought", buy);
             return;

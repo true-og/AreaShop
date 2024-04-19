@@ -5,7 +5,8 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.GeneralRegionParser;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.commands.util.SignProfileUtil;
 import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignManager;
@@ -22,19 +23,21 @@ import org.bukkit.util.BlockIterator;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.context.CommandContext;
-import org.incendo.cloud.parser.flag.CommandFlag;
+import org.incendo.cloud.key.CloudKey;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 @Singleton
 public class AddSignCommand extends AreashopCommandBean {
+
+	private static final CloudKey<GeneralRegion> KEY_REGION = CloudKey.of("region", GeneralRegion.class);
+
 	private final SignManager signManager;
 	private final Plugin plugin;
+	private final IFileManager fileManager;
 
 	private final MessageBridge messageBridge;
-
-	private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
     public AddSignCommand(
@@ -46,7 +49,7 @@ public class AddSignCommand extends AreashopCommandBean {
 		this.messageBridge = messageBridge;
         this.signManager = signManager;
         this.plugin = plugin;
-		this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+		this.fileManager = fileManager;
     }
 
 	@Override
@@ -66,7 +69,7 @@ public class AddSignCommand extends AreashopCommandBean {
 	protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
 		return builder.literal("addsign")
 				.senderType(Player.class)
-				.flag(this.regionFlag)
+				.optional(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
 				.flag(SignProfileUtil.DEFAULT_FLAG)
 				.handler(this::handleCommand);
 	}
@@ -90,7 +93,7 @@ public class AddSignCommand extends AreashopCommandBean {
 			return;
 		}
 
-		GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+		GeneralRegion region = RegionParseUtil.getOrParseRegion(context, KEY_REGION);
 		String profile = SignProfileUtil.getOrParseProfile(context, this.plugin);
 		Optional<RegionSign> optionalRegionSign = this.signManager.signFromLocation(block.getLocation());
 		if(optionalRegionSign.isPresent()) {

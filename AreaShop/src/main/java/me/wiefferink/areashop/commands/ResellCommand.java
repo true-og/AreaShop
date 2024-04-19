@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.BuyRegionParser;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -82,7 +82,7 @@ public class ResellCommand extends AreashopCommandBean {
             return;
         }
         double price = context.get(KEY_PRICE);
-        BuyRegion buy = RegionFlagUtil.getOrParseBuyRegion(context, this.regionFlag);
+        BuyRegion buy = RegionParseUtil.getOrParseBuyRegion(context, this.regionFlag);
         if (!buy.isSold()) {
             messageBridge.message(sender, "resell-notBought", buy);
             return;

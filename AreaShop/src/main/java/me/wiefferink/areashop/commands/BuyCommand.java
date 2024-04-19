@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,7 @@ public class BuyCommand extends AreashopCommandBean {
 
     @Inject
     public BuyCommand(@Nonnull IFileManager fileManager) {
-        this.buyRegionFlag = RegionFlagUtil.createDefaultBuy(fileManager);
+        this.buyRegionFlag = RegionParseUtil.createDefaultBuy(fileManager);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class BuyCommand extends AreashopCommandBean {
         if (!context.hasPermission("areashop.buy")) {
             throw new AreaShopCommandException("buy-noPermission");
         }
-        BuyRegion region = RegionFlagUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
+        BuyRegion region = RegionParseUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
         region.buy(context.sender());
     }
 

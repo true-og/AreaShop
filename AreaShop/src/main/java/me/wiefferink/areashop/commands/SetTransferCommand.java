@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import org.bukkit.command.CommandSender;
@@ -33,7 +33,7 @@ public class SetTransferCommand extends AreashopCommandBean {
             @Nonnull IFileManager fileManager
     ) {
         this.messageBridge = messageBridge;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class SetTransferCommand extends AreashopCommandBean {
         if (!sender.hasPermission("areashop.settransfer")) {
             throw new AreaShopCommandException("settransfer-noPermission");
         }
-        GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         boolean enabled = context.get(KEY_ENABLED);
         region.setTransferEnabled(enabled);
         messageBridge.message(sender, "settransfer-success", enabled, region);

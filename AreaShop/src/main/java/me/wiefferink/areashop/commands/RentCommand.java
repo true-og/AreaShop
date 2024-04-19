@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.RentRegion;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,7 @@ public class RentCommand extends AreashopCommandBean {
 
     @Inject
     public RentCommand(@Nonnull IFileManager fileManager) {
-        this.rentRegionFlag = RegionFlagUtil.createDefaultRent(fileManager);
+        this.rentRegionFlag = RegionParseUtil.createDefaultRent(fileManager);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RentCommand extends AreashopCommandBean {
         if (!context.hasPermission("areashop.rent")) {
             throw new AreaShopCommandException("rent-noPermission");
         }
-        RentRegion region = RegionFlagUtil.getOrParseRentRegion(context, this.rentRegionFlag);
+        RentRegion region = RegionParseUtil.getOrParseRentRegion(context, this.rentRegionFlag);
         region.rent(context.sender());
     }
 

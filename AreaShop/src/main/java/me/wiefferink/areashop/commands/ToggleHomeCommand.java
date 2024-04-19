@@ -6,7 +6,7 @@ import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.GeneralRegionParser;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.features.homeaccess.HomeAccessFeature;
 import me.wiefferink.areashop.features.homeaccess.HomeAccessType;
 import me.wiefferink.areashop.managers.IFileManager;
@@ -89,7 +89,7 @@ public final class ToggleHomeCommand extends AreashopCommandBean {
             throw new AreaShopCommandException("togglehome-noPermission");
         }
         final HomeAccessType accessType = context.get(KEY_ACCESS_TYPE);
-        final GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        final GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!(sender instanceof Player) && !sender.hasPermission("sethome.control.other")) {
             return;
         }

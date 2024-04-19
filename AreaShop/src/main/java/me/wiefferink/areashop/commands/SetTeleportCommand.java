@@ -6,7 +6,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -34,7 +34,7 @@ public class SetTeleportCommand extends AreashopCommandBean {
     @Inject
     public SetTeleportCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
         this.messageBridge = messageBridge;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     /**
@@ -85,7 +85,7 @@ public class SetTeleportCommand extends AreashopCommandBean {
             this.messageBridge.message(player, "setteleport-noPermission");
             return;
         }
-        GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
 
         boolean owner;
         if (region instanceof RentRegion rentRegion) {

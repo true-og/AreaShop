@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.commands.util.RentRegionParser;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -88,7 +88,7 @@ public class UnrentCommand extends AreashopCommandBean {
         if (!sender.hasPermission("areashop.unrent") && !sender.hasPermission("areashop.unrentown")) {
             throw new AreaShopCommandException("unrent-noPermission");
         }
-        RentRegion rent = RegionFlagUtil.getOrParseRentRegion(context, this.regionFlag);
+        RentRegion rent = RegionParseUtil.getOrParseRentRegion(context, this.regionFlag);
         if (!rent.isRented()) {
             throw new AreaShopCommandException("unrent-notRented", rent);
         }

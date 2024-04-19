@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -33,7 +33,7 @@ public class SetPriceCommand extends AreashopCommandBean {
     @Inject
     public SetPriceCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
         this.messageBridge = messageBridge;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SetPriceCommand extends AreashopCommandBean {
             this.messageBridge.message(sender, "setprice-noPermission");
             return;
         }
-        GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!sender.hasPermission("areashop.setprice")
                 && !(sender instanceof Player player && region.isLandlord(player.getUniqueId()))) {
             this.messageBridge.message(sender, "setprice-noLandlord", region);

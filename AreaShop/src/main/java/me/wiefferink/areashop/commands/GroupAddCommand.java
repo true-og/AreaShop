@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionFactory;
@@ -48,7 +48,7 @@ public class GroupAddCommand extends AreashopCommandBean {
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
         this.regionFactory = regionFactory;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class GroupAddCommand extends AreashopCommandBean {
             return;
         }
 
-        Collection<GeneralRegion> regions = RegionFlagUtil.getOrParseRegionsInSel(context, this.regionFlag);
+        Collection<GeneralRegion> regions = RegionParseUtil.getOrParseRegionsInSel(context, this.regionFlag);
         Set<GeneralRegion> regionsSuccess = new TreeSet<>();
         Set<GeneralRegion> regionsFailed = new TreeSet<>();
         for (GeneralRegion region : regions) {

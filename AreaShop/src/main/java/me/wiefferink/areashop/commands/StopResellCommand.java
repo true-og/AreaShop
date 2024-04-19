@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.BuyRegionParser;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -77,7 +77,7 @@ public class StopResellCommand extends AreashopCommandBean {
             return;
         }
 
-        BuyRegion buy = RegionFlagUtil.getOrParseBuyRegion(context, this.regionFlag);
+        BuyRegion buy = RegionParseUtil.getOrParseBuyRegion(context, this.regionFlag);
         if (!buy.isInResellingMode()) {
             this.messageBridge.message(sender, "stopresell-notResell", buy);
             return;

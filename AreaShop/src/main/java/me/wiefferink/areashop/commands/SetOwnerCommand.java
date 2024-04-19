@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.RegionFlagUtil;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
@@ -18,7 +18,6 @@ import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.flag.CommandFlag;
-import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -39,7 +38,7 @@ public class SetOwnerCommand extends AreashopCommandBean {
             @Nonnull IFileManager fileManager
     ) {
         this.messageBridge = messageBridge;
-        this.regionFlag = RegionFlagUtil.createDefault(fileManager);
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     @Override
@@ -75,7 +74,7 @@ public class SetOwnerCommand extends AreashopCommandBean {
             this.messageBridge.message(sender, "setowner-noPermission");
             return;
         }
-        GeneralRegion region = RegionFlagUtil.getOrParseRegion(context, this.regionFlag);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (region instanceof RentRegion && !sender.hasPermission("areashop.setownerrent")) {
             this.messageBridge.message(sender, "setowner-noPermissionRent", region);
             return;
