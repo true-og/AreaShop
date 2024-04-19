@@ -3,11 +3,8 @@ package me.wiefferink.areashop.commands.util;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.wiefferink.areashop.interfaces.WorldEditInterface;
-import me.wiefferink.areashop.interfaces.WorldEditSelection;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.IFileManager;
-import me.wiefferink.areashop.tools.Utils;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -16,14 +13,12 @@ import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.key.CloudKey;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class RegionCreationUtil {
 
-    private final WorldEditInterface worldEditInterface;
+
     private final Plugin plugin;
     private final IFileManager fileManager;
     private final Server server;
@@ -31,13 +26,11 @@ public class RegionCreationUtil {
 
     @Inject
     public RegionCreationUtil(
-            @Nonnull WorldEditInterface worldEditInterface,
             @Nonnull WorldGuardInterface worldGuardInterface,
             @Nonnull IFileManager fileManager,
             @Nonnull Server server,
             @Nonnull Plugin plugin
     ) {
-        this.worldEditInterface = worldEditInterface;
         this.worldGuardInterface = worldGuardInterface;
         this.fileManager = fileManager;
         this.plugin = plugin;
@@ -49,18 +42,7 @@ public class RegionCreationUtil {
             @Nonnull CloudKey<String> regionKey
     ) {
         Player player = context.sender();
-        WorldEditSelection selection = this.worldEditInterface.getPlayerSelection(player);
-        if (selection == null) {
-            return CompletableFuture.failedFuture(new AreaShopCommandException("cmd-noSelection"));
-        }
-        List<ProtectedRegion> protectedRegions = Utils.getWorldEditRegionsInSelection(selection);
-        if (!protectedRegions.isEmpty()) {
-            return CompletableFuture.failedFuture(new AreaShopCommandException("cmd-moreRegionsAtLocation"));
-        }
         World world = player.getWorld();
-        if (!Objects.equals(selection.getWorld(), world)) {
-            return CompletableFuture.failedFuture(new AreaShopCommandException("setup-selectionWorldMismatch"));
-        }
         String regionName = context.get(regionKey);
         if (this.fileManager.getRegion(regionName) != null) {
             return CompletableFuture.failedFuture(new AreaShopCommandException("add-failed", regionName));
