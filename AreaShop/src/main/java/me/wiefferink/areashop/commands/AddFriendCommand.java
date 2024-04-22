@@ -85,7 +85,7 @@ public class AddFriendCommand extends AreashopCommandBean {
            this.messageBridge.message(sender, "addfriend-noPermissionOther", region);
             return;
         }
-        if (friend.hasPlayedBefore() && !friend.isOnline() && !plugin.getConfig()
+        if (!friend.hasPlayedBefore() && !friend.isOnline() && !plugin.getConfig()
                 .getBoolean("addFriendNotExistingPlayers")) {
            this.messageBridge.message(sender, "addfriend-notVisited", friend.getName(), region);
         } else if (region.getFriendsFeature().getFriends().contains(friend.getUniqueId())) {
