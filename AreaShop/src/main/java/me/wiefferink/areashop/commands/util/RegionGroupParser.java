@@ -46,7 +46,7 @@ public class RegionGroupParser<C> implements ArgumentParser<C, RegionGroup>, Sug
         String text = input.peekString();
         List<Suggestion> suggestions = this.fileManager.getGroupNames().stream()
                 .filter(name -> name.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }

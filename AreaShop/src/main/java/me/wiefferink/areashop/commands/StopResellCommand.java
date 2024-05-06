@@ -108,7 +108,7 @@ public class StopResellCommand extends AreashopCommandBean {
                 .filter(region -> region.isSold() && region.isInResellingMode())
                 .map(GeneralRegion::getName)
                 .filter(name -> name.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }

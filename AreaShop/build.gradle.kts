@@ -31,17 +31,14 @@ dependencies {
     api("com.google.inject.extensions:guice-assistedinject:7.0.0") {
         exclude("com.google.guava")
     }
-    implementation("org.incendo:cloud-paper:2.0.0-beta.3") {
+    implementation("org.incendo:cloud-paper:2.0.0-beta.5") {
         exclude("com.google.guava")
     }
-    implementation("org.incendo:cloud-processors-confirmation:1.0.0-beta.1") {
+    implementation("org.incendo:cloud-processors-confirmation:1.0.0-beta.2") {
         exclude("com.google.guava")
     }
-    implementation("org.incendo:cloud-paper:2.0.0-beta.3") {
-        exclude("com.google.guava")
-    }
-    implementation("net.kyori:adventure-text-minimessage:4.14.0")
-    implementation("net.kyori:adventure-platform-bukkit:4.3.0")
+    implementation("net.kyori:adventure-text-minimessage:4.16.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.3.2")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
 
     // Project submodules
@@ -58,7 +55,8 @@ dependencies {
         runtimeOnly(projects.adapters.plugins.essentials)
         runtimeOnly(projects.adapters.platform.bukkitModern)
     }
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.57.1")
+    testImplementation("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:3.86.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }

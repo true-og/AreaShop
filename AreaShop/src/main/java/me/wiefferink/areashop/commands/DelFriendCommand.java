@@ -151,7 +151,7 @@ public class DelFriendCommand extends AreashopCommandBean {
         FriendsFeature friendsFeature = region.getFriendsFeature();
         Collection<Suggestion> suggestion = friendsFeature.getFriendNames().stream()
                 .filter(name -> name.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestion);
     }

@@ -163,7 +163,7 @@ public class AreashopCommands {
                 .confirmationRequiredNotifier((x, y) -> {
                 })
                 .build();
-        ConfirmationManager<CommandSender> confirmationManager = ConfirmationManager.of(confirmationConfiguration);
+        var confirmationManager = ConfirmationManager.confirmationManager(confirmationConfiguration);
         commandManager.registerCommandPostProcessor(confirmationManager.createPostprocessor());
     }
 

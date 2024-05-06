@@ -75,7 +75,7 @@ public class DurationInputParser<C> implements ArgumentParser<C, DurationInput>,
         List<String> suffixes = DurationInput.SUFFIXES;
         List<Suggestion> suggestions = suffixes.stream()
                 .filter(suffix -> suffix.startsWith(timeUnit))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }

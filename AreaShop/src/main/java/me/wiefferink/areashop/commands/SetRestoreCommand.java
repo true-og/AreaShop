@@ -107,7 +107,7 @@ public class SetRestoreCommand extends AreashopCommandBean {
         String text = input.peekString();
         List<Suggestion> suggestions = RESTORE_TYPES.stream()
                 .filter(type -> type.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }
@@ -123,7 +123,7 @@ public class SetRestoreCommand extends AreashopCommandBean {
         String text = input.peekString();
         List<Suggestion> suggestions = schemProfiles.getKeys(false).stream()
                 .filter(profile -> profile.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }

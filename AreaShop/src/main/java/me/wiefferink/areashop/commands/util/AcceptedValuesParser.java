@@ -81,7 +81,7 @@ public class AcceptedValuesParser<C> implements ArgumentParser<C, String>, Sugge
         String text = input.peekString();
         Iterable<Suggestion> suggestions = this.valuesProvider.get().stream()
                 .filter(s -> s.startsWith(text))
-                .map(Suggestion::simple)
+                .map(Suggestion::suggestion)
                 .toList();
         return CompletableFuture.completedFuture(suggestions);
     }

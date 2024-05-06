@@ -119,7 +119,7 @@ public class InfoCommand extends AreashopCommandBean {
             case REGION -> this.fileManager.getRegionNames().stream();
             default -> Stream.empty();
         };
-        List<Suggestion> suggestions = stream.filter(value -> value.startsWith(text)).map(Suggestion::simple).toList();
+        List<Suggestion> suggestions = stream.filter(value -> value.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
     }
 
