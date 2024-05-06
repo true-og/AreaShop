@@ -2,8 +2,6 @@ package me.wiefferink.areashop.features.signs;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import io.github.bakedlibs.dough.blocks.BlockPosition;
-import io.github.bakedlibs.dough.blocks.ChunkPosition;
 import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -14,8 +12,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SignsFeature extends RegionFeature {
 

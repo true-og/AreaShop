@@ -1,7 +1,6 @@
 package me.wiefferink.areashop.features.homeaccess;
 
 import me.wiefferink.areashop.regions.GeneralRegion;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;

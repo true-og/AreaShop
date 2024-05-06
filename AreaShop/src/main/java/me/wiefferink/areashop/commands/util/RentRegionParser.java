@@ -1,7 +1,6 @@
 package me.wiefferink.areashop.commands.util;
 
 import me.wiefferink.areashop.managers.IFileManager;
-import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.RentRegion;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;

@@ -13,7 +13,6 @@ import me.wiefferink.areashop.events.ask.DeletingRegionEvent;
 import me.wiefferink.areashop.events.notify.AddedRegionEvent;
 import me.wiefferink.areashop.events.notify.DeletedRegionEvent;
 import me.wiefferink.areashop.features.signs.SignManager;
-import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;

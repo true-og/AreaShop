@@ -15,7 +15,6 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.managers.IFileManager;
-import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.processing.Message;

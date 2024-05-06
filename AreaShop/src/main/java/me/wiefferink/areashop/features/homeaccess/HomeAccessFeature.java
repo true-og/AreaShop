@@ -8,7 +8,6 @@ import me.wiefferink.areashop.regions.GeneralRegion;
 
 import javax.annotation.Nonnull;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 public final class HomeAccessFeature extends RegionFeature {
     private HomeAccessType homeAccessType;

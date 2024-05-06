@@ -1,7 +1,6 @@
 package me.wiefferink.areashop.features.signs;
 
 import io.github.bakedlibs.dough.blocks.BlockPosition;
-import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.managers.Manager;
 import org.bukkit.Location;
 import org.bukkit.World;
