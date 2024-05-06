@@ -130,13 +130,15 @@ public class AreashopCommands {
     public void registerCommands() {
         this.commands.clear();
         initCommandManager();
-        var builder = commandManager.commandBuilder("areashop", "as");
+        var builder = this.commandManager.commandBuilder("areashop", "as");
         for (Class<? extends AreashopCommandBean> commandClass : COMMAND_CLASSES) {
             AreashopCommandBean commandBean = injector.getInstance(commandClass);
             this.commands.add(commandBean);
             var configuredBuilder = commandBean.configureCommand(builder);
             this.commandManager.command(configuredBuilder);
         }
+        // Show help by default
+        this.commandManager.command(builder.handler(context -> showHelp(context.sender())));
         this.helpRenderer = new HelpRenderer(this.messageBridge, this.commands);
     }
 
