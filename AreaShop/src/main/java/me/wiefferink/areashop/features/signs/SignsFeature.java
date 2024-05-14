@@ -18,6 +18,12 @@ public class SignsFeature extends RegionFeature {
 	private final SignManager internalSignManager = new SignManager();
 	private final SignManager globalSignManager;
 	private final SignFactory signFactory;
+
+	public static boolean exists(@Nonnull GeneralRegion region) {
+		ConfigurationSection section = region.getConfig().getConfigurationSection("general.signs");
+		return section != null && !section.getKeys(false).isEmpty();
+	}
+
 	/**
 	 * Constructor.
 	 * @param region The region to bind to

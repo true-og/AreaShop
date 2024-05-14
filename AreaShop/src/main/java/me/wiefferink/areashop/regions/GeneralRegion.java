@@ -785,7 +785,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 	 * @return true if the signs of this region need periodic updating, otherwise false
 	 */
 	public boolean needsPeriodicUpdate() {
-		return !(isDeleted() || !(this instanceof RentRegion)) && getSignsFeature().signManager().needsPeriodicUpdate();
+		return isDeleted();
 	}
 
 	/**

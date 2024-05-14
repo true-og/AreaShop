@@ -8,6 +8,7 @@ import me.wiefferink.areashop.events.ask.RentingRegionEvent;
 import me.wiefferink.areashop.events.ask.UnrentingRegionEvent;
 import me.wiefferink.areashop.events.notify.RentedRegionEvent;
 import me.wiefferink.areashop.events.notify.UnrentedRegionEvent;
+import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
@@ -75,6 +76,13 @@ public class RentRegion extends GeneralRegion {
 		this.economy = economy;
 	}
 
+	@Override
+	public boolean needsPeriodicUpdate() {
+		if (super.needsPeriodicUpdate()) {
+			return true;
+		}
+		return SignsFeature.exists(this) && getSignsFeature().signManager().needsPeriodicUpdate();
+	}
 
 	@Override
 	public boolean isOwner(UUID player) {

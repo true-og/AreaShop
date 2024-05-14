@@ -11,10 +11,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public class SignManager extends Manager {
 
-    private final Map<World, SignCache> signCacheMap = new HashMap<>();
+    private final Map<UUID, SignCache> signCacheMap = new HashMap<>();
 
     public Collection<BlockPosition> allSignLocations() {
         final Set<BlockPosition> set = new HashSet<>(signCacheMap.size());
@@ -33,11 +34,11 @@ public class SignManager extends Manager {
     }
 
     public SignCache cacheForWorld(World world) {
-        return this.signCacheMap.computeIfAbsent(world, x -> new SignCache());
+        return this.signCacheMap.computeIfAbsent(world.getUID(), x -> new SignCache());
     }
 
     public Optional<SignCache> getCacheForWorld(World world) {
-        return Optional.ofNullable(this.signCacheMap.get(world));
+        return Optional.ofNullable(this.signCacheMap.get(world.getUID()));
     }
 
     public Optional<RegionSign> signFromLocation(Location location) {
@@ -104,7 +105,7 @@ public class SignManager extends Manager {
         return result;
     }
 
-
+    @Override
     public void shutdown() {
         update();
         this.signCacheMap.values().forEach(SignCache::clear);
