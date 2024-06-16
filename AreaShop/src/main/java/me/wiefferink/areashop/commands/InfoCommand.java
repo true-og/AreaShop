@@ -7,6 +7,7 @@ import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.adapters.platform.OfflinePlayerHelper;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
+import me.wiefferink.areashop.commands.util.ParserWrapper;
 import me.wiefferink.areashop.commands.util.RegionGroupParser;
 import me.wiefferink.areashop.commands.util.RegionInfoUtil;
 import me.wiefferink.areashop.managers.IFileManager;
@@ -48,7 +49,6 @@ public class InfoCommand extends AreashopCommandBean {
     private static final CommandFlag<Integer> FLAG_PAGE = CommandFlag.builder("page")
             .withComponent(IntegerParser.integerParser(1))
             .build();
-    private static final CloudKey<String> KEY_FILTER_ARG = CloudKey.of("filterArg", String.class);
     private static final CloudKey<RegionStateFilterType> KEY_TYPE = CloudKey.of("type", RegionStateFilterType.class);
 
     private final MessageBridge messageBridge;
@@ -58,6 +58,7 @@ public class InfoCommand extends AreashopCommandBean {
     private final BukkitSchedulerExecutor executor;
 
     private final CommandFlag<RegionGroup> filterGroupFlag;
+    private final CommandFlag<String> filterArgFlag;
 
     @Inject
     public InfoCommand(
@@ -73,6 +74,9 @@ public class InfoCommand extends AreashopCommandBean {
         this.filterGroupFlag = CommandFlag.builder("group")
                 .withComponent(ParserDescriptor.of(new RegionGroupParser<>(fileManager, "info-noFiltergroup"),
                         RegionGroup.class))
+                .build();
+        this.filterArgFlag = CommandFlag.builder("filterArg")
+                .withComponent(ParserWrapper.wrap(StringParser.stringParser(), this::suggestFilterArg))
                 .build();
         this.offlinePlayerHelper = offlinePlayerHelper;
         this.executor = executor;
@@ -95,8 +99,9 @@ public class InfoCommand extends AreashopCommandBean {
     protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
         return builder.literal("info")
                 .required(KEY_TYPE, EnumParser.enumParser(RegionStateFilterType.class))
-                .optional(KEY_FILTER_ARG, StringParser.stringParser(), this::suggestFilterArg)
                 .flag(FLAG_PAGE)
+                .flag(this.filterGroupFlag)
+                .flag(filterArgFlag)
                 .handler(this::handleCommand);
     }
 
@@ -183,7 +188,7 @@ public class InfoCommand extends AreashopCommandBean {
 
     private void processWithPlayerFilter(@Nonnull CommandContext<CommandSender> context) {
         CommandSender sender = context.sender();
-        Optional<String> optionalArg = context.optional(KEY_FILTER_ARG);
+        Optional<String> optionalArg = context.flags().getValue(filterArgFlag);
         if (optionalArg.isEmpty()) {
             throw new AreaShopCommandException("info-playerHelp");
         }
@@ -202,7 +207,7 @@ public class InfoCommand extends AreashopCommandBean {
     private void processWithRegionFilter(@Nonnull CommandContext<CommandSender> context) {
         CommandSender sender = context.sender();
         // Region info
-        Optional<String> optionalArg = context.optional(KEY_FILTER_ARG);
+        Optional<String> optionalArg = context.flags().getValue(filterArgFlag);
         GeneralRegion region;
         if (optionalArg.isPresent()) {
             region = this.fileManager.getRegion(optionalArg.get());
