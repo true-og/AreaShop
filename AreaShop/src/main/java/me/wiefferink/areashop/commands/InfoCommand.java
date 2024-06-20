@@ -1,46 +1,30 @@
 package me.wiefferink.areashop.commands;
 
-import io.github.bakedlibs.dough.blocks.BlockPosition;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
-import me.wiefferink.areashop.adapters.platform.OfflinePlayerHelper;
-import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.ParserWrapper;
 import me.wiefferink.areashop.commands.util.RegionGroupParser;
-import me.wiefferink.areashop.commands.util.RegionInfoUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
-import me.wiefferink.areashop.tools.BukkitSchedulerExecutor;
 import me.wiefferink.areashop.tools.SimpleMessageBridge;
-import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
-import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.context.CommandContext;
-import org.incendo.cloud.context.CommandInput;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.parser.flag.CommandFlag;
 import org.incendo.cloud.parser.standard.EnumParser;
 import org.incendo.cloud.parser.standard.IntegerParser;
-import org.incendo.cloud.parser.standard.StringParser;
-import org.incendo.cloud.suggestion.Suggestion;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Singleton
@@ -53,33 +37,20 @@ public class InfoCommand extends AreashopCommandBean {
 
     private final MessageBridge messageBridge;
     private final IFileManager fileManager;
-    private final Server server;
-    private final OfflinePlayerHelper offlinePlayerHelper;
-    private final BukkitSchedulerExecutor executor;
 
     private final CommandFlag<RegionGroup> filterGroupFlag;
-    private final CommandFlag<String> filterArgFlag;
 
     @Inject
     public InfoCommand(
             @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager,
-            @Nonnull Server server,
-            @Nonnull OfflinePlayerHelper offlinePlayerHelper,
-            @Nonnull BukkitSchedulerExecutor executor
+            @Nonnull IFileManager fileManager
     ) {
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
-        this.server = server;
         this.filterGroupFlag = CommandFlag.builder("group")
                 .withComponent(ParserDescriptor.of(new RegionGroupParser<>(fileManager, "info-noFiltergroup"),
                         RegionGroup.class))
                 .build();
-        this.filterArgFlag = CommandFlag.builder("filterArg")
-                .withComponent(ParserWrapper.wrap(StringParser.stringParser(), this::suggestFilterArg))
-                .build();
-        this.offlinePlayerHelper = offlinePlayerHelper;
-        this.executor = executor;
     }
 
     @Override
@@ -101,30 +72,12 @@ public class InfoCommand extends AreashopCommandBean {
                 .required(KEY_TYPE, EnumParser.enumParser(RegionStateFilterType.class))
                 .flag(FLAG_PAGE)
                 .flag(this.filterGroupFlag)
-                .flag(filterArgFlag)
                 .handler(this::handleCommand);
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
         return CommandProperties.of("info");
-    }
-
-    private CompletableFuture<Iterable<Suggestion>> suggestFilterArg(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput commandInput) {
-        Optional<RegionStateFilterType> filterType = context.optional(KEY_TYPE);
-        if (filterType.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptyList());
-        }
-        String text = commandInput.peekString();
-        Stream<String> stream = switch (filterType.get()) {
-            case PLAYER -> this.server.getOnlinePlayers().stream().map(Player::getName);
-            case REGION -> this.fileManager.getRegionNames().stream();
-            default -> Stream.empty();
-        };
-        List<Suggestion> suggestions = stream.filter(value -> value.startsWith(text)).map(Suggestion::suggestion).toList();
-        return CompletableFuture.completedFuture(suggestions);
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
@@ -134,13 +87,7 @@ public class InfoCommand extends AreashopCommandBean {
             return;
         }
         RegionStateFilterType filterType = context.get(KEY_TYPE);
-        if (filterType == RegionStateFilterType.REGION) {
-            processWithRegionFilter(context);
-        } else if (filterType == RegionStateFilterType.PLAYER) {
-            processWithPlayerFilter(context);
-        } else {
-            processOtherFilters(context, filterType);
-        }
+        processOtherFilters(context, filterType);
     }
 
     private void processOtherFilters(@Nonnull CommandContext<CommandSender> context,
@@ -161,7 +108,6 @@ public class InfoCommand extends AreashopCommandBean {
                 }
                 yield regions.stream();
             }
-            default -> Stream.empty();
         };
         String header = switch (filterType) {
             case ALL -> "info-allHeader";
@@ -171,7 +117,6 @@ public class InfoCommand extends AreashopCommandBean {
             case FORSALE -> "info-forsaleHeader";
             case RESELLING -> "info-resellingHeader";
             case NOGROUP -> "info-nogroupHeader";
-            default -> "";
         };
         String baseCommand = switch (filterType) {
             case ALL -> "info all";
@@ -181,223 +126,8 @@ public class InfoCommand extends AreashopCommandBean {
             case FORSALE -> "info forsale";
             case RESELLING -> "info reselling";
             case NOGROUP -> "info nogroup";
-            default -> "";
         };
         showSortedPagedList(context.sender(), toShow, filterGroup, header, page, baseCommand);
-    }
-
-    private void processWithPlayerFilter(@Nonnull CommandContext<CommandSender> context) {
-        CommandSender sender = context.sender();
-        Optional<String> optionalArg = context.flags().getValue(filterArgFlag);
-        if (optionalArg.isEmpty()) {
-            throw new AreaShopCommandException("info-playerHelp");
-        }
-        String playerName = optionalArg.get();
-        this.offlinePlayerHelper.lookupOfflinePlayerAsync(playerName).thenAcceptAsync(offlinePlayer -> {
-            if (!offlinePlayer.hasPlayedBefore()) {
-                // Don't throw an exception here, just send the error message directly
-                this.messageBridge.message(sender, "me-noPlayer", playerName);
-                return;
-            }
-            RegionInfoUtil.showRegionInfo(this.messageBridge, this.fileManager, sender, offlinePlayer);
-        }, executor);
-
-    }
-
-    private void processWithRegionFilter(@Nonnull CommandContext<CommandSender> context) {
-        CommandSender sender = context.sender();
-        // Region info
-        Optional<String> optionalArg = context.flags().getValue(filterArgFlag);
-        GeneralRegion region;
-        if (optionalArg.isPresent()) {
-            region = this.fileManager.getRegion(optionalArg.get());
-            if (region == null) {
-                throw new AreaShopCommandException("info-regionNotExisting", optionalArg);
-            }
-        } else if (sender instanceof Player player) {
-            // get the region by location
-            List<GeneralRegion> regions = Utils.getImportantRegions(player.getLocation());
-            if (regions.isEmpty()) {
-                throw new AreaShopCommandException("cmd-noRegionsAtLocation");
-            } else if (regions.size() > 1) {
-                throw new AreaShopCommandException("cmd-moreRegionsAtLocation");
-            } else {
-                region = regions.get(0);
-            }
-        } else {
-            throw new AreaShopCommandException("cmd-automaticRegionOnlyByPlayer");
-        }
-        if (region instanceof RentRegion rent) {
-            handleRent(sender, rent);
-        } else if (region instanceof BuyRegion buy) {
-            handleBuy(sender, buy);
-        }
-    }
-
-    private void handleBuy(@Nonnull CommandSender sender, @Nonnull BuyRegion buy) {
-        messageBridge.message(sender, "info-regionHeaderBuy", buy);
-        if (buy.isSold()) {
-            if (buy.isInResellingMode()) {
-                messageBridge.messageNoPrefix(sender, "info-regionReselling", buy);
-                messageBridge.messageNoPrefix(sender, "info-regionReselPrice", buy);
-            } else {
-                messageBridge.messageNoPrefix(sender, "info-regionBought", buy);
-            }
-            // Money back
-            if (!buy.getBooleanSetting("buy.sellDisabled")) {
-                if (SellCommand.canUse(sender, buy)) {
-                    messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuyClick", buy);
-                } else {
-                    messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuy", buy);
-                }
-            }
-            // Friends
-            if (!buy.getFriendsFeature().getFriendNames().isEmpty()) {
-                String messagePart = "info-friend";
-                if (DelFriendCommand.canUse(sender, buy)) {
-                    messagePart = "info-friendRemove";
-                }
-                messageBridge.messageNoPrefix(sender,
-                        "info-regionFriends",
-                        buy,
-                        Utils.combinedMessage(buy.getFriendsFeature().getFriendNames(), messagePart));
-            }
-        } else {
-            messageBridge.messageNoPrefix(sender, "info-regionCanBeBought", buy);
-        }
-        if (buy.getLandlord() != null) {
-            messageBridge.messageNoPrefix(sender, "info-regionLandlord", buy);
-        }
-        if (buy.getInactiveTimeUntilSell() != -1) {
-            messageBridge.messageNoPrefix(sender, "info-regionInactiveSell", buy);
-        }
-        // Restoring
-        if (buy.isRestoreEnabled()) {
-            messageBridge.messageNoPrefix(sender, "info-regionRestoringBuy", buy);
-        }
-        // Restrictions
-        if (!buy.isSold()) {
-            if (buy.restrictedToRegion()) {
-                messageBridge.messageNoPrefix(sender, "info-regionRestrictedRegionBuy", buy);
-            } else if (buy.restrictedToWorld()) {
-                messageBridge.messageNoPrefix(sender, "info-regionRestrictedWorldBuy", buy);
-            }
-        }
-        messageBridge.messageNoPrefix(sender, "info-regionFooterBuy", buy);
-    }
-
-    private void handleRent(@Nonnull CommandSender sender, @Nonnull RentRegion rent) {
-        messageBridge.message(sender, "info-regionHeaderRent", rent);
-        if (rent.isRented()) {
-            messageBridge.messageNoPrefix(sender, "info-regionRented", rent);
-            messageBridge.messageNoPrefix(sender, "info-regionExtending", rent);
-            // Money back
-            if (UnrentCommand.canUse(sender, rent)) {
-                messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRentClick", rent);
-            } else {
-                messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRent", rent);
-            }
-            // Friends
-            if (!rent.getFriendsFeature().getFriendNames().isEmpty()) {
-                String messagePart = "info-friend";
-                if (DelFriendCommand.canUse(sender, rent)) {
-                    messagePart = "info-friendRemove";
-                }
-                messageBridge.messageNoPrefix(sender,
-                        "info-regionFriends",
-                        rent,
-                        Utils.combinedMessage(rent.getFriendsFeature().getFriendNames(), messagePart));
-            }
-        } else {
-            messageBridge.messageNoPrefix(sender, "info-regionCanBeRented", rent);
-        }
-        if (rent.getLandlordName() != null) {
-            messageBridge.messageNoPrefix(sender, "info-regionLandlord", rent);
-        }
-        // Maximum extends
-        if (rent.getMaxExtends() != -1) {
-            if (rent.getMaxExtends() == 0) {
-                messageBridge.messageNoPrefix(sender, "info-regionNoExtending", rent);
-            } else if (rent.isRented()) {
-                messageBridge.messageNoPrefix(sender, "info-regionExtendsLeft", rent);
-            } else {
-                messageBridge.messageNoPrefix(sender, "info-regionMaxExtends", rent);
-            }
-        }
-        // If maxExtends is zero it does not make sense to show this message
-        if (rent.getMaxRentTime() != -1 && rent.getMaxExtends() != 0) {
-            messageBridge.messageNoPrefix(sender, "info-regionMaxRentTime", rent);
-        }
-        if (rent.getInactiveTimeUntilUnrent() != -1) {
-            messageBridge.messageNoPrefix(sender, "info-regionInactiveUnrent", rent);
-        }
-        displayMiscInfo(sender, rent);
-        // Restoring
-        if (rent.isRestoreEnabled()) {
-            messageBridge.messageNoPrefix(sender, "info-regionRestoringRent", rent);
-        }
-        // Restrictions
-        if (!rent.isRented()) {
-            if (rent.restrictedToRegion()) {
-                messageBridge.messageNoPrefix(sender, "info-regionRestrictedRegionRent", rent);
-            } else if (rent.restrictedToWorld()) {
-                messageBridge.messageNoPrefix(sender, "info-regionRestrictedWorldRent", rent);
-            }
-        }
-        messageBridge.messageNoPrefix(sender, "info-regionFooterRent", rent);
-    }
-
-    private void displayMiscInfo(@Nonnull CommandSender sender, @Nonnull GeneralRegion region) {
-        displayTeleportInfo(sender, region);
-        displaySignInfo(sender, region);
-        displayGroupInfo(sender, region);
-    }
-
-    private void displayGroupInfo(@Nonnull CommandSender sender, @Nonnull GeneralRegion region) {// Groups
-        if (sender.hasPermission("areashop.groupinfo") && !region.getGroupNames().isEmpty()) {
-            messageBridge.messageNoPrefix(sender,
-                    "info-regionGroups",
-                    Utils.createCommaSeparatedList(region.getGroupNames()));
-        }
-    }
-
-    private void displaySignInfo(@Nonnull CommandSender sender, @Nonnull GeneralRegion region) {
-        // Signs
-        List<String> signLocations = new ArrayList<>();
-        for (BlockPosition location : region.getSignsFeature().signManager().allSignLocations()) {
-            signLocations.add(Message.fromKey("info-regionSignLocation")
-                    .replacements(location.getWorld().getName(),
-                            location.getX(),
-                            location.getY(),
-                            location.getZ())
-                    .getPlain());
-        }
-        if (!signLocations.isEmpty()) {
-            messageBridge.messageNoPrefix(sender,
-                    "info-regionSigns",
-                    Utils.createCommaSeparatedList(signLocations));
-        }
-    }
-
-    private void displayTeleportInfo(@Nonnull CommandSender sender, @Nonnull GeneralRegion region) {
-        // Teleport
-        Message tp = Message.fromKey("info-prefix");
-        boolean foundSomething = false;
-        if (TeleportCommand.canUse(sender, region)) {
-            foundSomething = true;
-            tp.append(Message.fromKey("info-regionTeleport").replacements(region));
-        }
-        if (SetTeleportCommand.canUse(sender, region)) {
-            if (foundSomething) {
-                tp.append(", ");
-            }
-            foundSomething = true;
-            tp.append(Message.fromKey("info-setRegionTeleport").replacements(region));
-        }
-        if (foundSomething) {
-            tp.append(".");
-            SimpleMessageBridge.send(tp, sender);
-        }
     }
 
 
@@ -535,9 +265,7 @@ public class InfoCommand extends AreashopCommandBean {
         SOLD,
         FORSALE,
         RESELLING,
-        NOGROUP,
-        PLAYER,
-        REGION
+        NOGROUP
     }
 
 }
