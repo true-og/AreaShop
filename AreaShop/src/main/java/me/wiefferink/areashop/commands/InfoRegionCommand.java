@@ -5,7 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
-import me.wiefferink.areashop.commands.util.GeneralRegionParser;
+import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.BuyRegion;
 import me.wiefferink.areashop.regions.GeneralRegion;
@@ -17,7 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.context.CommandContext;
-import org.incendo.cloud.key.CloudKey;
+import org.incendo.cloud.parser.flag.CommandFlag;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -26,10 +26,9 @@ import java.util.List;
 @Singleton
 public class InfoRegionCommand extends AreashopCommandBean {
 
-    private static final CloudKey<GeneralRegion> KEY_REGION = CloudKey.of("region", GeneralRegion.class);
+    private final CommandFlag<GeneralRegion> regionFlag;
 
     private final MessageBridge messageBridge;
-    private final IFileManager fileManager;
 
     @Inject
     public InfoRegionCommand(
@@ -37,7 +36,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
             @Nonnull IFileManager fileManager
     ) {
         this.messageBridge = messageBridge;
-        this.fileManager = fileManager;
+        this.regionFlag = RegionParseUtil.createDefault(fileManager);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
     @Override
     protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
         return builder.literal("info").literal("region")
-                .required(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
+                .flag(this.regionFlag)
                 .handler(this::handleCommand);
     }
 
@@ -72,7 +71,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
             return;
         }
         // Region info
-        GeneralRegion region = context.get(KEY_REGION);
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (region instanceof RentRegion rent) {
             handleRent(sender, rent);
         } else if (region instanceof BuyRegion buy) {
