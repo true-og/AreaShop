@@ -209,7 +209,7 @@ public class InfoCommand extends AreashopCommandBean {
         Message footer = Message.empty();
         // Previous button
         if (page > 1) {
-            footer.append(Message.fromKey("info-pagePrevious").replacements(baseCommand + " " + (page - 1)));
+            footer.append(Message.fromKey("info-pagePrevious").replacements(baseCommand + " --page " + (page - 1)));
         } else {
             footer.append(Message.fromKey("info-pageNoPrevious"));
         }
@@ -221,7 +221,7 @@ public class InfoCommand extends AreashopCommandBean {
             }
             footer.append(Message.fromKey("info-pageStatus").replacements(page, totalPages));
             if (page < totalPages) {
-                footer.append(Message.fromKey("info-pageNext").replacements(baseCommand + " " + (page + 1)));
+                footer.append(Message.fromKey("info-pageNext").replacements(baseCommand + " --page " + (page + 1)));
             } else {
                 footer.append(Message.fromKey("info-pageNoNext"));
             }
