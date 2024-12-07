@@ -11,7 +11,7 @@ buildCache {
     }
 }
 
-rootProject.name = "areashop-parent"
+rootProject.name = "AreaShop"
 
 // Interfaces
 include(":areashop-interface")

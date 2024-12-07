@@ -183,8 +183,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
 		// Setup NMS Impl
 		Version currentServerVersion = VersionUtil.parseMinecraftVersion(Bukkit.getBukkitVersion());
-		if (currentServerVersion.versionData().isOlderThan(VersionUtil.MC_1_18_2)) {
-			error("Unsupported minecraft version: " + currentServerVersion + "! Minimum is 1.18.2");
+		if (currentServerVersion.versionData().isOlderThan(VersionUtil.MC_1_19_4)) {
+			error("Unsupported minecraft version: " + currentServerVersion + "! Minimum is 1.19.4");
 			shutdownOnError();
 			return;
 		}
