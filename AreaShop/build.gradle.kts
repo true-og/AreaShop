@@ -61,8 +61,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
 
-
-
 repositories {
     mavenCentral()
 }
@@ -128,9 +126,9 @@ tasks {
         relocate("org.spongepowered", "${base}.spongepowered")
         relocate("org.yaml.snakeyaml", "${base}.snakeyaml")
     }
+
     runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
+        // Configure the Minecraft version for the task.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
         minecraftVersion("1.19.4")
 
@@ -143,4 +141,18 @@ tasks {
             url("https://mediafilez.forgecdn.net/files/3677/516/worldguard-bukkit-7.0.7-dist.jar")
         }
     }
+
+    // Register the custom task without the `tasks.` prefix
+    register("runCopyJarScript", Exec::class) {
+        group = "build"
+        description = "Runs the copyjar.sh script after build completion."
+        workingDir(rootDir)
+        commandLine("sh", "copyjar.sh", project.version.toString())
+    }
+
+    // Configure the build task to finalize with the custom task without the `tasks.` prefix
+    named("build") {
+        finalizedBy("runCopyJarScript")
+    }
 }
+
