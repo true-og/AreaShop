@@ -31,6 +31,19 @@
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
+.settings
+AreaShop/.settings
+adapters/.settings
+adapters/platform/.settings/
+adapters/platform/bukkit-modern/.settings/
+adapters/platform/paper.settings/
+adapters/platform/platform-interface/.settings/
+adapters/plugins/.settings/
+adapters/plugins/essentials/.settings/
+adapters/plugins/worldedit/.settings/
+adapters/plugins/worldguard/.settings/
+areashop-interface/.settings/
+areashop-nms/.settings/
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
