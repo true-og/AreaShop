@@ -18,7 +18,9 @@ dependencies {
     compileOnlyApi(libs.worldeditBukkit)
     compileOnlyApi(libs.worldguardCore)
     compileOnlyApi(libs.worldguardBukkit)
-    compileOnlyApi("com.github.MilkBowl:VaultAPI:1.7")
+    // Economy (DiamondBank-OG API, from the git submodule) and permissions (LuckPerms)
+    compileOnlyApi(project(":libs:DiamondBank-OG"))
+    compileOnly("net.luckperms:api:5.5")
 
     // 3rd party libraries
     api("io.papermc:paperlib:1.0.8")
@@ -134,7 +136,9 @@ tasks {
 
         downloadPlugins {
             github("EssentialsX", "essentials", "2.20.1", "EssentialsX-2.20.1.jar")
-            github("MilkBowl", "Vault", "1.7.3", "Vault.jar")
+            // LuckPerms (permissions provider). DiamondBank-OG must be installed manually in the
+            // test server since it also needs a Postgres + Redis/KeyDB backend to run.
+            url("https://download.luckperms.net/1587/bukkit/loader/LuckPerms-Bukkit-5.5.15.jar")
             // WorldEdit 7.2.19
             url("https://mediafilez.forgecdn.net/files/5077/477/worldedit-bukkit-7.2.19.jar")
             // WorldGuard 7.0.7

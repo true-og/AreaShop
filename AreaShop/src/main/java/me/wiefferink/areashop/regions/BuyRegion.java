@@ -14,8 +14,7 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.tools.Utils;
-import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.economy.EconomyResponse;
+import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -30,7 +29,7 @@ import java.util.UUID;
 
 public class BuyRegion extends GeneralRegion {
 
-	private final Economy economy;
+	private final DiamondBankAPIJava economy;
 	
 	@AssistedInject
 	BuyRegion(
@@ -39,7 +38,7 @@ public class BuyRegion extends GeneralRegion {
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
 			@Nonnull MessageBridge messageBridge,
-			@Nullable Economy economy,
+			@Nullable DiamondBankAPIJava economy,
 			@Assisted @Nonnull YamlConfiguration config
 	) {
 		super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, config);
@@ -53,7 +52,7 @@ public class BuyRegion extends GeneralRegion {
 			@Nonnull WorldEditInterface worldEditInterface,
 			@Nonnull WorldGuardInterface worldGuardInterface,
 			@Nonnull MessageBridge messageBridge,
-			@Nullable Economy economy,
+			@Nullable DiamondBankAPIJava economy,
 			@Assisted @Nonnull String name,
 			@Assisted @Nonnull World world
 	) {
@@ -370,19 +369,7 @@ public class BuyRegion extends GeneralRegion {
 			return false;
 		}
 
-		// Check if the player has enough money
-		// TODO: Offline economy support is temporarily disabled for Jubilee mode
-		/*
-		if (isResell && !economy.has(offlinePlayer, getWorldName(), getResellPrice())) {
-			message(offlinePlayer, "buy-lowMoneyResell", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
-			return false;
-		}
-		if (!isResell && !economy.has(offlinePlayer, getWorldName(), getPrice())) {
-			message(offlinePlayer, "buy-lowMoney", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
-			return false;
-		}
-		*/
-
+		// Buying is free during the jubilee (only rent regions are charged).
 		UUID oldOwner = getBuyer();
 		if(isResell && oldOwner != null) {
 			// Broadcast and check event
@@ -395,30 +382,12 @@ public class BuyRegion extends GeneralRegion {
 
 			getFriendsFeature().clearFriends();
 			double resellPrice = getResellPrice();
-			// Transfer the money to the previous owner
 			OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
 			String oldOwnerName = getPlayerName();
 			if(oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
 				oldOwnerName = oldOwnerPlayer.getName();
 			}
-			// TODO: Offline economy support is temporarily disabled for Jubilee mode
-			/*
-			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), getResellPrice());
-			if(!r.transactionSuccess()) {
-				message(offlinePlayer, "buy-payError");
-				AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while buying " + getName() + ": " + r.errorMessage);
-				return false;
-			}
-			r = null;
-			if(oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
-				r = economy.depositPlayer(oldOwnerPlayer, getWorldName(), getResellPrice());
-			} else if(oldOwnerName != null) {
-				r = economy.depositPlayer(oldOwnerName, getWorldName(), getResellPrice());
-			}
-			if(r == null || !r.transactionSuccess()) {
-				AreaShop.warn("Something went wrong with paying '" + oldOwnerName + "' " + getFormattedPrice() + " for his resell of region " + getName() + " to " + offlinePlayer.getName());
-			}
-			*/
+			// Reselling is free during the jubilee (no economy transfer).
 
 			// Set the owner
 			setBuyer(offlinePlayer.getUniqueId());
@@ -448,31 +417,7 @@ public class BuyRegion extends GeneralRegion {
 				return false;
 			}
 
-			// Substract the money from the players balance
-			// TODO: Offline economy support is temporarily disabled for Jubilee mode
-			/*
-			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), getPrice());
-			if(!r.transactionSuccess()) {
-				message(offlinePlayer, "buy-payError");
-				return false;
-			}
-			// Optionally give money to the landlord
-			OfflinePlayer landlordPlayer = null;
-			if(getLandlord() != null) {
-				landlordPlayer = Bukkit.getOfflinePlayer(getLandlord());
-			}
-			String landlordName = getLandlordName();
-			if(landlordName != null) {
-				if(landlordPlayer != null && landlordPlayer.getName() != null) {
-					r = economy.depositPlayer(landlordPlayer, getWorldName(), getPrice());
-				} else {
-					r = economy.depositPlayer(landlordName, getWorldName(), getPrice());
-				}
-				if(r != null && !r.transactionSuccess()) {
-					AreaShop.warn("Something went wrong with paying '" + landlordName + "' " + getFormattedPrice() + " for his sell of region " + getName() + " to " + offlinePlayer.getName());
-				}
-			}
-			*/
+			// Buying is free during the jubilee (no economy transfer, no landlord payout).
 
 			// Set the owner
 			setBuyer(offlinePlayer.getUniqueId());
@@ -530,49 +475,9 @@ public class BuyRegion extends GeneralRegion {
 		}
 
 		disableReselling();
-		// Give part of the buying price back
+		// Money back is not paid out during the jubilee (no economy payouts). The amount is still
+		// computed and reported in the SoldRegionEvent below for informational purposes.
 		double moneyBack = getMoneyBackAmount();
-		if(moneyBack > 0 && giveMoneyBack) {
-			boolean noPayBack = false;
-			OfflinePlayer landlordPlayer = null;
-			if(getLandlord() != null) {
-				landlordPlayer = Bukkit.getOfflinePlayer(getLandlord());
-			}
-			String landlordName = getLandlordName();
-			// TODO: Offline economy support is temporarily disabled for Jubilee mode
-			/*
-			EconomyResponse r;
-			if(landlordName != null) {
-				if(landlordPlayer != null && landlordPlayer.getName() != null) {
-					r = economy.withdrawPlayer(landlordPlayer, getWorldName(), moneyBack);
-				} else {
-					r = economy.withdrawPlayer(landlordName, getWorldName(), moneyBack);
-				}
-				if(r == null || !r.transactionSuccess()) {
-					noPayBack = true;
-				}
-			}
-
-			// Give back the money
-			OfflinePlayer player = Bukkit.getOfflinePlayer(getBuyer());
-			if(player.hasPlayedBefore() && !noPayBack) {
-				EconomyResponse response = null;
-				boolean error = false;
-				try {
-					if(player.getName() != null) {
-						response = economy.depositPlayer(player, getWorldName(), moneyBack);
-					} else if(getPlayerName() != null) {
-						response = economy.depositPlayer(getPlayerName(), getWorldName(), moneyBack);
-					}
-				} catch(Exception e) {
-					error = true;
-				}
-				if(error || response == null || !response.transactionSuccess()) {
-					AreaShop.warn("Something went wrong with paying back money to " + getPlayerName() + " while selling region " + getName());
-				}
-			}
-			*/
-		}
 
 		// Handle schematic save/restore (while %uuid% is still available)
 		handleSchematicEvent(RegionEvent.SOLD);

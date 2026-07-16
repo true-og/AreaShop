@@ -13,7 +13,8 @@ import me.wiefferink.areashop.regions.RegionGroup;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
-import net.milkbowl.vault.economy.Economy;
+import net.trueog.diamondbankog.DiamondBankException;
+import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
@@ -38,7 +39,7 @@ public class FindCommand extends AreashopCommandBean {
             GeneralRegion.RegionType.class);
     private static final CloudKey<Double> KEY_PRICE = CloudKey.of("maxPrice", Double.class);
 
-    private final Economy economy;
+    private final DiamondBankAPIJava economy;
     private final IFileManager fileManager;
     private final CommandFlag<RegionGroup> regionGroupFlag;
 
@@ -47,7 +48,7 @@ public class FindCommand extends AreashopCommandBean {
     @Inject
     public FindCommand(
             @Nonnull MessageBridge messageBridge,
-            @Nonnull Economy economy,
+            @Nonnull DiamondBankAPIJava economy,
             @Nonnull IFileManager fileManager
     ) {
         this.messageBridge = messageBridge;
@@ -94,7 +95,17 @@ public class FindCommand extends AreashopCommandBean {
         }
         double balance;
         if (economy != null) {
-            balance = economy.getBalance(sender);
+            double diamonds = 0;
+            try {
+                // DiamondBank stores balances in shards; convert the player's total to diamonds.
+                long shardsPerDiamond = economy.diamondsToShards(1f);
+                if (shardsPerDiamond > 0) {
+                    diamonds = economy.getTotalShards(sender.getUniqueId()) / (double) shardsPerDiamond;
+                }
+            } catch (DiamondBankException e) {
+                diamonds = 0;
+            }
+            balance = diamonds;
         } else {
             balance = 0;
         }

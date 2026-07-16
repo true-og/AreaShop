@@ -32,7 +32,8 @@ assignees: ''
 * AreaShop version: 
 * WorldEdit version: 
 * WorldGuard version: 
-* Vault version: 
+* DiamondBank-OG version: 
+* LuckPerms version: 
 
 
 **Your config files**

@@ -32,8 +32,8 @@
 * Bukkit/Spigot 1.19.4 or newer (hybrids such as Mohist are not supported)
 * [WorldGuard](http://dev.bukkit.org/bukkit-plugins/worldguard/): 7.0.7 or newer
 * [WorldEdit](http://dev.bukkit.org/bukkit-plugins/worldedit/): 7.2.12 or newer
-* [Vault](http://dev.bukkit.org/bukkit-plugins/vault/): 1.7.3 or higher
-* An economy plugin supported by Vault (check the [Vault page](http://dev.bukkit.org/bukkit-plugins/vault/) for a list of these)
+* [DiamondBank-OG](https://github.com/true-og/DiamondBank-OG): diamond-based economy provider
+* [LuckPerms](https://luckperms.net/): 5.5 or higher (permissions)
 
 AreaShop allows you selling and renting regions to players. It could be used to let them rent a jail in your prison server, a shop in the market of the survival server or a plot on a creative server. The player interacts with signs, making it easy to use. It also has a lot of commands to check the status of all regions, manage the renting and buying of a region and also features for admins. A lot of messages send to the player can be clicked, for immediately performing actions (buying the region, selling the region, etc.) or getting more information (for example clicking region name for region information). To setup the renting and selling of the regions exactly as you want AreaShop has a lot of options to custimize it to your liking.
 

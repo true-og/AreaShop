@@ -22,6 +22,12 @@ java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 
 subprojects {
 
+    // The libs/ submodules (e.g. DiamondBank-OG) are self-contained builds with their own
+    // Kotlin/GraalVM toolchain and plugins; do not apply AreaShop's Java/publish config to them.
+    if (project.path.startsWith(":libs")) {
+        return@subprojects
+    }
+
     group = rootProject.group
     version = rootProject.version
 

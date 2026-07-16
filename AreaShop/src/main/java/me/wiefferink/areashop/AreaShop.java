@@ -37,7 +37,11 @@ import me.wiefferink.areashop.tools.version.Version;
 import me.wiefferink.areashop.tools.version.VersionUtil;
 import me.wiefferink.bukkitdo.Do;
 import me.wiefferink.interactivemessenger.source.LanguageManager;
-import net.milkbowl.vault.economy.Economy;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.model.user.UserManager;
+import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
@@ -209,9 +213,9 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		}
 		final PlatformModule platformModule = new PlatformModule(platform, this.platformAdapter);
 
-		// Check if Vault is present
-		if(getServer().getPluginManager().getPlugin("Vault") == null) {
-			error("Vault plugin is not present or has not loaded correctly");
+		// Check if DiamondBank-OG is present
+		if(getServer().getPluginManager().getPlugin("DiamondBank-OG") == null) {
+			error("DiamondBank-OG plugin is not present or has not loaded correctly");
 			shutdownOnError();
 			return;
 		}
@@ -619,37 +623,36 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	}
 
 	/**
-	 * Function to get the Vault plugin.
-	 * @return Economy
+	 * Function to get the DiamondBank-OG economy API.
+	 * @return DiamondBankAPIJava provider, or null if DiamondBank-OG is not present
 	 */
-	@Deprecated
-	private Economy getEconomy() {
-		RegisteredServiceProvider<Economy> economy = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+	private DiamondBankAPIJava getEconomy() {
+		RegisteredServiceProvider<DiamondBankAPIJava> economy = getServer().getServicesManager().getRegistration(DiamondBankAPIJava.class);
 		if(economy == null) {
-			error("There is no economy provider to support Vault, make sure you installed an economy plugin");
+			error("There is no economy provider present, make sure you installed DiamondBank-OG");
 			return null;
 		}
 		return economy.getProvider();
 	}
 
 	/**
-	 * Get the Vault permissions provider.
-	 * @return Vault permissions provider
+	 * Get the LuckPerms permissions provider.
+	 * @return LuckPerms provider, or null if LuckPerms is not present
 	 */
-	@Deprecated
-	private net.milkbowl.vault.permission.Permission getPermissionProvider() {
-		RegisteredServiceProvider<net.milkbowl.vault.permission.Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
-		if (permissionProvider == null) {
+	private LuckPerms getPermissionProvider() {
+		try {
+			return LuckPermsProvider.get();
+		} catch(IllegalStateException | NoClassDefFoundError e) {
+			// LuckPerms not loaded/registered yet
 			return null;
 		}
-		return permissionProvider.getProvider();
 	}
 
 	/**
 	 * Check for a permission of a (possibly offline) player.
 	 * @param offlinePlayer OfflinePlayer to check
 	 * @param permission Permission to check
-	 * @return true if the player has the permission, false if the player does not have permission or, is offline and there is not Vault-compatible permission plugin
+	 * @return true if the player has the permission, false if the player does not have permission or, is offline and there is no LuckPerms provider available
 	 */
 	public boolean hasPermission(OfflinePlayer offlinePlayer, String permission) {
 		// Online, return through Bukkit
@@ -657,11 +660,24 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 			return offlinePlayer.getPlayer().hasPermission(permission);
 		}
 
-		// Resolve while offline if possible
-		net.milkbowl.vault.permission.Permission permissionProvider = getPermissionProvider();
+		// Resolve while offline if possible, through LuckPerms
+		LuckPerms permissionProvider = getPermissionProvider();
 		if(permissionProvider != null) {
-			// TODO: Should we provide a world here?
-			return permissionProvider.playerHas(null, offlinePlayer, permission);
+			UserManager userManager = permissionProvider.getUserManager();
+			User user = userManager.getUser(offlinePlayer.getUniqueId());
+			boolean loaded = user != null;
+			if(user == null) {
+				// Not cached, load it from storage (blocking)
+				user = userManager.loadUser(offlinePlayer.getUniqueId()).join();
+			}
+			if(user == null) {
+				return false;
+			}
+			boolean result = user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+			if(!loaded) {
+				userManager.cleanupUser(user);
+			}
+			return result;
 		}
 
 		// Player offline and no offline permission provider available, safely say that there is no permission
