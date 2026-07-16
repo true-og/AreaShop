@@ -1,12 +1,18 @@
----
-name: shop-51
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -146.0
-    "y": 57.0
-    z: -201.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-51
+  type: rent
+  world: world
+  lastActive: 1715104715767
+  signs:
+    '0':
+      location:
+        world: world
+        x: -146.0
+        y: 57.0
+        z: -201.0
+      facing: NORTH
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: bc26eba9-b8e3-45f1-a755-d46260cdccc7
+  rentedUntil: 1786804780000

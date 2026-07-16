@@ -105,22 +105,29 @@ years: [y, year, years]
 #   https://github.com/NLthijs48/AreaShop/wiki/Limitgroups-information-and-examples.
 limitGroups:
   default:
-    total: 1
-    rents: 1
-    buys: 1
+    # ARM did not impose a limit on players without an arm.limit.* permission.
+    total: -1
+    rents: -1
+    buys: -1
   og:
     total: 2
-    groups:
+    rents: 2
+    buys: 2
+    groupLimits:
       shop: 1
       union-shop: 1
   og-pro:
     total: 3
-    groups:
+    rents: 3
+    buys: 3
+    groupLimits:
       shop: 2
       union-shop: 1
   og-master:
     total: 4
-    groups:
+    rents: 4
+    buys: 4
+    groupLimits:
       shop: 3
       union-shop: 1
 

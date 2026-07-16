@@ -1,12 +1,18 @@
----
-name: shop-44
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -106.0
-    "y": 68.0
-    z: -222.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-44
+  type: rent
+  world: world
+  lastActive: 1706147034515
+  signs:
+    '0':
+      location:
+        world: world
+        x: -106.0
+        y: 68.0
+        z: -222.0
+      facing: WEST
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: 6e0007a5-9164-4fba-8c6a-fe940ba797fc
+  rentedUntil: 1786804780000

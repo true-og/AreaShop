@@ -285,9 +285,8 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		);
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
-		// Extract default regions from JAR
-		try {
-			java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(new java.io.FileInputStream(this.getFile()));
+		// Extract the migrated ARM data from the JAR without replacing live data.
+		try(java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(new java.io.FileInputStream(this.getFile()))) {
 			java.util.zip.ZipEntry entry;
 			while((entry = zip.getNextEntry()) != null) {
 				if(entry.getName().startsWith("regions/") && entry.getName().endsWith(".yml")) {
@@ -297,9 +296,12 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 					}
 				}
 			}
-			zip.close();
 		} catch (Exception e) {
 			error("Failed to extract default regions from JAR: " + e.getMessage());
+		}
+		java.io.File groupsFile = new java.io.File(getDataFolder(), AreaShop.groupsFile);
+		if(!groupsFile.exists()) {
+			saveResource(AreaShop.groupsFile, false);
 		}
 
 		// Load all data from files and check versions
@@ -891,7 +893,5 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 	}
 
 }
-
-
 
 

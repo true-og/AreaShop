@@ -1,12 +1,18 @@
----
-name: shop-52
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -146.0
-    "y": 57.0
-    z: -207.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-52
+  type: rent
+  world: world
+  lastActive: 1730449340234
+  signs:
+    '0':
+      location:
+        world: world
+        x: -146.0
+        y: 57.0
+        z: -207.0
+      facing: SOUTH
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: a8f81a4a-d522-4cdf-a299-3c2842c13635
+  rentedUntil: 1786804780000

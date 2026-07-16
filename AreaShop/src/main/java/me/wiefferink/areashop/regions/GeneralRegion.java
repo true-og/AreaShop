@@ -1298,6 +1298,10 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		if(extend) {
 			exclude = this;
 		}
+		LimitResult regionGroupLimit = checkRegionGroupLimits(offlinePlayer, exclude);
+		if(regionGroupLimit != null) {
+			return regionGroupLimit;
+		}
 		String typePath;
 		if(type == RegionType.RENT) {
 			typePath = "rents";
@@ -1308,7 +1312,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		List<String> groups = new ArrayList<>(plugin.getConfig().getConfigurationSection("limitGroups").getKeys(false));
 		while(!groups.isEmpty()) {
 			String group = groups.get(0);
-			if(plugin.hasPermission(offlinePlayer, "areashop.limits." + group) && this.matchesLimitGroup(group)) {
+			if(hasLimitGroupPermission(offlinePlayer, group) && this.matchesLimitGroup(group)) {
 				String pathPrefix = "limitGroups." + group + ".";
 				if(!plugin.getConfig().isInt(pathPrefix + "total")) {
 					AreaShop.warn("Limit group " + group + " in the config.yml file does not correctly specify the number of total regions (should be specified as total: <number>)");
@@ -1338,7 +1342,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 				// Get the highest number from the groups of the same category
 				List<String> groupsCopy = new ArrayList<>(groups);
 				for(String checkGroup : groupsCopy) {
-					if(plugin.hasPermission(offlinePlayer, "areashop.limits." + checkGroup) && this.matchesLimitGroup(checkGroup)) {
+					if(hasLimitGroupPermission(offlinePlayer, checkGroup) && this.matchesLimitGroup(checkGroup)) {
 						if(limitGroupsOfSameCategory(group, checkGroup)) {
 							groups.remove(checkGroup);
 							int totalLimitOther = plugin.getConfig().getInt("limitGroups." + checkGroup + ".total");
@@ -1381,6 +1385,67 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 			groups.remove(group);
 		}
 		return new LimitResult(true, null, 0, 0, null);
+	}
+
+	/**
+	 * Keep the ARM limit permissions working while permission data is migrated.
+	 */
+	private boolean hasLimitGroupPermission(OfflinePlayer player, String group) {
+		return plugin.hasPermission(player, "areashop.limits." + group)
+				|| plugin.hasPermission(player, "arm.limit." + group);
+	}
+
+	/**
+	 * Enforce ARM's per-region-kind limits using AreaShop region groups. The
+	 * highest applicable permission group wins, matching AreaShop's normal limit
+	 * behavior when a player has multiple ranks.
+	 */
+	private LimitResult checkRegionGroupLimits(OfflinePlayer player, GeneralRegion exclude) {
+		ConfigurationSection limitGroups = plugin.getConfig().getConfigurationSection("limitGroups");
+		if(limitGroups == null) {
+			return null;
+		}
+		for(RegionGroup regionGroup : plugin.getFileManager().getGroups()) {
+			if(!regionGroup.isMember(this)) {
+				continue;
+			}
+			int highestLimit = Integer.MIN_VALUE;
+			String highestPermissionGroup = null;
+			for(String permissionGroup : limitGroups.getKeys(false)) {
+				String path = "limitGroups." + permissionGroup + ".groupLimits." + regionGroup.getName();
+				if(hasLimitGroupPermission(player, permissionGroup)
+						&& matchesLimitGroup(permissionGroup)
+						&& plugin.getConfig().isInt(path)) {
+					int configuredLimit = plugin.getConfig().getInt(path);
+					if(configuredLimit == -1) {
+						highestLimit = Integer.MAX_VALUE;
+						highestPermissionGroup = permissionGroup;
+						break;
+					}
+					if(configuredLimit > highestLimit) {
+						highestLimit = configuredLimit;
+						highestPermissionGroup = permissionGroup;
+					}
+				}
+			}
+			if(highestLimit == Integer.MIN_VALUE || highestLimit == Integer.MAX_VALUE) {
+				continue;
+			}
+			int current = 0;
+			for(GeneralRegion ownedRegion : plugin.getFileManager().getRegionsRef()) {
+				if(ownedRegion.getBooleanSetting("general.countForLimits")
+						&& ownedRegion.isOwner(player)
+						&& regionGroup.isMember(ownedRegion)
+						&& (exclude == null || !exclude.getName().equals(ownedRegion.getName()))) {
+					current++;
+				}
+			}
+			if(current >= highestLimit) {
+				return new LimitResult(false, LimitType.TOTAL, highestLimit, current,
+						highestPermissionGroup + "/" + regionGroup.getName());
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -1687,8 +1752,6 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 		}
 	}
 }
-
-
 
 
 

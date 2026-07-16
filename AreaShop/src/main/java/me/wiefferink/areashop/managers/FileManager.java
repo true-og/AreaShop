@@ -854,6 +854,7 @@ public class FileManager extends Manager implements IFileManager {
 				InputStreamReader normal = new InputStreamReader(plugin.getResource(AreaShop.defaultFile), StandardCharsets.UTF_8)
 		) {
 			defaultConfig = YamlConfiguration.loadConfiguration(custom);
+			migrateIncompleteArmDefaults(defaultFile);
 			if(defaultConfig.getKeys(false).isEmpty()) {
 				AreaShop.warn("File 'default.yml' is empty, check for errors in the log.");
 				result = false;
@@ -863,6 +864,32 @@ public class FileManager extends Manager implements IFileManager {
 			result = false;
 		}
 		return result;
+	}
+
+	/**
+	 * Repair the first ARM migration's generated default.yml. The signature is
+	 * deliberately exact so user-customized AreaShop installations are untouched.
+	 */
+	private void migrateIncompleteArmDefaults(File defaultFile) {
+		if(!"%width% * %length% * %height% * 32".equals(defaultConfig.getString("rent.price"))) {
+			return;
+		}
+		defaultConfig.set("general.flagProfile.ALL.priority", 20);
+		defaultConfig.set("general.flagProfile.forrent.greeting",
+				"%lang:wgPrefix%&6This shop can be rented for &b%price% Diamonds &6per &2%duration%");
+		defaultConfig.set("general.flagProfile.forsale.greeting",
+				"%lang:wgPrefix%&6This shop can be purchased for &b%price% Diamonds");
+		defaultConfig.set("general.flagProfile.resell.greeting",
+				"%lang:wgPrefix%&6This shop can be purchased for &b%resellprice% Diamonds");
+		defaultConfig.set("rent.price", "%width% * %depth% * 32");
+		defaultConfig.set("rent.maxRentTime", "365 days");
+		defaultConfig.set("rent.warningOnLoginTime", "7 days");
+		try {
+			defaultConfig.save(defaultFile);
+			AreaShop.info("Repaired settings from the incomplete AdvancedRegionMarket migration in default.yml");
+		} catch(IOException e) {
+			AreaShop.warn("Could not save repaired AdvancedRegionMarket settings to " + defaultFile.getAbsolutePath());
+		}
 	}
 
 	/**
@@ -896,6 +923,7 @@ public class FileManager extends Manager implements IFileManager {
                 InputStreamReader hidden = new InputStreamReader(plugin.getResource(AreaShop.configFileHidden), StandardCharsets.UTF_8)
 		) {
 			config = YamlConfiguration.loadConfiguration(custom);
+			migrateIncompleteArmConfig(configFile);
 			if(config.getKeys(false).isEmpty()) {
 				AreaShop.warn("File 'config.yml' is empty, check for errors in the log.");
 				result = false;
@@ -921,6 +949,39 @@ public class FileManager extends Manager implements IFileManager {
 	}
 
 	/**
+	 * Repair the invalid map-shaped limit groups emitted by the first ARM
+	 * migration. AreaShop requires total/rents/buys integer values here.
+	 */
+	private void migrateIncompleteArmConfig(File configFile) {
+		if(!config.isConfigurationSection("limitGroups.og.groups")
+				|| config.isInt("limitGroups.og.rents")) {
+			return;
+		}
+		config.set("limitGroups.default.total", -1);
+		config.set("limitGroups.default.rents", -1);
+		config.set("limitGroups.default.buys", -1);
+		setArmLimitGroup("og", 2);
+		setArmLimitGroup("og-pro", 3);
+		setArmLimitGroup("og-master", 4);
+		try {
+			config.save(configFile);
+			AreaShop.info("Repaired limit groups from the incomplete AdvancedRegionMarket migration in config.yml");
+		} catch(IOException e) {
+			AreaShop.warn("Could not save repaired AdvancedRegionMarket limits to " + configFile.getAbsolutePath());
+		}
+	}
+
+	private void setArmLimitGroup(String name, int limit) {
+		String path = "limitGroups." + name + ".";
+		config.set(path + "total", limit);
+		config.set(path + "rents", limit);
+		config.set(path + "buys", limit);
+		config.set(path + "groups", null);
+		config.set(path + "groupLimits.shop", limit - 1);
+		config.set(path + "groupLimits.union-shop", 1);
+	}
+
+	/**
 	 * Load the groups.yml file from disk
 	 * @return true if succeeded, otherwise false
 	 */
@@ -940,11 +1001,35 @@ public class FileManager extends Manager implements IFileManager {
 		if(groupsConfig == null) {
 			groupsConfig = new YamlConfiguration();
 		}
+		mergeBundledArmGroups(groupFile);
 		for(String groupName : groupsConfig.getKeys(false)) {
 			RegionGroup group = regionFactory.createRegionGroup(groupName);
 			groups.put(groupName, group);
 		}
 		return result;
+	}
+
+	private void mergeBundledArmGroups(File groupFile) {
+		try(InputStream input = plugin.getResource(AreaShop.groupsFile)) {
+			if(input == null) {
+				return;
+			}
+			YamlConfiguration bundled = YamlConfiguration.loadConfiguration(
+					new InputStreamReader(input, StandardCharsets.UTF_8));
+			boolean changed = false;
+			for(String path : bundled.getKeys(true)) {
+				if(!bundled.isConfigurationSection(path) && !groupsConfig.isSet(path)) {
+					groupsConfig.set(path, bundled.get(path));
+					changed = true;
+				}
+			}
+			if(changed) {
+				groupsConfig.save(groupFile);
+				AreaShop.info("Added migrated AdvancedRegionMarket region groups to groups.yml");
+			}
+		} catch(IOException e) {
+			AreaShop.warn("Could not merge migrated AdvancedRegionMarket region groups into " + groupFile.getAbsolutePath());
+		}
 	}
 
 	/**
@@ -980,6 +1065,8 @@ public class FileManager extends Manager implements IFileManager {
 		List<GeneralRegion> noWorld = new ArrayList<>();
 		Map<GeneralRegion, File> noRegion = new HashMap<>();
 		List<GeneralRegion> incorrectDuration = new ArrayList<>();
+		List<String> unresolvedLegacyOwners = new ArrayList<>();
+		int migratedLegacyRegions = 0;
 		for(File regionFile : regionFiles) {
 			if(regionFile.exists() && regionFile.isFile() && !regionFile.isHidden()) {
 
@@ -998,6 +1085,7 @@ public class FileManager extends Manager implements IFileManager {
 					AreaShop.warn("Something went wrong reading region file: " + regionFile.getAbsolutePath());
 					continue;
 				}
+				boolean legacyArmRegion = migrateLegacyArmRegionShape(regionConfig);
 
 				// Construct the correct type of region
 				String type = regionConfig.getString("general.type");
@@ -1019,9 +1107,14 @@ public class FileManager extends Manager implements IFileManager {
 					noWorld.add(region);
 				} else if(region.getRegion() == null) {
 					noRegion.put(region, regionFile);
+				} else if(legacyArmRegion && !migrateLegacyArmRegionState(region, regionConfig, regionFile)) {
+					unresolvedLegacyOwners.add(region.getName());
 				} else if(region instanceof RentRegion && !Utils.checkTimeFormat(((RentRegion)region).getDurationString())) {
 					incorrectDuration.add(region);
 				} else {
+					if(legacyArmRegion) {
+						migratedLegacyRegions++;
+					}
 					added = true;
 					addRegionNoSave(region);
 				}
@@ -1077,7 +1170,107 @@ public class FileManager extends Manager implements IFileManager {
 			}
 			AreaShop.warn("The following regions have an incorrect time format as duration: " + Utils.createCommaSeparatedList(incorrectDurationNames));
 		}
+		if(!unresolvedLegacyOwners.isEmpty()) {
+			AreaShop.warn("Could not migrate the renter because exactly one WorldGuard owner was not found; these regions were not loaded: "
+					+ Utils.createCommaSeparatedList(unresolvedLegacyOwners));
+		}
+		if(migratedLegacyRegions > 0) {
+			AreaShop.info("Migrated " + migratedLegacyRegions + " AdvancedRegionMarket region files to the AreaShop format");
+		}
 		plugin.setReady(true);
+	}
+
+	/**
+	 * Convert the flat files produced by the first ARM migration into AreaShop's
+	 * nested region schema. The legacy state keys remain until ownership has been
+	 * recovered from WorldGuard.
+	 */
+	private boolean migrateLegacyArmRegionShape(YamlConfiguration regionConfig) {
+		if(regionConfig.isSet("general.type") || !regionConfig.isString("type")) {
+			return false;
+		}
+		String type = regionConfig.getString("type");
+		if(!RegionType.RENT.getValue().equals(type) && !RegionType.BUY.getValue().equals(type)) {
+			return false;
+		}
+		regionConfig.set("general.name", regionConfig.getString("name"));
+		regionConfig.set("general.type", type);
+		regionConfig.set("general.world", regionConfig.getString("world"));
+
+		ConfigurationSection signs = regionConfig.getConfigurationSection("signs");
+		if(signs != null) {
+			for(String key : signs.getKeys(false)) {
+				String source = "signs." + key + ".";
+				String destination = "general.signs." + key + ".location.";
+				regionConfig.set(destination + "world", regionConfig.get(source + "world"));
+				regionConfig.set(destination + "x", regionConfig.get(source + "x"));
+				regionConfig.set(destination + "y", regionConfig.get(source + "y"));
+				regionConfig.set(destination + "z", regionConfig.get(source + "z"));
+			}
+		}
+		mergeBundledArmRegion(regionConfig);
+		return true;
+	}
+
+	private void mergeBundledArmRegion(YamlConfiguration regionConfig) {
+		String name = regionConfig.getString("general.name");
+		if(name == null) {
+			return;
+		}
+		try(InputStream input = plugin.getResource("regions/" + name.toLowerCase(Locale.ENGLISH) + ".yml")) {
+			if(input == null) {
+				return;
+			}
+			YamlConfiguration bundled = YamlConfiguration.loadConfiguration(
+					new InputStreamReader(input, StandardCharsets.UTF_8));
+			for(String path : bundled.getKeys(true)) {
+				if(!bundled.isConfigurationSection(path) && !regionConfig.isSet(path)) {
+					regionConfig.set(path, bundled.get(path));
+				}
+			}
+		} catch(IOException e) {
+			AreaShop.warn("Could not read bundled AdvancedRegionMarket data for " + name);
+		}
+	}
+
+	/**
+	 * ARM stored tenants and friends in the WorldGuard owner/member domains. Read
+	 * them before AreaShop applies its own flag profile, then persist everything
+	 * in the AreaShop region file.
+	 */
+	private boolean migrateLegacyArmRegionState(GeneralRegion region, YamlConfiguration regionConfig, File regionFile) {
+		if(regionConfig.getBoolean("rented")) {
+			List<UUID> owners = worldGuardInterface.getOwners(region.getRegion()).asUniqueIdList();
+			if(!(region instanceof RentRegion) || owners.size() != 1) {
+				return false;
+			}
+			UUID renter = owners.get(0);
+			regionConfig.set("rent.renter", renter.toString());
+			regionConfig.set("rent.rentedUntil", regionConfig.getLong("rentedUntil"));
+			List<String> friends = new ArrayList<>();
+			for(UUID member : worldGuardInterface.getMembers(region.getRegion()).asUniqueIdList()) {
+				if(!member.equals(renter)) {
+					friends.add(member.toString());
+				}
+			}
+			regionConfig.set("general.friends", friends.isEmpty() ? null : friends);
+		}
+
+		regionConfig.set("name", null);
+		regionConfig.set("type", null);
+		regionConfig.set("world", null);
+		regionConfig.set("signs", null);
+		regionConfig.set("rented", null);
+		regionConfig.set("rentedUntil", null);
+		// Fixed ARM prices must not override the adaptive area formula in default.yml.
+		regionConfig.set("rent.price", null);
+		try {
+			regionConfig.save(regionFile);
+			return true;
+		} catch(IOException e) {
+			AreaShop.warn("Could not save migrated AdvancedRegionMarket region file: " + regionFile.getAbsolutePath());
+			return false;
+		}
 	}
 
 
@@ -1413,13 +1606,6 @@ public class FileManager extends Manager implements IFileManager {
 		groupsConfig.set(group.getName().toLowerCase() + "." + path, setting);
 	}
 }
-
-
-
-
-
-
-
 
 
 

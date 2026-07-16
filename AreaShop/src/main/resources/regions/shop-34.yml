@@ -1,12 +1,18 @@
----
-name: shop-34
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -154.0
-    "y": 68.0
-    z: -204.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-34
+  type: rent
+  world: world
+  lastActive: 1697470909534
+  signs:
+    '0':
+      location:
+        world: world
+        x: -154.0
+        y: 68.0
+        z: -204.0
+      facing: EAST
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: ca8b8f60-dc62-4f7a-ac83-997284a41303
+  rentedUntil: 1786804780000

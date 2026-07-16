@@ -1,12 +1,22 @@
----
-name: shop-25
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -107.0
-    "y": 67.0
-    z: -274.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-25
+  type: rent
+  world: world
+  lastActive: 1705302176193
+  friends:
+    - 49d02d8a-6a02-4b7c-b849-67be313c36b4
+    - 1535efec-ec8c-491c-9cd3-1731ef98c9b0
+    - 6a4a92f0-07ea-42c7-87fa-7a44a2a9723b
+  signs:
+    '0':
+      location:
+        world: world
+        x: -107.0
+        y: 67.0
+        z: -274.0
+      facing: NORTH
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: cb4872b5-67d5-4431-8ad2-763f6fb6ced8
+  rentedUntil: 1786804780000

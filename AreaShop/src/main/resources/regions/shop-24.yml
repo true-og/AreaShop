@@ -1,10 +1,15 @@
----
-name: shop-24
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -103.0
-    "y": 68.0
-    z: -278.0
+general:
+  name: shop-24
+  type: rent
+  world: world
+  signs:
+    '0':
+      location:
+        world: world
+        x: -103.0
+        y: 68.0
+        z: -278.0
+      facing: SOUTH
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'

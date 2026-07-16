@@ -1,12 +1,18 @@
----
-name: shop-82
-type: rent
-world: world
-signs:
-  '0':
-    world: world
-    x: -101.0
-    "y": 56.0
-    z: -274.0
-rented: true
-rentedUntil: 1786804780000
+general:
+  name: shop-82
+  type: rent
+  world: world
+  lastActive: 1740855792526
+  signs:
+    '0':
+      location:
+        world: world
+        x: -101.0
+        y: 56.0
+        z: -274.0
+      facing: WEST
+rent:
+  duration: '30 days'
+  maxRentTime: '365 days'
+  renter: 9c272295-71dd-4aad-b59e-3de12d73b68a
+  rentedUntil: 1786804780000
