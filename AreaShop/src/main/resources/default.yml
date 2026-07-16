@@ -116,29 +116,34 @@ general:
       priority: 10
       owners: ''
       members: ''
-      interact: 'deny g:non_members' # Only allow region members/owners to use things in the region (chests, furnace, animals, etc.)
-      use: 'deny g:non_members'
-      build: 'deny g:non_members'
-      block-break: 'deny g:non_members'
-      block-place: 'deny g:non_members'
+      ride: 'allow g:members'
+      build: 'allow g:members'
+      block-break: 'allow g:members'
+      block-place: 'allow g:members'
+      chest-access: 'allow g:members'
     forrent:
-      greeting: '%lang:wgPrefix%%lang:greeting-forrent%'
+      greeting: '%lang:prefix%&6This shop can be rented for &b%price% Diamonds &6per &2%duration%'
+      use: 'allow g:all'
     rented:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%%lang:greeting-rented%'
+      greeting: ''
+      use: 'allow g:members'
     forsale:
-      greeting: '%lang:wgPrefix%%lang:greeting-forsale%'
+      greeting: '%lang:prefix%&6This shop can be purchased for &b%price% Diamonds'
+      use: 'allow g:all'
     sold:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%%lang:greeting-bought%'
+      greeting: ''
+      use: 'allow g:members'
     resell:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%%lang:greeting-resale%'
+      greeting: '%lang:prefix%&6This shop can be purchased for &b%resellprice% Diamonds'
+      use: 'allow g:all'
 
   ##### Save and restore schematics to clean up regions.
   # After 'save:' or 'restore:' you enter the name of the file to restore from/to (.schematic is added automatically).
   # Set to true to enable saving/restoring for regions as specified in the profile below, which is specified in the config.
-  enableRestore: false
+  enableRestore: true
   schematicProfile:
     created:
       save: '%type%-%region%'
@@ -200,14 +205,14 @@ general:
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 rent:
   # The default price of a rental region (variables, mathematical expressions and JavaScript can be used).
-  price: 1000
+  price: '%width% * %length% * %height% * 32'
   # The default duration of a rental region, you can find all time indicators in config.yml below the RENTING header.
-  duration: '1 day'
+  duration: '30 days'
   # Automatically extend the rental when it is running out (if the player meets the criteria)
-  autoExtend: false
+  autoExtend: true
   # The percentage of the rent price you get back if you unrent the region (only the time that is unused is given back).
   # (variables, mathematical expressions and JavaScript can be used)
-  moneyBack: 100
+  moneyBack: 0
   # Maximum number of extends a player can do (-1 for infinite, 0 for no extending), if they are at this number then
   # they are force to let their rent run out (and can rent it again at that point).
   maxExtends: -1
@@ -239,9 +244,9 @@ rent:
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 buy:
   # The default price of a buy region (variables, mathematical expressions and JavaScript can be used).
-  price: 1000
+  price: 0
   # The percentage of the price you get back if you sell the region (variables, mathematical expressions and JavaScript can be used)
-  moneyBack: 100
+  moneyBack: 0
   # Automatically sell the region after the specified number of minutes between the last login time of the buyer and the current time
   # Use times like '1 day' etc, or 'disabled' for never.
   inactiveTimeUntilSell: 'disabled'

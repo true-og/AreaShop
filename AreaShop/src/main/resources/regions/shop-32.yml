@@ -1,0 +1,10 @@
+---
+name: shop-32
+type: rent
+world: world
+signs:
+  '0':
+    world: world
+    x: -164.0
+    "y": 68.0
+    z: -230.0

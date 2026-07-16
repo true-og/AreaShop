@@ -371,6 +371,8 @@ public class BuyRegion extends GeneralRegion {
 		}
 
 		// Check if the player has enough money
+		// TODO: Offline economy support is temporarily disabled for Jubilee mode
+		/*
 		if (isResell && !economy.has(offlinePlayer, getWorldName(), getResellPrice())) {
 			message(offlinePlayer, "buy-lowMoneyResell", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
 			return false;
@@ -379,6 +381,7 @@ public class BuyRegion extends GeneralRegion {
 			message(offlinePlayer, "buy-lowMoney", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
 			return false;
 		}
+		*/
 
 		UUID oldOwner = getBuyer();
 		if(isResell && oldOwner != null) {
@@ -393,6 +396,13 @@ public class BuyRegion extends GeneralRegion {
 			getFriendsFeature().clearFriends();
 			double resellPrice = getResellPrice();
 			// Transfer the money to the previous owner
+			OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
+			String oldOwnerName = getPlayerName();
+			if(oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
+				oldOwnerName = oldOwnerPlayer.getName();
+			}
+			// TODO: Offline economy support is temporarily disabled for Jubilee mode
+			/*
 			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), getResellPrice());
 			if(!r.transactionSuccess()) {
 				message(offlinePlayer, "buy-payError");
@@ -400,17 +410,15 @@ public class BuyRegion extends GeneralRegion {
 				return false;
 			}
 			r = null;
-			OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
-			String oldOwnerName = getPlayerName();
 			if(oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
 				r = economy.depositPlayer(oldOwnerPlayer, getWorldName(), getResellPrice());
-				oldOwnerName = oldOwnerPlayer.getName();
 			} else if(oldOwnerName != null) {
 				r = economy.depositPlayer(oldOwnerName, getWorldName(), getResellPrice());
 			}
 			if(r == null || !r.transactionSuccess()) {
 				AreaShop.warn("Something went wrong with paying '" + oldOwnerName + "' " + getFormattedPrice() + " for his resell of region " + getName() + " to " + offlinePlayer.getName());
 			}
+			*/
 
 			// Set the owner
 			setBuyer(offlinePlayer.getUniqueId());
@@ -441,6 +449,8 @@ public class BuyRegion extends GeneralRegion {
 			}
 
 			// Substract the money from the players balance
+			// TODO: Offline economy support is temporarily disabled for Jubilee mode
+			/*
 			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), getPrice());
 			if(!r.transactionSuccess()) {
 				message(offlinePlayer, "buy-payError");
@@ -462,6 +472,7 @@ public class BuyRegion extends GeneralRegion {
 					AreaShop.warn("Something went wrong with paying '" + landlordName + "' " + getFormattedPrice() + " for his sell of region " + getName() + " to " + offlinePlayer.getName());
 				}
 			}
+			*/
 
 			// Set the owner
 			setBuyer(offlinePlayer.getUniqueId());
@@ -528,6 +539,8 @@ public class BuyRegion extends GeneralRegion {
 				landlordPlayer = Bukkit.getOfflinePlayer(getLandlord());
 			}
 			String landlordName = getLandlordName();
+			// TODO: Offline economy support is temporarily disabled for Jubilee mode
+			/*
 			EconomyResponse r;
 			if(landlordName != null) {
 				if(landlordPlayer != null && landlordPlayer.getName() != null) {
@@ -558,6 +571,7 @@ public class BuyRegion extends GeneralRegion {
 					AreaShop.warn("Something went wrong with paying back money to " + getPlayerName() + " while selling region " + getName());
 				}
 			}
+			*/
 		}
 
 		// Handle schematic save/restore (while %uuid% is still available)

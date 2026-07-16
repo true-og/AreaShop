@@ -581,13 +581,12 @@ public class RentRegion extends GeneralRegion {
 		}
 
 		// Check if the player has enough money
-		if(!economy.has(offlinePlayer, getWorldName(), price)) {
-			if(extend) {
-				message(offlinePlayer, "rent-lowMoneyExtend", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
-			} else {
+		// TODO: Offline economy support (for auto-renewals) is temporarily disabled for Jubilee mode
+		if(!extend) {
+			if(!economy.has(offlinePlayer, getWorldName(), price)) {
 				message(offlinePlayer, "rent-lowMoneyRent", Utils.formatCurrency(economy.getBalance(offlinePlayer, getWorldName())));
+				return false;
 			}
-			return false;
 		}
 
 		// Broadcast and check event
@@ -599,11 +598,14 @@ public class RentRegion extends GeneralRegion {
 		}
 
 		// Substract the money from the players balance
-		EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), price);
-		if(!r.transactionSuccess()) {
-			message(offlinePlayer, "rent-payError");
-			AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while renting " + getName() + ": " + r.errorMessage);
-			return false;
+		// TODO: Offline economy support (for auto-renewals) is temporarily disabled for Jubilee mode
+		if(!extend) {
+			EconomyResponse r = economy.withdrawPlayer(offlinePlayer, getWorldName(), price);
+			if(!r.transactionSuccess()) {
+				message(offlinePlayer, "rent-payError");
+				AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName() + " while renting " + getName() + ": " + r.errorMessage);
+				return false;
+			}
 		}
 		// Optionally give money to the landlord
 		OfflinePlayer landlordPlayer = null;
@@ -611,7 +613,9 @@ public class RentRegion extends GeneralRegion {
 			landlordPlayer = Bukkit.getOfflinePlayer(getLandlord());
 		}
 		String landlordName = getLandlordName();
-		if(landlordName != null) {
+		if(landlordName != null && !extend) {
+			// TODO: Offline economy support (for auto-renewals) is temporarily disabled for Jubilee mode
+			EconomyResponse r;
 			if(landlordPlayer != null && landlordPlayer.getName() != null) {
 				r = economy.depositPlayer(landlordPlayer, getWorldName(), price);
 			} else {
@@ -700,6 +704,8 @@ public class RentRegion extends GeneralRegion {
 				landlordPlayer = Bukkit.getOfflinePlayer(getLandlord());
 			}
 			String landlordName = getLandlordName();
+			// TODO: Offline economy support is temporarily disabled for Jubilee mode
+			/*
 			EconomyResponse r;
 			if(landlordName != null) {
 				if(landlordPlayer != null && landlordPlayer.getName() != null) {
@@ -730,6 +736,7 @@ public class RentRegion extends GeneralRegion {
 					AreaShop.warn("Something went wrong with paying back to " + getPlayerName() + " money while unrenting region " + getName());
 				}
 			}
+			*/
 		}
 
 		// Handle schematic save/restore (while %uuid% is still available)

@@ -108,6 +108,21 @@ limitGroups:
     total: 1
     rents: 1
     buys: 1
+  og:
+    total: 2
+    groups:
+      shop: 1
+      union-shop: 1
+  og-pro:
+    total: 3
+    groups:
+      shop: 2
+      union-shop: 1
+  og-master:
+    total: 4
+    groups:
+      shop: 3
+      union-shop: 1
 
 
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐

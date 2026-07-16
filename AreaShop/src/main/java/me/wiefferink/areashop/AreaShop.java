@@ -281,6 +281,23 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 		);
 		injector = Guice.createInjector(Stage.PRODUCTION, new BukkitModule(getServer()), asModule);
 
+		// Extract default regions from JAR
+		try {
+			java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(new java.io.FileInputStream(this.getFile()));
+			java.util.zip.ZipEntry entry;
+			while((entry = zip.getNextEntry()) != null) {
+				if(entry.getName().startsWith("regions/") && entry.getName().endsWith(".yml")) {
+					java.io.File outFile = new java.io.File(getDataFolder(), entry.getName());
+					if(!outFile.exists()) {
+						saveResource(entry.getName(), false);
+					}
+				}
+			}
+			zip.close();
+		} catch (Exception e) {
+			error("Failed to extract default regions from JAR: " + e.getMessage());
+		}
+
 		// Load all data from files and check versions
 		fileManager = injector.getInstance(IFileManager.class);
 		managers.add((FileManager) fileManager);

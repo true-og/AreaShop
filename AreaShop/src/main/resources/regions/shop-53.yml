@@ -1,0 +1,12 @@
+---
+name: shop-53
+type: rent
+world: world
+signs:
+  '0':
+    world: world
+    x: -158.0
+    "y": 57.0
+    z: -201.0
+rented: true
+rentedUntil: 1786804780000

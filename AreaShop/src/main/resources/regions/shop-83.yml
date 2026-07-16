@@ -1,0 +1,10 @@
+---
+name: shop-83
+type: rent
+world: world
+signs:
+  '0':
+    world: world
+    x: -107.0
+    "y": 56.0
+    z: -266.0
