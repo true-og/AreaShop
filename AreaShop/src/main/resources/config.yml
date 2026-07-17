@@ -150,8 +150,8 @@ addFriendNotExistingPlayers: false
 # Enable sending stats to http://mcstats.org/ (Metrics plugin).
 # This information will give me an indication about how much the plugin is used and encourages me to continue development.
 sendStats: true
-# If enabled it will check for updates when loading the plugin, it will never download files, it will only notify about it.
-checkForUpdates: true
+# Update checks are disabled for this build.
+checkForUpdates: false
 # Use colors when sending messages to console and log files.
 useColorsInConsole: false
 # Use tellraw style messages, which can be interacted with by players

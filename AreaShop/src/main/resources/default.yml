@@ -44,23 +44,23 @@ general:
   # Sections with 'Player' at the end will be run by the player that clicks the sign and 'Console' ones from the console.
   signProfile:
     forrent:
-      line1: '&2&l[For Rent]'
-      line2: '%region%'
-      line3: '%duration%'
-      line4: '%price%'
+      line1: '&2For Rent:'
+      line2: '&f%region%'
+      line3: '&6Duration: %duration% (12x)'
+      line4: '&b%rawprice% Diamonds'
       rightClickPlayer:
-        - 'areashop rent --region %region%'
+        - 'areashop info region %region%'
       rightClickConsole:
       #  - 'areashop message %clicker% %lang:confirm-rent|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region %region%'
     rented:
-      line1: '&4&l[Rented]'
-      line2: '%region%'
-      line3: '%player%'
-      line4: '%untilshort%'
+      line1: '&2Rented:'
+      line2: '&f%region%'
+      line3: '&bShopkeeper:'
+      line4: '&f%player%'
       rightClickPlayer:
-        - 'areashop rent --region %region%'
+        - 'areashop info region %region%'
       rightClickConsole:
       #  - 'areashop message %clicker% %lang:confirm-extend|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
@@ -68,23 +68,23 @@ general:
       shiftRightClickConsole:
         - 'areashop message %clicker% %lang:confirm-unrent|%region%|%'
     forsale:
-      line1: '&2&l[For Sale]'
-      line2: '%region%'
-      line3: '%price%'
-      line4:
+      line1: '&2For Sale:'
+      line2: '&f%region%'
+      line3: '&b%rawprice% Diamonds'
+      line4: '&7%width%x%depth%x%height%'
       rightClickPlayer:
-        - 'areashop buy --region %region%'
+        - 'areashop info region %region%'
       rightClickConsole:
       #  - 'areashop message %clicker% %lang:confirm-buy|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region %region%'
     resell:
-      line1: '&9&l[Resale]'
-      line2: '%region%'
-      line3: '%resellprice%'
-      line4: '&8%player%'
+      line1: '&2For Sale:'
+      line2: '&f%region%'
+      line3: '&b%rawresellprice% Diamonds'
+      line4: '&7%width%x%depth%x%height%'
       rightClickPlayer:
-        - 'areashop buy --region %region%'
+        - 'areashop info region %region%'
       rightClickConsole:
       #  - 'areashop message %clicker% %lang:confirm-buy|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
@@ -92,12 +92,12 @@ general:
       shiftRightClickPlayer:
         - 'areashop stopresell %region%'
     sold:
-      line1: '&4&l[Sold]'
-      line2: '%region%'
-      line3: '%player%'
-      line4:
+      line1: '&4Sold:'
+      line2: '&f%region%'
+      line3: '&l%player%'
+      line4: '&2No Expiry'
       rightClickPlayer:
-        - 'areashop buy --region %region%'
+        - 'areashop info region %region%'
       leftClickPlayer:
         - 'areashop info region %region%'
       shiftRightClickConsole:
