@@ -193,6 +193,7 @@ maximumTries: 50000
 # %price%          The price of the region formatted with the configured characters before and after the number.
 # %rawprice%       The price without formatting, like '10.0' or '7.77'.
 # %duration%       The duration of a rent region, for example '1 d', '4 minutes' or '2 years'.
+# %durationshort%  The duration in compact form for signs, for example '30d', '1d 12h' or '45min'.
 # %world%          The name of the world that the region is in.
 # %type%           The type of the region, 'rent' or 'buy'.
 # %until%          The end time of a rent formatted as configured with 'timeFormatChat'.

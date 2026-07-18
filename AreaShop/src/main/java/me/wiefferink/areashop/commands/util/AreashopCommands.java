@@ -25,6 +25,7 @@ import me.wiefferink.areashop.commands.InfoRegionCommand;
 import me.wiefferink.areashop.commands.LinkSignsCommand;
 import me.wiefferink.areashop.commands.MeCommand;
 import me.wiefferink.areashop.commands.MessageCommand;
+import me.wiefferink.areashop.commands.PayRentCommand;
 import me.wiefferink.areashop.commands.QuickBuyCommand;
 import me.wiefferink.areashop.commands.QuickDeleteCommand;
 import me.wiefferink.areashop.commands.QuickRentCommand;
@@ -73,12 +74,12 @@ public class AreashopCommands {
             DelSignCommand.class, FindCommand.class, GroupAddCommand.class, GroupDelCommand.class,
             GroupInfoCommand.class, GroupListCommand.class, HelpCommand.class, InfoCommand.class, InfoBaseCommand.class,
             InfoPlayerCommand.class, InfoRegionCommand.class, LinkSignsCommand.class, MeCommand.class,
-            MessageCommand.class, QuickBuyCommand.class, QuickDeleteCommand.class, QuickRentCommand.class,
-            ReloadCommand.class, RentCommand.class, ResellCommand.class, SchematicEventCommand.class, SellCommand.class,
-            SetDurationCommand.class, SetLandlordCommand.class, SetOwnerCommand.class, SetPriceCommand.class,
-            SetRestoreCommand.class, SetTeleportCommand.class, SetTransferCommand.class, StackCommand.class,
-            StopResellCommand.class, TeleportCommand.class, ToggleHomeCommand.class, TransferCommand.class,
-            UnrentCommand.class);
+            MessageCommand.class, PayRentCommand.class, QuickBuyCommand.class, QuickDeleteCommand.class,
+            QuickRentCommand.class, ReloadCommand.class, RentCommand.class, ResellCommand.class,
+            SchematicEventCommand.class, SellCommand.class, SetDurationCommand.class, SetLandlordCommand.class,
+            SetOwnerCommand.class, SetPriceCommand.class, SetRestoreCommand.class, SetTeleportCommand.class,
+            SetTransferCommand.class, StackCommand.class, StopResellCommand.class, TeleportCommand.class,
+            ToggleHomeCommand.class, TransferCommand.class, UnrentCommand.class);
 
     private final MessageBridge messageBridge;
 

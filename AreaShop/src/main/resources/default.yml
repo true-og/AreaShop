@@ -44,10 +44,10 @@ general:
   # Sections with 'Player' at the end will be run by the player that clicks the sign and 'Console' ones from the console.
   signProfile:
     forrent:
-      line1: '&0&lFor Rent:'
-      line2: '&6%region%'
-      line3: '&eDuration: %duration% (12x)'
-      line4: '&b%price%'
+      line1: '&2For Rent:'
+      line2: '&0&l%region%'
+      line3: '&e%durationshort% (12x)'
+      line4: '%price%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
       rightClickConsole:
@@ -55,8 +55,8 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     rented:
-      line1: '&0&lRented:'
-      line2: '&6%region%'
+      line1: '&2Rented:'
+      line2: '&0&l%region%'
       line3: '&3&lShopkeeper:'
       line4: '&0%playercolor%%player%'
       rightClickPlayer:
@@ -65,12 +65,14 @@ general:
       #  - 'areashop message %clicker% %lang:confirm-extend|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region --region %region%'
-      shiftRightClickConsole:
-        - 'areashop message %clicker% %lang:confirm-unrent|%region%|%'
+      shiftRightClickPlayer:
+        - 'areashop payrent --region %region%'
+      shiftLeftClickPlayer:
+        - 'areashop payrent --region %region%'
     forsale:
-      line1: '&0&lFor Sale:'
-      line2: '&6%region%'
-      line3: '&b%price%'
+      line1: '&2For Sale:'
+      line2: '&0&l%region%'
+      line3: '%price%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -79,9 +81,9 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     resell:
-      line1: '&0&lFor Sale:'
-      line2: '&6%region%'
-      line3: '&b%resellprice%'
+      line1: '&2For Sale:'
+      line2: '&0&l%region%'
+      line3: '%resellprice%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -92,8 +94,8 @@ general:
       shiftRightClickPlayer:
         - 'areashop stopresell --region %region%'
     sold:
-      line1: '&0&lSold:'
-      line2: '&6%region%'
+      line1: '&4Sold:'
+      line2: '&0&l%region%'
       line3: '&0%playercolor%%player%'
       line4: '&2No Expiry'
       rightClickPlayer:
@@ -122,14 +124,14 @@ general:
       block-place: 'allow g:members'
       chest-access: 'allow g:members'
     forrent:
-      greeting: '%lang:wgPrefix%&6This shop can be rented for &b%price% &6per &2%duration%'
+      greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%'
       use: 'allow g:all'
     rented:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
       use: 'allow g:members'
     forsale:
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%price%'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for %price%'
       use: 'allow g:all'
     sold:
       members: '%uuid%, %friendsuuid%'
@@ -137,7 +139,7 @@ general:
       use: 'allow g:members'
     resell:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%resellprice%'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for %resellprice%'
       use: 'allow g:all'
 
   ##### Save and restore schematics to clean up regions.

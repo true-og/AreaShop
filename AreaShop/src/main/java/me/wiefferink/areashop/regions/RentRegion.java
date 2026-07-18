@@ -253,6 +253,7 @@ public class RentRegion extends GeneralRegion {
             case AreaShop.tagPrice -> Message.fromString(getFormattedPrice());
             case AreaShop.tagRawPrice -> getPrice();
             case AreaShop.tagDuration -> getDurationString();
+            case AreaShop.tagDurationShort -> Utils.millisToCompactFormat(getDuration());
             case AreaShop.tagPlayerName -> getPlayerName();
             case AreaShop.tagPlayerColor -> Message.fromString(plugin.getPlayerPrefixColors(getRenter()));
             case AreaShop.tagPlayerUUID -> getRenter();
@@ -641,11 +642,25 @@ public class RentRegion extends GeneralRegion {
 
     /**
      * Rent a region.
-     * 
+     *
      * @param offlinePlayer The player that wants to rent the region
      * @return true if it succeeded and false if not
      */
     public boolean rent(OfflinePlayer offlinePlayer) {
+
+        return rent(offlinePlayer, null);
+
+    }
+
+    /**
+     * Rent a region, optionally charged to another player.
+     *
+     * @param offlinePlayer The player the rent is for
+     * @param payer         The online player paying the Diamonds, or null to charge
+     *                      the renter themselves
+     * @return true if it succeeded and false if not
+     */
+    public boolean rent(OfflinePlayer offlinePlayer, Player payer) {
 
         if (economy == null) {
 
@@ -818,14 +833,16 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // During the jubilee only the first rent is charged, otherwise every rent and extend
-        // costs the (possibly prorated) price. Payment is taken from the renter's physical
-        // diamonds through DiamondBank-OG, so the renter must be online.
+        // During the jubilee only the first rent is charged, otherwise every rent and
+        // extend
+        // costs the (possibly prorated) price. Payment is taken from the paying
+        // player's physical
+        // diamonds through DiamondBank-OG, so the payer must be online.
         boolean charged = price > 0 && (!extend || !plugin.isJubilee());
         long priceShards = 0;
         if (charged) {
 
-            Player payingPlayer = offlinePlayer.getPlayer();
+            Player payingPlayer = payer != null ? payer : offlinePlayer.getPlayer();
             if (payingPlayer == null) {
 
                 message(offlinePlayer, "rent-payError");
@@ -839,7 +856,7 @@ public class RentRegion extends GeneralRegion {
                 long balance = economy.getTotalShards(payingPlayer.getUniqueId());
                 if (balance < priceShards) {
 
-                    message(offlinePlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent",
+                    message(payingPlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent",
                             economy.shardsToDiamonds(balance));
                     return false;
 
@@ -847,7 +864,7 @@ public class RentRegion extends GeneralRegion {
 
             } catch (DiamondBankException e) {
 
-                message(offlinePlayer, "rent-payError");
+                message(payingPlayer, "rent-payError");
                 return false;
 
             }
@@ -864,10 +881,10 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Subtract the money from the player's balance (physical diamonds)
+        // Subtract the money from the paying player's balance (physical diamonds)
         if (charged) {
 
-            Player payingPlayer = offlinePlayer.getPlayer();
+            Player payingPlayer = payer != null ? payer : offlinePlayer.getPlayer();
             if (payingPlayer == null) {
 
                 message(offlinePlayer, "rent-payError");
@@ -892,13 +909,13 @@ public class RentRegion extends GeneralRegion {
 
                 }
 
-                message(offlinePlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent", have);
+                message(payingPlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent", have);
                 return false;
 
             } catch (DiamondBankException e) {
 
-                message(offlinePlayer, "rent-payError");
-                AreaShop.debug("Something went wrong with getting money from " + offlinePlayer.getName()
+                message(payingPlayer, "rent-payError");
+                AreaShop.debug("Something went wrong with getting money from " + payingPlayer.getName()
                         + " while renting " + getName() + ": " + e.getMessage());
                 return false;
 
@@ -963,6 +980,13 @@ public class RentRegion extends GeneralRegion {
 
         }
 
+        // Confirm to the payer when they paid for someone else's rent
+        if (payer != null && !payer.getUniqueId().equals(offlinePlayer.getUniqueId())) {
+
+            message(payer, "payrent-paidOther");
+
+        }
+
         // Notify about updates
         this.notifyAndUpdate(new RentedRegionEvent(this, extend));
         return true;
@@ -1016,7 +1040,8 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Pay back (part of) the price for the unused time, jubilee mode pays nothing back.
+        // Pay back (part of) the price for the unused time, jubilee mode pays nothing
+        // back.
         // If the payback fails the unrent is cancelled completely.
         double moneyBack = getMoneyBackAmount();
         if (giveMoneyBack && !plugin.isJubilee() && moneyBack > 0) {

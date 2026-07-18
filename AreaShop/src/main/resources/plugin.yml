@@ -24,6 +24,7 @@ permissions:
       areashop.destroyrent: true
       areashop.destroybuy: true
       areashop.rent: true
+      areashop.payrent: true
       areashop.buy: true
       areashop.buyresell: true
       areashop.buynormal: true
@@ -75,6 +76,9 @@ permissions:
     default: true
   areashop.rent:
     description: Allows you to rent a region
+    default: true
+  areashop.payrent:
+    description: Allows you to pay the rent of a region, your own or someone else's
     default: true
   areashop.buy:
     description: Allows you to buy a region

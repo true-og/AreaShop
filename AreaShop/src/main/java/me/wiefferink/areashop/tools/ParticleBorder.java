@@ -1,12 +1,10 @@
-/*
- * Adapted from the ParticleBorder minifeature of AdvancedRegionMarket
- * (https://github.com/alex9849/advanced-region-market), Copyright alex9849,
- * licensed under the Apache License, Version 2.0:
- *     http://www.apache.org/licenses/LICENSE-2.0
- * Modifications for AreaShop: takes a plugin instance instead of using the ARM
- * singleton, outlines cuboids only (polygonal regions use their bounding box),
- * always uses the purple witch particle effect and restarts cleanly when recreated.
- */
+// Adapted from the ParticleBorder minifeature of AdvancedRegionMarket
+// (https://github.com/alex9849/advanced-region-market), Copyright alex9849,
+// licensed under the Apache License, Version 2.0:
+//     http://www.apache.org/licenses/LICENSE-2.0
+// Modifications for AreaShop: takes a plugin instance instead of using the ARM
+// singleton, outlines cuboids only (polygonal regions use their bounding box),
+// always uses the purple witch particle effect and restarts cleanly when recreated.
 package me.wiefferink.areashop.tools;
 
 import org.bukkit.Bukkit;
@@ -20,9 +18,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shows the edges of a cuboid region to a single player with purple particles.
- */
+// Shows the edges of a cuboid region to a single player with purple particles.
 public class ParticleBorder {
 
     private final Plugin plugin;
@@ -33,15 +29,8 @@ public class ParticleBorder {
     private Integer taskID;
     private Integer cancelerID;
 
-    /**
-     * Create a particle border for a cuboid volume.
-     * 
-     * @param plugin Plugin to schedule the particle tasks with
-     * @param player Player that should see the particles
-     * @param world  World the volume is in
-     * @param pos1   First corner of the volume
-     * @param pos2   Second corner of the volume
-     */
+    // Create a particle border for a cuboid volume that only the given player will
+    // see.
     public ParticleBorder(Plugin plugin, Player player, World world, Vector pos1, Vector pos2) {
 
         this.plugin = plugin;
@@ -87,11 +76,7 @@ public class ParticleBorder {
 
     }
 
-    /**
-     * Start showing the border to the player.
-     * 
-     * @param ticks How long the border should stay visible, in ticks
-     */
+    // Start showing the border to the player for the given number of ticks.
     public void createParticleBorder(int ticks) {
 
         removeBorder();
@@ -128,9 +113,7 @@ public class ParticleBorder {
 
     }
 
-    /**
-     * Stop showing the border.
-     */
+    // Stop showing the border.
     public void removeBorder() {
 
         if (taskID == null || cancelerID == null) {

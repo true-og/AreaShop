@@ -409,6 +409,73 @@ public class Utils {
 
     }
 
+    /**
+     * Convert milliseconds to the compact time format AdvancedRegionMarket uses on
+     * signs, for example '30d', '1d 12h', '45min' or '30s'.
+     *
+     * @param milliseconds The amount of milliseconds to convert
+     * @return A compact string with the non-zero day/hour/minute/second parts
+     */
+    public static String millisToCompactFormat(long milliseconds) {
+
+        long seconds = (milliseconds + 500) / 1000;
+        if (seconds <= 0) {
+
+            return "0s";
+
+        }
+
+        long days = seconds / 86400;
+        long hours = (seconds % 86400) / 3600;
+        long minutes = (seconds % 3600) / 60;
+        long secs = seconds % 60;
+        StringBuilder result = new StringBuilder();
+        if (days > 0) {
+
+            result.append(days).append("d");
+
+        }
+
+        if (hours > 0) {
+
+            if (result.length() > 0) {
+
+                result.append(" ");
+
+            }
+
+            result.append(hours).append("h");
+
+        }
+
+        if (minutes > 0) {
+
+            if (result.length() > 0) {
+
+                result.append(" ");
+
+            }
+
+            result.append(minutes).append("min");
+
+        }
+
+        if (secs > 0) {
+
+            if (result.length() > 0) {
+
+                result.append(" ");
+
+            }
+
+            result.append(secs).append("s");
+
+        }
+
+        return result.toString();
+
+    }
+
     private static final BlockFace[] facings = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST,
             BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
 
@@ -724,7 +791,8 @@ public class Utils {
 
     }
 
-    // Convert an amount of diamonds to DiamondBank-OG shards (9 shards = 1 diamond).
+    // Convert an amount of diamonds to DiamondBank-OG shards (9 shards = 1
+    // diamond).
     public static long diamondsToShards(double diamonds) {
 
         return Math.round(diamonds * 9.0);

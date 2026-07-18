@@ -27,6 +27,7 @@ import me.wiefferink.areashop.modules.BukkitModule;
 import me.wiefferink.areashop.modules.DependencyModule;
 import me.wiefferink.areashop.modules.PlatformModule;
 import me.wiefferink.areashop.platform.adapter.PlatformAdapter;
+import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
@@ -64,9 +65,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -102,6 +105,15 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
     private final ServiceManager serviceManager = new ServiceManager();
 
+    // Cached LuckPerms prefix colors so sign updates never block on storage
+    private static final long PREFIX_COLOR_CACHE_MILLIS = TimeUnit.MINUTES.toMillis(5);
+
+    private record CachedPrefixColor(String color, long loadedAt) {
+    }
+
+    private final Map<UUID, CachedPrefixColor> prefixColorCache = new ConcurrentHashMap<>();
+    private final Set<UUID> prefixColorLoading = ConcurrentHashMap.newKeySet();
+
     // Folders and file names
     public static final String languageFolder = "lang";
     public static final String schematicFolder = "schem";
@@ -130,6 +142,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
     public static final String tagPrice = "price";
     public static final String tagRawPrice = "rawprice";
     public static final String tagDuration = "duration";
+    public static final String tagDurationShort = "durationshort";
     public static final String tagRentedUntil = "until";
     public static final String tagRentedUntilShort = "untilshort";
     public static final String tagWidth = "width"; // x-axis
@@ -580,15 +593,18 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
     }
 
-    // Check if jubilee mode is enabled: only the first rent is charged and gets the maximum
-    // rent time, extending/buying/reselling is free and there are no Diamond paybacks.
+    // Check if jubilee mode is enabled: only the first rent is charged and gets the
+    // maximum
+    // rent time, extending/buying/reselling is free and there are no Diamond
+    // paybacks.
     public boolean isJubilee() {
 
         return getConfig().getBoolean("jubilee");
 
     }
 
-    // Extend all currently rented regions to the maximum rent time, jubilee mode grants
+    // Extend all currently rented regions to the maximum rent time, jubilee mode
+    // grants
     // every renter the maximum duration.
     private void applyJubileeToRents() {
 
@@ -932,14 +948,10 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
     }
 
-    /**
-     * Get the color and formatting codes a player's name inherits from their
-     * LuckPerms prefix.
-     * 
-     * @param player UUID of the player, may be null
-     * @return Legacy color codes (&amp;-format) active at the end of the player's
-     *         prefix, empty string if unavailable
-     */
+    // Get the color code a player's name inherits from their LuckPerms prefix,
+    // in &-format, or an empty string if unavailable. Never blocks the calling
+    // thread: uncached users are loaded asynchronously and the result is cached,
+    // affected signs are repainted once the color is known.
     public String getPlayerPrefixColors(UUID player) {
 
         if (player == null) {
@@ -957,26 +969,78 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
         UserManager userManager = permissionProvider.getUserManager();
         User user = userManager.getUser(player);
-        boolean loaded = user != null;
-        if (user == null) {
+        if (user != null) {
 
-            // Not cached, load it from storage (blocking)
-            user = userManager.loadUser(player).join();
-
-        }
-
-        if (user == null) {
-
-            return "";
+            String color = extractPrefixColor(user.getCachedData().getMetaData().getPrefix());
+            prefixColorCache.put(player, new CachedPrefixColor(color, System.currentTimeMillis()));
+            return color;
 
         }
 
-        String prefix = user.getCachedData().getMetaData().getPrefix();
-        if (!loaded) {
+        CachedPrefixColor cached = prefixColorCache.get(player);
+        boolean fresh = cached != null && (System.currentTimeMillis() - cached.loadedAt()) < PREFIX_COLOR_CACHE_MILLIS;
+        if (!fresh && prefixColorLoading.add(player)) {
 
-            userManager.cleanupUser(user);
+            // Not cached, load it from storage asynchronously and repaint the
+            // signs of the regions the player owns when the color changed
+            userManager.loadUser(player).whenComplete((loadedUser, error) -> {
+
+                try {
+
+                    if (error != null || loadedUser == null) {
+
+                        return;
+
+                    }
+
+                    String color = extractPrefixColor(loadedUser.getCachedData().getMetaData().getPrefix());
+                    CachedPrefixColor previous = prefixColorCache.put(player,
+                            new CachedPrefixColor(color, System.currentTimeMillis()));
+                    userManager.cleanupUser(loadedUser);
+                    if ((previous == null || !previous.color().equals(color)) && isEnabled()) {
+
+                        getServer().getScheduler().runTask(this, () -> updateRegionsOfPlayer(player));
+
+                    }
+
+                } finally {
+
+                    prefixColorLoading.remove(player);
+
+                }
+
+            });
 
         }
+
+        // Serve the cached color (possibly stale) until the async load finishes
+        return cached == null ? "" : cached.color();
+
+    }
+
+    // Repaint the signs and flags of all regions owned by the given player
+    private void updateRegionsOfPlayer(UUID player) {
+
+        if (fileManager == null) {
+
+            return;
+
+        }
+
+        for (GeneralRegion region : fileManager.getRegionsRef()) {
+
+            if (player.equals(region.getOwner())) {
+
+                region.update();
+
+            }
+
+        }
+
+    }
+
+    // Extract the color a name inherits from a prefix as an &-code, or ""
+    private static String extractPrefixColor(String prefix) {
 
         if (prefix == null) {
 

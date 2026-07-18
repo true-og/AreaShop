@@ -510,7 +510,8 @@ public class BuyRegion extends GeneralRegion {
 
         }
 
-        // Buying and reselling are free during the jubilee, otherwise the price is charged
+        // Buying and reselling are free during the jubilee, otherwise the price is
+        // charged
         boolean jubilee = plugin.isJubilee();
         UUID oldOwner = getBuyer();
         if (isResell && oldOwner != null) {
@@ -548,8 +549,8 @@ public class BuyRegion extends GeneralRegion {
 
                 try {
 
-                    economy.playerPayPlayer(payingPlayer.getUniqueId(), oldOwner,
-                            Utils.diamondsToShards(resellPrice), "AreaShop resell: " + getName(), null);
+                    economy.playerPayPlayer(payingPlayer.getUniqueId(), oldOwner, Utils.diamondsToShards(resellPrice),
+                            "AreaShop resell: " + getName(), null);
 
                 } catch (DiamondBankException.InsufficientFundsException e) {
 
