@@ -51,6 +51,11 @@ signTags:
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │ ECONOMY: Options to change the display of prices.                                                                          │
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+# Jubilee mode: only the first rent of a shop costs Diamonds and the rent is set to the maximum
+# rent time immediately. Extending, buying and reselling are free and no Diamonds are paid back
+# when unrenting or selling. Set to false for the normal pay-per-period economy.
+jubilee: true
+
 # The characters displayed before a price ('&b' makes all prices aqua in chat and on signs).
 moneyCharacter: '&b'
 # The characters displayed after a price (all prices are measured in diamonds).

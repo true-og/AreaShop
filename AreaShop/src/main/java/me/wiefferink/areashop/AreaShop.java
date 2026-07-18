@@ -27,6 +27,7 @@ import me.wiefferink.areashop.modules.BukkitModule;
 import me.wiefferink.areashop.modules.DependencyModule;
 import me.wiefferink.areashop.modules.PlatformModule;
 import me.wiefferink.areashop.platform.adapter.PlatformAdapter;
+import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.areashop.services.ServiceManager;
 import me.wiefferink.areashop.tools.GithubUpdateCheck;
 import me.wiefferink.areashop.tools.LanguageConverter;
@@ -571,6 +572,45 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
     public void setReady(boolean ready) {
 
         this.ready = ready;
+        if (ready && isJubilee() && fileManager != null) {
+
+            applyJubileeToRents();
+
+        }
+
+    }
+
+    // Check if jubilee mode is enabled: only the first rent is charged and gets the maximum
+    // rent time, extending/buying/reselling is free and there are no Diamond paybacks.
+    public boolean isJubilee() {
+
+        return getConfig().getBoolean("jubilee");
+
+    }
+
+    // Extend all currently rented regions to the maximum rent time, jubilee mode grants
+    // every renter the maximum duration.
+    private void applyJubileeToRents() {
+
+        long now = System.currentTimeMillis();
+        for (RentRegion rent : fileManager.getRentsRef()) {
+
+            long maxRentTime = rent.getMaxRentTime();
+            if (!rent.isRented() || maxRentTime == -1) {
+
+                continue;
+
+            }
+
+            long target = now + maxRentTime;
+            if (rent.getRentedUntil() < target) {
+
+                rent.setRentedUntil(target);
+                rent.update();
+
+            }
+
+        }
 
     }
 
@@ -944,29 +984,31 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
         }
 
-        // Normalize to &-codes and drop leading resets, the rank color is the first
-        // code of the prefix
+        // Normalize to &-codes, the name inherits the last color of the prefix's
+        // leading codes.
+        // Only valid legacy color codes are accepted so no other characters can leak
+        // onto signs.
         prefix = prefix.replace('§', '&').trim();
-        while (prefix.length() >= 2 && prefix.charAt(0) == '&' && Character.toLowerCase(prefix.charAt(1)) == 'r') {
+        String color = "";
+        for (int i = 0; i + 1 < prefix.length() && prefix.charAt(i) == '&'; i += 2) {
 
-            prefix = prefix.substring(2);
+            char code = Character.toLowerCase(prefix.charAt(i + 1));
+            boolean isColor = (code >= '0' && code <= '9') || (code >= 'a' && code <= 'f');
+            boolean isFormatOrReset = (code >= 'k' && code <= 'o') || code == 'r';
+            if (isColor) {
 
-        }
+                color = "&" + code;
 
-        StringBuilder colors = new StringBuilder();
-        for (int i = 0; i < prefix.length() - 1; i += 2) {
+            } else if (!isFormatOrReset) {
 
-            if (prefix.charAt(i) != '&') {
-
+                // Not a legacy code, stop scanning the prefix
                 break;
 
             }
 
-            colors.append('&').append(prefix.charAt(i + 1));
-
         }
 
-        return colors.toString();
+        return color;
 
     }
 

@@ -240,12 +240,8 @@ public class SignListener implements Listener {
 
         }
 
-        // Punching the sign highlights the region volume for 30 seconds
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-
-            highlightRegion(player, regionSign.getRegion());
-
-        }
+        // Clicking the sign highlights the region volume for 30 seconds
+        highlightRegion(player, regionSign.getRegion());
 
         boolean ran = regionSign.runSignCommands(player, clickType);
 

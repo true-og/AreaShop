@@ -14,6 +14,8 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.tools.Utils;
+import me.wiefferink.interactivemessenger.processing.Message;
+import net.trueog.diamondbankog.DiamondBankException;
 import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -337,14 +339,16 @@ public class BuyRegion extends GeneralRegion {
 
         return switch (variable) {
 
-            case AreaShop.tagPrice -> getFormattedPrice();
+            // Color code carrying values are wrapped as Message so they are not escaped on
+            // insert
+            case AreaShop.tagPrice -> Message.fromString(getFormattedPrice());
             case AreaShop.tagRawPrice -> getPrice();
             case AreaShop.tagPlayerName -> getPlayerName();
-            case AreaShop.tagPlayerColor -> plugin.getPlayerPrefixColors(getBuyer());
+            case AreaShop.tagPlayerColor -> Message.fromString(plugin.getPlayerPrefixColors(getBuyer()));
             case AreaShop.tagPlayerUUID -> getBuyer();
-            case AreaShop.tagResellPrice -> getFormattedResellPrice();
+            case AreaShop.tagResellPrice -> Message.fromString(getFormattedResellPrice());
             case AreaShop.tagRawResellPrice -> getResellPrice();
-            case AreaShop.tagMoneyBackAmount -> getFormattedMoneyBackAmount();
+            case AreaShop.tagMoneyBackAmount -> Message.fromString(getFormattedMoneyBackAmount());
             case AreaShop.tagRawMoneyBackAmount -> getMoneyBackAmount();
             case AreaShop.tagMoneyBackPercentage ->
                 getMoneyBackPercentage() % 1.0 == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
@@ -506,7 +510,8 @@ public class BuyRegion extends GeneralRegion {
 
         }
 
-        // Buying is free during the jubilee (only rent regions are charged).
+        // Buying and reselling are free during the jubilee, otherwise the price is charged
+        boolean jubilee = plugin.isJubilee();
         UUID oldOwner = getBuyer();
         if (isResell && oldOwner != null) {
 
@@ -529,7 +534,36 @@ public class BuyRegion extends GeneralRegion {
                 oldOwnerName = oldOwnerPlayer.getName();
 
             }
-            // Reselling is free during the jubilee (no economy transfer).
+
+            // Pay the old owner through DiamondBank-OG, free during the jubilee
+            if (!jubilee && resellPrice > 0) {
+
+                Player payingPlayer = offlinePlayer.getPlayer();
+                if (payingPlayer == null) {
+
+                    message(offlinePlayer, "buy-payError");
+                    return false;
+
+                }
+
+                try {
+
+                    economy.playerPayPlayer(payingPlayer.getUniqueId(), oldOwner,
+                            Utils.diamondsToShards(resellPrice), "AreaShop resell: " + getName(), null);
+
+                } catch (DiamondBankException.InsufficientFundsException e) {
+
+                    message(offlinePlayer, "buy-lowMoneyResell", getBalanceString(payingPlayer));
+                    return false;
+
+                } catch (DiamondBankException e) {
+
+                    message(offlinePlayer, "buy-payError");
+                    return false;
+
+                }
+
+            }
 
             // Set the owner
             setBuyer(offlinePlayer.getUniqueId());
@@ -565,7 +599,67 @@ public class BuyRegion extends GeneralRegion {
 
             }
 
-            // Buying is free during the jubilee (no economy transfer, no landlord payout).
+            // Charge the price through DiamondBank-OG, free during the jubilee
+            double price = getPrice();
+            if (!jubilee && price > 0) {
+
+                Player payingPlayer = offlinePlayer.getPlayer();
+                if (payingPlayer == null) {
+
+                    message(offlinePlayer, "buy-payError");
+                    return false;
+
+                }
+
+                try {
+
+                    economy.consumeFromPlayer(payingPlayer.getUniqueId(), Utils.diamondsToShards(price),
+                            "AreaShop buy: " + getName(), null);
+
+                } catch (DiamondBankException.InsufficientFundsException e) {
+
+                    message(offlinePlayer, "buy-lowMoney", getBalanceString(payingPlayer));
+                    return false;
+
+                } catch (DiamondBankException e) {
+
+                    message(offlinePlayer, "buy-payError");
+                    return false;
+
+                }
+
+                // Pay the landlord if there is one, otherwise the diamonds stay consumed.
+                // If the landlord payout fails the buyer is refunded and the buy is cancelled.
+                UUID landlord = getLandlord();
+                if (landlord != null) {
+
+                    try {
+
+                        economy.addToPlayerBankShards(landlord, Utils.diamondsToShards(price),
+                                "AreaShop buy: " + getName(), null);
+
+                    } catch (DiamondBankException e) {
+
+                        try {
+
+                            economy.addToPlayerBankShards(payingPlayer.getUniqueId(), Utils.diamondsToShards(price),
+                                    "AreaShop buy refund: " + getName(), null);
+
+                        } catch (DiamondBankException refundError) {
+
+                            AreaShop.warn("Could not refund " + price + " Diamonds to " + payingPlayer.getName()
+                                    + " after a failed landlord payout for " + getName());
+
+                        }
+
+                        message(offlinePlayer, "buy-payError");
+                        return false;
+
+                    }
+
+                }
+
+            }
 
             // Set the owner
             setBuyer(offlinePlayer.getUniqueId());
@@ -642,12 +736,33 @@ public class BuyRegion extends GeneralRegion {
 
         }
 
-        disableReselling();
-        // Money back is not paid out during the jubilee (no economy payouts). The
-        // amount is still
-        // computed and reported in the SoldRegionEvent below for informational
-        // purposes.
+        // Pay back (part of) the price, jubilee mode pays nothing back.
+        // If the payback fails the sell is cancelled completely.
         double moneyBack = getMoneyBackAmount();
+        if (giveMoneyBack && !plugin.isJubilee() && moneyBack > 0) {
+
+            UUID payBackTo = getBuyer();
+            if (payBackTo != null) {
+
+                try {
+
+                    economy.addToPlayerBankShards(payBackTo, Utils.diamondsToShards(moneyBack),
+                            "AreaShop sell: " + getName(), null);
+
+                } catch (DiamondBankException e) {
+
+                    AreaShop.warn("Could not pay back " + moneyBack + " Diamonds to " + getPlayerName()
+                            + " for selling " + getName() + ", sell cancelled");
+                    message(executor, "sell-payError");
+                    return false;
+
+                }
+
+            }
+
+        }
+
+        disableReselling();
 
         // Handle schematic save/restore (while %uuid% is still available)
         handleSchematicEvent(RegionEvent.SOLD);
@@ -665,6 +780,20 @@ public class BuyRegion extends GeneralRegion {
         // Notify about updates
         this.notifyAndUpdate(new SoldRegionEvent(this, oldBuyer, Math.max(moneyBack, 0)));
         return true;
+
+    }
+
+    private String getBalanceString(Player player) {
+
+        try {
+
+            return economy.shardsToDiamonds(economy.getTotalShards(player.getUniqueId()));
+
+        } catch (DiamondBankException e) {
+
+            return economy.shardsToDiamonds(0);
+
+        }
 
     }
 

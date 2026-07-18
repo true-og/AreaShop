@@ -44,7 +44,7 @@ general:
   # Sections with 'Player' at the end will be run by the player that clicks the sign and 'Console' ones from the console.
   signProfile:
     forrent:
-      line1: '&2&lFor Rent:'
+      line1: '&0&lFor Rent:'
       line2: '&6%region%'
       line3: '&eDuration: %duration% (12x)'
       line4: '&b%price%'
@@ -55,7 +55,7 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     rented:
-      line1: '&2&lRented:'
+      line1: '&0&lRented:'
       line2: '&6%region%'
       line3: '&3&lShopkeeper:'
       line4: '&0%playercolor%%player%'
@@ -68,7 +68,7 @@ general:
       shiftRightClickConsole:
         - 'areashop message %clicker% %lang:confirm-unrent|%region%|%'
     forsale:
-      line1: '&2&lFor Sale:'
+      line1: '&0&lFor Sale:'
       line2: '&6%region%'
       line3: '&b%price%'
       line4: '&8%width%x%depth%x%height%'
@@ -79,7 +79,7 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     resell:
-      line1: '&2&lFor Sale:'
+      line1: '&0&lFor Sale:'
       line2: '&6%region%'
       line3: '&b%resellprice%'
       line4: '&8%width%x%depth%x%height%'
@@ -92,7 +92,7 @@ general:
       shiftRightClickPlayer:
         - 'areashop stopresell --region %region%'
     sold:
-      line1: '&4&lSold:'
+      line1: '&0&lSold:'
       line2: '&6%region%'
       line3: '&0%playercolor%%player%'
       line4: '&2No Expiry'

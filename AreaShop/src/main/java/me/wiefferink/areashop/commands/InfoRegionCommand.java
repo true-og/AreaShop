@@ -3,6 +3,7 @@ package me.wiefferink.areashop.commands;
 import io.github.bakedlibs.dough.blocks.BlockPosition;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.RegionParseUtil;
@@ -30,11 +31,23 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
     private final MessageBridge messageBridge;
 
-    @Inject
-    public InfoRegionCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+    private final AreaShop plugin;
 
+    @Inject
+    public InfoRegionCommand(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge,
+            @Nonnull IFileManager fileManager)
+    {
+
+        this.plugin = plugin;
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
+    }
+
+    // Pick the jubilee variant of a message key when jubilee mode is enabled.
+    private String jubileeKey(String base) {
+
+        return plugin.isJubilee() ? base + "Jubilee" : base;
 
     }
 
@@ -106,7 +119,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
             if (buy.isInResellingMode()) {
 
                 messageBridge.messageNoPrefix(sender, "info-regionReselling", buy);
-                messageBridge.messageNoPrefix(sender, "info-regionReselPrice", buy);
+                messageBridge.messageNoPrefix(sender, jubileeKey("info-regionReselPrice"), buy);
 
             } else {
 
@@ -119,11 +132,11 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
                 if (SellCommand.canUse(sender, buy)) {
 
-                    messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuyClick", buy);
+                    messageBridge.messageNoPrefix(sender, jubileeKey("info-regionMoneyBackBuyClick"), buy);
 
                 } else {
 
-                    messageBridge.messageNoPrefix(sender, "info-regionMoneyBackBuy", buy);
+                    messageBridge.messageNoPrefix(sender, jubileeKey("info-regionMoneyBackBuy"), buy);
 
                 }
 
@@ -146,7 +159,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
         } else {
 
-            messageBridge.messageNoPrefix(sender, "info-regionCanBeBought", buy);
+            messageBridge.messageNoPrefix(sender, jubileeKey("info-regionCanBeBought"), buy);
 
         }
 
@@ -194,15 +207,15 @@ public class InfoRegionCommand extends AreashopCommandBean {
         if (rent.isRented()) {
 
             messageBridge.messageNoPrefix(sender, "info-regionRented", rent);
-            messageBridge.messageNoPrefix(sender, "info-regionExtending", rent);
+            messageBridge.messageNoPrefix(sender, jubileeKey("info-regionExtending"), rent);
             // Money back
             if (UnrentCommand.canUse(sender, rent)) {
 
-                messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRentClick", rent);
+                messageBridge.messageNoPrefix(sender, jubileeKey("info-regionMoneyBackRentClick"), rent);
 
             } else {
 
-                messageBridge.messageNoPrefix(sender, "info-regionMoneyBackRent", rent);
+                messageBridge.messageNoPrefix(sender, jubileeKey("info-regionMoneyBackRent"), rent);
 
             }
 
@@ -223,7 +236,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
         } else {
 
-            messageBridge.messageNoPrefix(sender, "info-regionCanBeRented", rent);
+            messageBridge.messageNoPrefix(sender, jubileeKey("info-regionCanBeRented"), rent);
 
         }
 

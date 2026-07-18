@@ -13,6 +13,7 @@ import me.wiefferink.areashop.interfaces.WorldEditInterface;
 import me.wiefferink.areashop.interfaces.WorldGuardInterface;
 import me.wiefferink.areashop.managers.FeatureManager;
 import me.wiefferink.areashop.tools.Utils;
+import me.wiefferink.interactivemessenger.processing.Message;
 import net.trueog.diamondbankog.DiamondBankException;
 import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.bukkit.Bukkit;
@@ -247,18 +248,20 @@ public class RentRegion extends GeneralRegion {
 
         return switch (variable) {
 
-            case AreaShop.tagPrice -> getFormattedPrice();
+            // Color code carrying values are wrapped as Message so they are not escaped on
+            // insert
+            case AreaShop.tagPrice -> Message.fromString(getFormattedPrice());
             case AreaShop.tagRawPrice -> getPrice();
             case AreaShop.tagDuration -> getDurationString();
             case AreaShop.tagPlayerName -> getPlayerName();
-            case AreaShop.tagPlayerColor -> plugin.getPlayerPrefixColors(getRenter());
+            case AreaShop.tagPlayerColor -> Message.fromString(plugin.getPlayerPrefixColors(getRenter()));
             case AreaShop.tagPlayerUUID -> getRenter();
             case AreaShop.tagRentedUntil ->
                 new SimpleDateFormat(plugin.getConfig().getString("timeFormatChat")).format(new Date(getRentedUntil()));
             case AreaShop.tagRentedUntilShort ->
                 new SimpleDateFormat(plugin.getConfig().getString("timeFormatSign")).format(new Date(getRentedUntil()));
             case AreaShop.tagTimeLeft -> getTimeLeftString();
-            case AreaShop.tagMoneyBackAmount -> getFormattedMoneyBackAmount();
+            case AreaShop.tagMoneyBackAmount -> Message.fromString(getFormattedMoneyBackAmount());
             case AreaShop.tagRawMoneyBackAmount -> getMoneyBackAmount();
             case AreaShop.tagMoneyBackPercentage ->
                 (getMoneyBackPercentage() % 1.0) == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
@@ -815,14 +818,12 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Only the first rent is charged (a configured price in diamonds);
-        // extends/renewals are
-        // free during the jubilee. Payment is taken from the renter's physical diamonds
-        // through
-        // DiamondBank-OG, so the renter must be online. No landlord/seller payout:
-        // diamonds are consumed.
+        // During the jubilee only the first rent is charged, otherwise every rent and extend
+        // costs the (possibly prorated) price. Payment is taken from the renter's physical
+        // diamonds through DiamondBank-OG, so the renter must be online.
+        boolean charged = price > 0 && (!extend || !plugin.isJubilee());
         long priceShards = 0;
-        if (!extend && price > 0) {
+        if (charged) {
 
             Player payingPlayer = offlinePlayer.getPlayer();
             if (payingPlayer == null) {
@@ -832,26 +833,14 @@ public class RentRegion extends GeneralRegion {
 
             }
 
-            try {
-
-                priceShards = economy.diamondsToShards((float) price);
-
-            } catch (Exception e) {
-
-                // Price could not be represented in shards (e.g. more than one decimal digit)
-                message(offlinePlayer, "rent-payError");
-                AreaShop.debug("Could not convert price " + price + " to shards while renting " + getName() + ": "
-                        + e.getMessage());
-                return false;
-
-            }
-
+            priceShards = Utils.diamondsToShards(price);
             try {
 
                 long balance = economy.getTotalShards(payingPlayer.getUniqueId());
                 if (balance < priceShards) {
 
-                    message(offlinePlayer, "rent-lowMoneyRent", economy.shardsToDiamonds(balance));
+                    message(offlinePlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent",
+                            economy.shardsToDiamonds(balance));
                     return false;
 
                 }
@@ -875,9 +864,8 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Subtract the money from the player's balance (physical diamonds, first rent
-        // only)
-        if (!extend && price > 0) {
+        // Subtract the money from the player's balance (physical diamonds)
+        if (charged) {
 
             Player payingPlayer = offlinePlayer.getPlayer();
             if (payingPlayer == null) {
@@ -904,7 +892,7 @@ public class RentRegion extends GeneralRegion {
 
                 }
 
-                message(offlinePlayer, "rent-lowMoneyRent", have);
+                message(offlinePlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent", have);
                 return false;
 
             } catch (DiamondBankException e) {
@@ -920,7 +908,12 @@ public class RentRegion extends GeneralRegion {
 
         // Get the time until the region will be rented
         Calendar calendar = Calendar.getInstance();
-        if (extendToMax) {
+        if (plugin.isJubilee() && maxRentTime != -1) {
+
+            // Jubilee grants the maximum rent time immediately
+            calendar.setTimeInMillis(calendar.getTimeInMillis() + maxRentTime);
+
+        } else if (extendToMax) {
 
             calendar.setTimeInMillis(calendar.getTimeInMillis() + getMaxRentTime());
 
@@ -959,6 +952,10 @@ public class RentRegion extends GeneralRegion {
         } else if (extend) {
 
             message(offlinePlayer, "rent-extended");
+
+        } else if (plugin.isJubilee()) {
+
+            message(offlinePlayer, "rent-rentedJubilee");
 
         } else {
 
@@ -1019,11 +1016,31 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Money back is not paid out during the jubilee (no economy payouts). The
-        // amount is still
-        // computed and reported in the UnrentedRegionEvent below for informational
-        // purposes.
+        // Pay back (part of) the price for the unused time, jubilee mode pays nothing back.
+        // If the payback fails the unrent is cancelled completely.
         double moneyBack = getMoneyBackAmount();
+        if (giveMoneyBack && !plugin.isJubilee() && moneyBack > 0) {
+
+            UUID payBackTo = getRenter();
+            if (payBackTo != null) {
+
+                try {
+
+                    economy.addToPlayerBankShards(payBackTo, Utils.diamondsToShards(moneyBack),
+                            "AreaShop unrent: " + getName(), null);
+
+                } catch (DiamondBankException e) {
+
+                    AreaShop.warn("Could not pay back " + moneyBack + " Diamonds to " + getPlayerName()
+                            + " for unrenting " + getName() + ", unrent cancelled");
+                    message(executor, "unrent-payError");
+                    return false;
+
+                }
+
+            }
+
+        }
 
         // Handle schematic save/restore (while %uuid% is still available)
         handleSchematicEvent(RegionEvent.UNRENTED);

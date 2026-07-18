@@ -724,9 +724,16 @@ public class Utils {
 
     }
 
+    // Convert an amount of diamonds to DiamondBank-OG shards (9 shards = 1 diamond).
+    public static long diamondsToShards(double diamonds) {
+
+        return Math.round(diamonds * 9.0);
+
+    }
+
     /**
      * Format the currency amount with the characters before and after.
-     * 
+     *
      * @param amount Amount of money to format
      * @return Currency character format string
      */
