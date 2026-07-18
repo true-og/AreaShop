@@ -10,34 +10,45 @@ import org.bukkit.command.CommandSender;
  */
 public class AddedFriendEvent extends CancellableRegionEvent<GeneralRegion> {
 
-	private final OfflinePlayer friend;
-	private final CommandSender by;
+    private final OfflinePlayer friend;
+    private final CommandSender by;
 
-	/**
-	 * Constructor.
-	 * @param region The region the friend is getting added to
-	 * @param friend The friend that is about to be added
-	 * @param by     The CommandSender that is adding the friend, or null if none
-	 */
-	public AddedFriendEvent(GeneralRegion region, OfflinePlayer friend, CommandSender by) {
-		super(region);
-		this.friend = friend;
-		this.by = by;
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region the friend is getting added to
+     * @param friend The friend that is about to be added
+     * @param by     The CommandSender that is adding the friend, or null if none
+     */
+    public AddedFriendEvent(GeneralRegion region, OfflinePlayer friend, CommandSender by) {
 
-	/**
-	 * Get the OfflinePlayer that is getting added as friend.
-	 * @return The friend that is getting added
-	 */
-	public OfflinePlayer getFriend() {
-		return friend;
-	}
+        super(region);
+        this.friend = friend;
+        this.by = by;
 
-	/**
-	 * Get the CommandSender that is adding the friend.
-	 * @return null if none, a CommandSender if done by someone (likely Player or ConsoleCommandSender)
-	 */
-	public CommandSender getBy() {
-		return by;
-	}
+    }
+
+    /**
+     * Get the OfflinePlayer that is getting added as friend.
+     * 
+     * @return The friend that is getting added
+     */
+    public OfflinePlayer getFriend() {
+
+        return friend;
+
+    }
+
+    /**
+     * Get the CommandSender that is adding the friend.
+     * 
+     * @return null if none, a CommandSender if done by someone (likely Player or
+     *         ConsoleCommandSender)
+     */
+    public CommandSender getBy() {
+
+        return by;
+
+    }
+
 }

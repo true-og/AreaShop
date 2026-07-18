@@ -11,23 +11,23 @@ import javax.annotation.Nonnull;
 public interface AreaShopApi extends AreaShopInterface {
 
     /**
-     * Get the SignLinkerManager.
-     * Handles sign linking mode.
+     * Get the SignLinkerManager. Handles sign linking mode.
      *
      * @return The SignLinkerManager
      */
-    @Nonnull SignLinkerManager getSignlinkerManager();
+    @Nonnull
+    SignLinkerManager getSignlinkerManager();
 
     /**
-     * Get the FeatureManager.
-     * Manages region specific features.
+     * Get the FeatureManager. Manages region specific features.
      *
      * @return The FeatureManager
      */
-    @Nonnull FeatureManager getFeatureManager();
+    @Nonnull
+    FeatureManager getFeatureManager();
 
-
-    @Nonnull SignManager getSignManager();
+    @Nonnull
+    SignManager getSignManager();
 
     @Nonnull
     ServiceManager getServiceManager();

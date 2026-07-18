@@ -44,91 +44,120 @@ public class QuickRentCommand extends AreashopCommandBean {
     private final BukkitSchedulerExecutor executor;
 
     @Inject
-    public QuickRentCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull RegionFactory regionFactory,
-            @Nonnull IFileManager fileManager,
-            @Nonnull RegionCreationUtil regionCreationUtil,
-            @Nonnull BukkitSchedulerExecutor executor
-    ) {
+    public QuickRentCommand(@Nonnull MessageBridge messageBridge, @Nonnull RegionFactory regionFactory,
+            @Nonnull IFileManager fileManager, @Nonnull RegionCreationUtil regionCreationUtil,
+            @Nonnull BukkitSchedulerExecutor executor)
+    {
+
         this.messageBridge = messageBridge;
         this.regionFactory = regionFactory;
         this.fileManager = fileManager;
         this.regionCreationUtil = regionCreationUtil;
         this.executor = executor;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Nonnull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("quickrent")
-                .permission("permission")
-                .senderType(Player.class)
-                .required(KEY_REGION, StringParser.stringParser())
-                .required(KEY_PRICE, DoubleParser.doubleParser(0))
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("quickrent").permission("permission").senderType(Player.class)
+                .required(KEY_REGION, StringParser.stringParser()).required(KEY_PRICE, DoubleParser.doubleParser(0))
                 .required(KEY_DURATION, DurationInputParser.durationInputParser())
                 .required(KEY_LANDLORD, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .handler(this::handleCommand);
+
     }
 
     // /as quickrent <name> <price> <duration> <landlord>
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         if (!player.hasPermission("areashop.quickrent")) {
+
             player.sendMessage("Insufficient permission");
             return;
+
         }
-        this.regionCreationUtil.createRegion(context, KEY_REGION)
-                .exceptionally(throwable -> {
-                    if (throwable instanceof AreaShopCommandException exception) {
-                        ArgumentParseExceptionHandler.handleException(this.messageBridge, player, exception);
-                    } else {
-                        throw new CommandExecutionException(throwable, context);
-                    }
-                    return null;
-                }).thenAcceptAsync(region -> {
-                    // Error handled previously
-                    if (region == null) {
-                        this.messageBridge.message(player, "quickadd-failedCreateWGRegion");
-                        return;
-                    }
-                    double price = context.get(KEY_PRICE);
-                    DurationInput duration = context.get(KEY_DURATION);
 
-                    OfflinePlayer landlord = context.get(KEY_LANDLORD);
-                    if (!landlord.hasPlayedBefore()) {
-                        this.messageBridge.message(player, "me-noPlayer");
-                        return;
-                    }
-                    String regionName = region.getId();
-                    World world = player.getWorld();
+        this.regionCreationUtil.createRegion(context, KEY_REGION).exceptionally(throwable -> {
 
-                    RentRegion rentRegion = this.regionFactory.createRentRegion(regionName, world);
-                    rentRegion.setPrice(price);
-                    rentRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
-                    rentRegion.setDuration(duration.toTinySpacedString());
-                    this.fileManager.addRegion(rentRegion);
-                    this.messageBridge.message(player, "add-success", "rent", regionName);
-                }, this.executor);
+            if (throwable instanceof AreaShopCommandException exception) {
+
+                ArgumentParseExceptionHandler.handleException(this.messageBridge, player, exception);
+
+            } else {
+
+                throw new CommandExecutionException(throwable, context);
+
+            }
+
+            return null;
+
+        }).thenAcceptAsync(region -> {
+
+            // Error handled previously
+            if (region == null) {
+
+                this.messageBridge.message(player, "quickadd-failedCreateWGRegion");
+                return;
+
+            }
+
+            double price = context.get(KEY_PRICE);
+            DurationInput duration = context.get(KEY_DURATION);
+
+            OfflinePlayer landlord = context.get(KEY_LANDLORD);
+            if (!landlord.hasPlayedBefore()) {
+
+                this.messageBridge.message(player, "me-noPlayer");
+                return;
+
+            }
+
+            String regionName = region.getId();
+            World world = player.getWorld();
+
+            RentRegion rentRegion = this.regionFactory.createRentRegion(regionName, world);
+            rentRegion.setPrice(price);
+            rentRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
+            rentRegion.setDuration(duration.toTinySpacedString());
+            this.fileManager.addRegion(rentRegion);
+            this.messageBridge.message(player, "add-success", "rent", regionName);
+
+        }, this.executor);
+
     }
 
     @Nullable
     @Override
     public String getHelpKey(@Nonnull CommandSender target) {
+
         if (target.hasPermission("areashop.quickrent")) {
+
             return "help-quickrent";
+
         }
+
         return null;
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("quickrent");
+
     }
+
 }

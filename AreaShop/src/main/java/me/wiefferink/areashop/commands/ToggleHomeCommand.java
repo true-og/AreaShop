@@ -41,84 +41,109 @@ public final class ToggleHomeCommand extends AreashopCommandBean {
 
     @Inject
     public ToggleHomeCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
         this.regionFlag = CommandFlag.builder("region")
-                .withComponent(
-                        new CommandComponent.Builder<CommandSender, GeneralRegion>()
-                                .name("region")
-                                .description(Description.EMPTY)
-                                .valueType(GeneralRegion.class)
-                                .parser(GeneralRegionParser.generalRegionParser(fileManager))
-                                .suggestionProvider(this::suggestRegions)
-                                .build()
-                ).build();
-    }
+                .withComponent(new CommandComponent.Builder<CommandSender, GeneralRegion>().name("region")
+                        .description(Description.EMPTY).valueType(GeneralRegion.class)
+                        .parser(GeneralRegionParser.generalRegionParser(fileManager))
+                        .suggestionProvider(this::suggestRegions).build())
+                .build();
 
+    }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (!target.hasPermission("sethomecontrol.control")) {
+
             return null;
+
         }
+
         return "help-togglehome";
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("togglehome")
-                .required(KEY_ACCESS_TYPE, EnumParser.enumParser(HomeAccessType.class))
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("togglehome").required(KEY_ACCESS_TYPE, EnumParser.enumParser(HomeAccessType.class))
+                .flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("togglehome");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.togglehome")) {
+
             throw new AreaShopCommandException("togglehome-noPermission");
+
         }
+
         final HomeAccessType accessType = context.get(KEY_ACCESS_TYPE);
         final GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!(sender instanceof Player) && !sender.hasPermission("sethome.control.other")) {
+
             return;
+
         }
+
         if (sender instanceof Player player && !region.isOwner(player)) {
+
             throw new AreaShopCommandException("togglehome-noPermission");
+
         }
+
         region.getOrCreateFeature(HomeAccessFeature.class).homeAccessType(accessType);
         this.messageBridge.message(sender, "togglehome-success", accessType.name());
+
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestRegions(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestRegions(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
         CommandSender sender = context.sender();
         Stream<GeneralRegion> regions;
         if (sender.hasPermission("sethome.control.other")) {
+
             regions = this.fileManager.getRegionsRef().stream();
+
         } else if (!sender.hasPermission("sethome.control.other") && sender instanceof Player player) {
-            regions = this.fileManager.getRegionsRef().stream()
-                    .filter(region -> region.isOwner(player.getUniqueId()));
+
+            regions = this.fileManager.getRegionsRef().stream().filter(region -> region.isOwner(player.getUniqueId()));
+
         } else {
+
             regions = Stream.empty();
+
         }
-        List<Suggestion> suggestions = regions.map(GeneralRegion::getName)
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+
+        List<Suggestion> suggestions = regions.map(GeneralRegion::getName).filter(name -> name.startsWith(text))
+                .map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
+
 }

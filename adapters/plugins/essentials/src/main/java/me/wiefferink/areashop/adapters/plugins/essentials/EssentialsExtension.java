@@ -21,34 +21,51 @@ public class EssentialsExtension implements AreashopExtension {
 
     @Override
     public void init(@Nonnull AreaShop plugin, @Nonnull Injector injector) {
+
         if (this.enabled) {
+
             return;
+
         }
-        Injector childInjector = injector.createChildInjector(new FactoryModuleBuilder().build(HomeListenerFactory.class));
+
+        Injector childInjector = injector
+                .createChildInjector(new FactoryModuleBuilder().build(HomeListenerFactory.class));
         Server server = childInjector.getInstance(Server.class);
         Plugin essentialsPlugin = server.getPluginManager().getPlugin("Essentials");
         if (essentialsPlugin == null) {
+
             return;
+
         }
+
         this.essentials = (Essentials) essentialsPlugin;
         AreaShop.info("EssentialsX detected; registering optional features");
         registerServices(plugin);
         if (!server.getPluginManager().isPluginEnabled("Essentials")) {
+
             return;
+
         }
+
         AreaShop.info("EssentialsX detected; binding implementation for home access");
         HomeListenerFactory factory = childInjector.getInstance(HomeListenerFactory.class);
         AccessControlValidator controlValidator = new OwnershipControlValidator();
         HomeModificationListener listener = factory.createListener(controlValidator);
         server.getPluginManager().registerEvents(listener, plugin);
         this.enabled = true;
+
     }
 
     private void registerServices(@Nonnull AreaShop plugin) {
+
         if (plugin.getConfig().getBoolean("enable-mail-notifications")) {
+
             MailSender mailSender = new PluginMailSender(plugin.getName());
             MailService mailService = new EssentialsMailService(this.essentials.getMail(), mailSender, this.essentials);
             plugin.getServiceManager().registerService(MailService.class, mailService);
+
         }
+
     }
+
 }

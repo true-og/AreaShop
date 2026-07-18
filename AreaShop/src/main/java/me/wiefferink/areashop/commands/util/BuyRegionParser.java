@@ -16,40 +16,53 @@ public class BuyRegionParser<C> implements ArgumentParser<C, BuyRegion> {
     private final SuggestionProvider<C> suggestionProvider;
 
     public BuyRegionParser(@Nonnull IFileManager fileManager, @Nonnull SuggestionProvider<C> suggestionProvider) {
+
         this.fileManager = fileManager;
         this.suggestionProvider = suggestionProvider;
+
     }
 
     public BuyRegionParser(@Nonnull IFileManager fileManager) {
+
         this(fileManager, defaultSuggestionProvider(fileManager));
+
     }
 
     private static <C> SuggestionProvider<C> defaultSuggestionProvider(@Nonnull IFileManager fileManager) {
+
         return SuggestionProvider.blockingStrings((ctx, input) -> {
-                    String text = input.peekString();
-                    return fileManager.getBuyNames()
-                            .stream()
-                            .filter(name -> name.startsWith(text))
-                            .toList();
-                }
-        );
+
+            String text = input.peekString();
+            return fileManager.getBuyNames().stream().filter(name -> name.startsWith(text)).toList();
+
+        });
+
     }
 
     @Override
     public @Nonnull ArgumentParseResult<BuyRegion> parse(@Nonnull CommandContext<C> commandContext,
-                                                         @Nonnull CommandInput commandInput) {
+            @Nonnull CommandInput commandInput)
+    {
+
         String input = commandInput.peekString();
         BuyRegion region = this.fileManager.getBuy(input);
         if (region != null) {
+
             commandInput.readString();
             return ArgumentParseResult.success(region);
+
         }
+
         AreaShopCommandException exception = new AreaShopCommandException("buy-noBuyable", input);
         return ArgumentParseResult.failure(exception);
+
     }
 
     @Override
     public @Nonnull SuggestionProvider<C> suggestionProvider() {
+
         return this.suggestionProvider;
+
     }
+
 }

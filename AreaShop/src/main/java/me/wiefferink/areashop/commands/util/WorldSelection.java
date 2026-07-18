@@ -10,14 +10,20 @@ import javax.annotation.Nonnull;
 
 public record WorldSelection(@Nonnull World world, @Nonnull WorldEditSelection selection) {
 
-    public static WorldSelection fromPlayer(@Nonnull Player player,
-                                            @Nonnull WorldEditInterface worldEditInterface) throws ParserException {
+    public static WorldSelection fromPlayer(@Nonnull Player player, @Nonnull WorldEditInterface worldEditInterface)
+            throws ParserException
+    {
+
         WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
         if (selection == null) {
+
             throw new AreaShopCommandException("cmd-noSelection");
+
         }
+
         World world = selection.getWorld();
         return new WorldSelection(world, selection);
+
     }
 
 }

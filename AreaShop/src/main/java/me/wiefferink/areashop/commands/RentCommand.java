@@ -23,43 +23,58 @@ public class RentCommand extends AreashopCommandBean {
 
     @Inject
     public RentCommand(@Nonnull IFileManager fileManager) {
+
         this.rentRegionFlag = RegionParseUtil.createDefaultRent(fileManager);
+
     }
 
     @Override
     public String stringDescription() {
+
         return "Allows you to rent a region";
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.rent")) {
+
+        if (target.hasPermission("areashop.rent")) {
+
             return "help-rent";
+
         }
+
         return null;
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("rent");
+
     }
 
-
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder
-                .literal("rent")
-                .flag(this.rentRegionFlag)
-                .senderType(Player.class)
-                .handler(this::handleCommand);
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("rent").flag(this.rentRegionFlag).senderType(Player.class).handler(this::handleCommand);
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         if (!context.hasPermission("areashop.rent")) {
+
             throw new AreaShopCommandException("rent-noPermission");
+
         }
+
         RentRegion region = RegionParseUtil.getOrParseRentRegion(context, this.rentRegionFlag);
         region.rent(context.sender());
+
     }
 
 }

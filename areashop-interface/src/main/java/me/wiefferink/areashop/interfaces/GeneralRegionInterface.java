@@ -5,21 +5,25 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.World;
 
 public interface GeneralRegionInterface {
-	ProtectedRegion getRegion();
 
-	String getName();
+    ProtectedRegion getRegion();
 
-	World getWorld();
+    String getName();
 
-	String getWorldName();
+    World getWorld();
 
-	int getWidth();
+    String getWorldName();
 
-	int getDepth();
+    int getWidth();
 
-	int getHeight();
+    int getDepth();
 
-	default BlockVector3 computeDimensions() {
-		return BlockVector3.at(getWidth(), getHeight(), getDepth());
-	}
+    int getHeight();
+
+    default BlockVector3 computeDimensions() {
+
+        return BlockVector3.at(getWidth(), getHeight(), getDepth());
+
+    }
+
 }

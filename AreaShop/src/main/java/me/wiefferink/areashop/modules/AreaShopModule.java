@@ -39,15 +39,12 @@ public class AreaShopModule extends AbstractModule {
 
     private final ServiceManager serviceManager;
 
-    public AreaShopModule(@Nonnull AreaShop instance,
-                          @Nonnull MessageBridge messageBridge,
-                          @Nonnull PlatformAdapter platformAdapter,
-                          @Nonnull WorldEditInterface worldEditInterface,
-                          @Nonnull WorldGuardInterface worldGuardInterface,
-                          @Nonnull SignErrorLogger signErrorLogger,
-                          @Nonnull ServiceManager serviceManager,
-                          @Nonnull AbstractModule... extras
-    ) {
+    public AreaShopModule(@Nonnull AreaShop instance, @Nonnull MessageBridge messageBridge,
+            @Nonnull PlatformAdapter platformAdapter, @Nonnull WorldEditInterface worldEditInterface,
+            @Nonnull WorldGuardInterface worldGuardInterface, @Nonnull SignErrorLogger signErrorLogger,
+            @Nonnull ServiceManager serviceManager, @Nonnull AbstractModule... extras)
+    {
+
         this.instance = instance;
         this.messageBridge = messageBridge;
         this.platformAdapter = platformAdapter;
@@ -56,10 +53,12 @@ public class AreaShopModule extends AbstractModule {
         this.worldGuardInterface = worldGuardInterface;
         this.serviceManager = serviceManager;
         this.extras = extras;
+
     }
 
     @Override
     protected void configure() {
+
         Arrays.stream(this.extras).forEach(this::install);
         bind(Plugin.class).toInstance(this.instance);
         bind(AreaShop.class).toInstance(this.instance);
@@ -79,9 +78,14 @@ public class AreaShopModule extends AbstractModule {
         install(new FactoryModuleBuilder().build(FeatureFactory.class));
         install(new FactoryModuleBuilder().build(ImportJobFactory.class));
         requestStaticInjection(Utils.class);
+
     }
+
     @Provides
     public BukkitAudiences provideBukkitAudiences(@Nonnull Plugin plugin) {
+
         return BukkitAudiences.create(plugin);
+
     }
+
 }

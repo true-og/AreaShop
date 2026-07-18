@@ -46,189 +46,199 @@ public class FindCommand extends AreashopCommandBean {
     private final MessageBridge messageBridge;
 
     @Inject
-    public FindCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull DiamondBankAPIJava economy,
-            @Nonnull IFileManager fileManager
-    ) {
+    public FindCommand(@Nonnull MessageBridge messageBridge, @Nonnull DiamondBankAPIJava economy,
+            @Nonnull IFileManager fileManager)
+    {
+
         this.messageBridge = messageBridge;
         this.economy = economy;
         this.fileManager = fileManager;
         this.regionGroupFlag = CommandFlag.builder("region")
-                .withComponent(ParserDescriptor.of(new RegionGroupParser<>(fileManager, "find-wrongGroup"),
-                        RegionGroup.class))
+                .withComponent(
+                        ParserDescriptor.of(new RegionGroupParser<>(fileManager, "find-wrongGroup"), RegionGroup.class))
                 .build();
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.find")) {
+
+        if (target.hasPermission("areashop.find")) {
+
             return "help-find";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("find")
-                .senderType(Player.class)
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("find").senderType(Player.class)
                 .required(KEY_REGION_TYPE, EnumParser.enumParser(GeneralRegion.RegionType.class))
-                .optional(KEY_PRICE, DoubleParser.doubleParser(0))
-                .flag(this.regionGroupFlag)
+                .optional(KEY_PRICE, DoubleParser.doubleParser(0)).flag(this.regionGroupFlag)
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("find");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player sender = context.sender();
         if (!sender.hasPermission("areashop.find")) {
+
             throw new AreaShopCommandException("find-noPermission");
+
         }
+
         double balance;
         if (economy != null) {
+
             double diamonds = 0;
             try {
-                // DiamondBank stores balances in shards; convert the player's total to diamonds.
+
+                // DiamondBank stores balances in shards; convert the player's total to
+                // diamonds.
                 long shardsPerDiamond = economy.diamondsToShards(1f);
                 if (shardsPerDiamond > 0) {
+
                     diamonds = economy.getTotalShards(sender.getUniqueId()) / (double) shardsPerDiamond;
+
                 }
+
             } catch (DiamondBankException e) {
+
                 diamonds = 0;
+
             }
+
             balance = diamonds;
+
         } else {
+
             balance = 0;
+
         }
+
         boolean maxPriceSet = context.contains(KEY_PRICE);
         double maxPrice = context.getOrDefault(KEY_PRICE, Double.MAX_VALUE);
         RegionGroup group = context.flags().get(this.regionGroupFlag);
         GeneralRegion.RegionType regionType = context.get(KEY_REGION_TYPE);
         Message onlyInGroup;
         if (group != null) {
+
             onlyInGroup = Message.fromKey("find-onlyInGroup").replacements(group.getName());
+
         } else {
+
             onlyInGroup = Message.empty();
+
         }
+
         switch (regionType) {
+
             case BUY -> handleBuy(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
             case RENT -> handleRent(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
+
         }
+
     }
 
-    private void handleBuy(@Nonnull Player sender,
-                           double balance,
-                           double maxPrice,
-                           boolean maxPriceSet,
-                           @Nonnull Message onlyInGroup,
-                           RegionGroup group
-    ) {
+    private void handleBuy(@Nonnull Player sender, double balance, double maxPrice, boolean maxPriceSet,
+            @Nonnull Message onlyInGroup, RegionGroup group)
+    {
+
         Collection<BuyRegion> regions = fileManager.getBuysRef();
         List<BuyRegion> results = new LinkedList<>();
         for (BuyRegion region : regions) {
+
             if (!region.isSold()
-                    && ((region.getPrice() <= balance && !maxPriceSet) || (region.getPrice() <= maxPrice && maxPriceSet))
-                    && (group == null || group.isMember(region))
-                    && (region.getBooleanSetting("general.findCrossWorld") || sender.getWorld()
-                    .equals(region.getWorld()))
-            ) {
+                    && ((region.getPrice() <= balance && !maxPriceSet)
+                            || (region.getPrice() <= maxPrice && maxPriceSet))
+                    && (group == null || group.isMember(region)) && (region.getBooleanSetting("general.findCrossWorld")
+                            || sender.getWorld().equals(region.getWorld())))
+            {
+
                 results.add(region);
+
             }
+
         }
+
         if (results.isEmpty()) {
+
             double currency = maxPriceSet ? maxPrice : balance;
             String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
             throw new AreaShopCommandException(key, "buy", Utils.formatCurrency(currency), onlyInGroup);
+
         }
+
         // Draw a random one
         BuyRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
         // Teleport
         double currency = maxPriceSet ? maxPrice : balance;
         String key = maxPriceSet ? "find-successMax" : "find-success";
-        this.messageBridge.message(sender,
-                key,
-                "buy",
-                Utils.formatCurrency(currency),
-                onlyInGroup,
-                region);
+        this.messageBridge.message(sender, key, "buy", Utils.formatCurrency(currency), onlyInGroup, region);
         boolean tpToSign = region.getBooleanSetting("general.findTeleportToSign");
         region.getTeleportFeature().teleportPlayer(sender, tpToSign, false);
+
     }
 
-    private void handleRent(
-            @Nonnull Player sender,
-            double balance,
-            double maxPrice,
-            boolean maxPriceSet,
-            @Nonnull Message onlyInGroup,
-            RegionGroup group
-    ) {
+    private void handleRent(@Nonnull Player sender, double balance, double maxPrice, boolean maxPriceSet,
+            @Nonnull Message onlyInGroup, RegionGroup group)
+    {
+
         Collection<RentRegion> regions = fileManager.getRentsRef();
         List<RentRegion> results = new LinkedList<>();
         for (RentRegion region : regions) {
+
             if (!region.isRented()
-                    && ((region.getPrice() <= balance && !maxPriceSet) || (region.getPrice() <= maxPrice && maxPriceSet))
-                    && (group == null || group.isMember(region))
-                    && (region.getBooleanSetting("general.findCrossWorld") || sender.getWorld()
-                    .equals(region.getWorld()))
-            ) {
+                    && ((region.getPrice() <= balance && !maxPriceSet)
+                            || (region.getPrice() <= maxPrice && maxPriceSet))
+                    && (group == null || group.isMember(region)) && (region.getBooleanSetting("general.findCrossWorld")
+                            || sender.getWorld().equals(region.getWorld())))
+            {
+
                 results.add(region);
+
             }
+
         }
+
         if (results.isEmpty()) {
+
             double currency = maxPriceSet ? maxPrice : balance;
             String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
             throw new AreaShopCommandException(key, "rent", Utils.formatCurrency(currency), onlyInGroup);
+
         }
+
         // Draw a random one
         RentRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
         // Teleport
         double currency = maxPriceSet ? maxPrice : balance;
         String key = maxPriceSet ? "find-successMax" : "find-success";
-        this.messageBridge.message(sender,
-                key,
-                "rent",
-                Utils.formatCurrency(currency),
-                onlyInGroup,
-                region);
+        this.messageBridge.message(sender, key, "rent", Utils.formatCurrency(currency), onlyInGroup, region);
         boolean tpToSign = region.getBooleanSetting("general.findTeleportToSign");
         region.getTeleportFeature().teleportPlayer(sender, tpToSign, false);
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -8,12 +8,15 @@ import me.wiefferink.areashop.regions.GeneralRegion;
  */
 public class DeletingRegionEvent extends CancellableRegionEvent<GeneralRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that has been added
-	 */
-	public DeletingRegionEvent(GeneralRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that has been added
+     */
+    public DeletingRegionEvent(GeneralRegion region) {
+
+        super(region);
+
+    }
 
 }

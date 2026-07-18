@@ -25,73 +25,64 @@ public class InfoPlayerCommand extends AreashopCommandBean {
     private final IFileManager fileManager;
 
     @Inject
-    public InfoPlayerCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public InfoPlayerCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.info")) {
+
             return "help-info";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
         return builder.literal("info").literal("player")
                 .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("info region");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.info")) {
+
             messageBridge.message(sender, "info-noPermission");
             return;
+
         }
+
         OfflinePlayer offlinePlayer = context.get(KEY_PLAYER);
         RegionInfoUtil.showRegionInfo(this.messageBridge, this.fileManager, sender, offlinePlayer);
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

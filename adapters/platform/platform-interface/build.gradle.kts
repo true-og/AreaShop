@@ -1,5 +1,3 @@
 description = "AreaShop Platform Interface"
 
-dependencies {
-    compileOnlyApi(libs.spigot)
-}
+dependencies { compileOnlyApi(libs.spigot) }

@@ -48,8 +48,7 @@ public class StackCommand extends AreashopCommandBean {
     private static final CloudKey<GeneralRegion.RegionType> KEY_TYPE = CloudKey.of("type",
             GeneralRegion.RegionType.class);
     private static final CommandFlag<String> FLAG_GROUP = CommandFlag.builder("group")
-            .withComponent(StringParser.stringParser())
-            .build();
+            .withComponent(StringParser.stringParser()).build();
     private final MessageBridge messageBridge;
     private final Plugin plugin;
     private final WorldEditInterface worldEditInterface;
@@ -58,15 +57,12 @@ public class StackCommand extends AreashopCommandBean {
     private final IFileManager fileManager;
 
     @Inject
-    public StackCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull Plugin plugin,
-            @Nonnull WorldEditInterface worldEditInterface,
-            @Nonnull WorldGuardInterface worldGuardInterface,
-            @Nonnull RegionFactory regionFactory,
-            @Nonnull IFileManager fileManager
+    public StackCommand(@Nonnull MessageBridge messageBridge, @Nonnull Plugin plugin,
+            @Nonnull WorldEditInterface worldEditInterface, @Nonnull WorldGuardInterface worldGuardInterface,
+            @Nonnull RegionFactory regionFactory, @Nonnull IFileManager fileManager
 
     ) {
+
         this.messageBridge = messageBridge;
         this.plugin = plugin;
         this.worldEditInterface = worldEditInterface;
@@ -78,60 +74,87 @@ public class StackCommand extends AreashopCommandBean {
 
     @NotNull
     private static Vector calculateShift(BlockFace facing, WorldEditSelection selection, int gap) {
+
         Vector shift = new Vector(0, 0, 0);
         if (facing == BlockFace.SOUTH) {
+
             shift = shift.setZ(-selection.getLength() - gap);
+
         } else if (facing == BlockFace.WEST) {
+
             shift = shift.setX(selection.getWidth() + gap);
+
         } else if (facing == BlockFace.NORTH) {
+
             shift = shift.setZ(selection.getLength() + gap);
+
         } else if (facing == BlockFace.EAST) {
+
             shift = shift.setX(-selection.getWidth() - gap);
+
         } else if (facing == BlockFace.DOWN) {
+
             shift = shift.setY(-selection.getHeight() - gap);
+
         } else if (facing == BlockFace.UP) {
+
             shift = shift.setY(selection.getHeight() + gap);
+
         }
+
         return shift;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.stack")) {
+
             return "help-stack";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("stack")
-                .senderType(Player.class)
-                .required(KEY_AMOUNT, IntegerParser.integerParser(0))
-                .required(KEY_GAP, IntegerParser.integerParser(0))
-                .required(KEY_NAME, StringParser.stringParser())
-                .required(KEY_TYPE, EnumParser.enumParser(GeneralRegion.RegionType.class))
-                .flag(FLAG_GROUP)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("stack").senderType(Player.class).required(KEY_AMOUNT, IntegerParser.integerParser(0))
+                .required(KEY_GAP, IntegerParser.integerParser(0)).required(KEY_NAME, StringParser.stringParser())
+                .required(KEY_TYPE, EnumParser.enumParser(GeneralRegion.RegionType.class)).flag(FLAG_GROUP)
                 .handler(this::handleCommand);
 
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("stack");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         if (!player.hasPermission("areashop.stack")) {
+
             throw new AreaShopCommandException("stack-noPermission");
+
         }
+
         int amount = context.get(KEY_AMOUNT);
         int gap = context.get(KEY_GAP);
         String name = context.get(KEY_NAME);
@@ -140,46 +163,61 @@ public class StackCommand extends AreashopCommandBean {
         // Get WorldEdit selection
         final WorldEditSelection selection = worldEditInterface.getPlayerSelection(player);
         if (selection == null) {
+
             this.messageBridge.message(player, "stack-noSelection");
             return;
+
         }
+
         // Get or create group
         RegionGroup group = null;
         if (optionalGroup.isPresent()) {
+
             String groupName = optionalGroup.get();
             group = fileManager.getGroup(groupName);
             if (group == null) {
+
                 group = regionFactory.createRegionGroup(groupName);
                 fileManager.addGroup(group);
+
             }
+
         }
-        // Get facing of the player (must be clearly one of the four directions to make sure it is no mistake)
+
+        // Get facing of the player (must be clearly one of the four directions to make
+        // sure it is no mistake)
         BlockFace facing = Utils.yawToFacing(player.getLocation().getYaw());
         if (player.getLocation().getPitch() > 45) {
+
             facing = BlockFace.DOWN;
+
         } else if (player.getLocation().getPitch() < -45) {
+
             facing = BlockFace.UP;
+
         }
-        if (!(facing == BlockFace.NORTH || facing == BlockFace.EAST || facing == BlockFace.SOUTH || facing == BlockFace.WEST || facing == BlockFace.UP || facing == BlockFace.DOWN)) {
-            this.messageBridge.message(player,
-                    "stack-unclearDirection",
+
+        if (!(facing == BlockFace.NORTH || facing == BlockFace.EAST || facing == BlockFace.SOUTH
+                || facing == BlockFace.WEST || facing == BlockFace.UP || facing == BlockFace.DOWN))
+        {
+
+            this.messageBridge.message(player, "stack-unclearDirection",
                     facing.toString().toLowerCase().replace('_', '-'));
             return;
+
         }
+
         Vector shift = calculateShift(facing, selection, gap);
         BukkitRunnable task = stackTask(player, name, amount, selection, regionType, shift, group);
         task.runTaskTimer(plugin, 1, 1);
+
     }
 
-    private BukkitRunnable stackTask(
-            @Nonnull Player player,
-            @Nonnull String name,
-            int amount,
-            @Nonnull WorldEditSelection selection,
-            GeneralRegion.RegionType regionType,
-            @Nonnull Vector shift,
-            @Nullable RegionGroup group
-    ) {
+    private BukkitRunnable stackTask(@Nonnull Player player, @Nonnull String name, int amount,
+            @Nonnull WorldEditSelection selection, GeneralRegion.RegionType regionType, @Nonnull Vector shift,
+            @Nullable RegionGroup group)
+    {
+
         final int regionsPerTick = plugin.getConfig().getInt("adding.regionsPerTick");
 
         Location minimumLocation = selection.getMinimumLocation();
@@ -187,6 +225,7 @@ public class StackCommand extends AreashopCommandBean {
         Location maximumLocation = selection.getMaximumLocation();
         Vector maximumVector = new Vector(maximumLocation.getX(), maximumLocation.getY(), maximumLocation.getZ());
         return new BukkitRunnable() {
+
             private final RegionManager manager = worldGuardInterface.getRegionManager(selection.getWorld());
             private int current = -1;
             private int counter = 1;
@@ -195,99 +234,137 @@ public class StackCommand extends AreashopCommandBean {
 
             @Override
             public void run() {
+
                 for (int i = 0; i < regionsPerTick; i++) {
+
                     current++;
                     if (current >= amount) {
+
                         continue;
+
                     }
+
                     // Create the region name
                     String regionName = countToName(name, counter);
                     while (manager.getRegion(regionName) != null || fileManager.getRegion(regionName) != null) {
+
                         counter++;
                         regionName = countToName(name, counter);
+
                     }
 
-                    // Add the region to WorldGuard (at startposition shifted by the number of this region times the blocks it should shift)
+                    // Add the region to WorldGuard (at startposition shifted by the number of this
+                    // region times the blocks it should shift)
                     Vector minimum = minimumVector.clone().add(shift.clone().multiply(current));
                     Vector maximum = maximumVector.clone().add(shift.clone().multiply(current));
 
                     // Check for out of bounds
                     if (minimum.getBlockY() < 0) {
+
                         tooLow++;
                         continue;
+
                     } else if (maximum.getBlockY() > 256) {
+
                         tooHigh++;
                         continue;
+
                     }
+
                     ProtectedCuboidRegion region = worldGuardInterface.createCuboidRegion(regionName, minimum, maximum);
                     manager.addRegion(region);
 
                     // Add the region to AreaShop
                     GeneralRegion newRegion;
                     if (regionType == GeneralRegion.RegionType.BUY) {
+
                         newRegion = regionFactory.createRentRegion(regionName, selection.getWorld());
+
                     } else {
+
                         newRegion = regionFactory.createBuyRegion(regionName, selection.getWorld());
+
                     }
 
                     if (group != null) {
+
                         group.addMember(newRegion);
+
                     }
+
                     AddingRegionEvent event = fileManager.addRegion(newRegion);
                     if (event.isCancelled()) {
+
                         messageBridge.message(player, "general-cancelled", event.getReason());
                         continue;
+
                     }
+
                     newRegion.handleSchematicEvent(GeneralRegion.RegionEvent.CREATED);
                     newRegion.update();
+
                 }
+
                 if (current >= amount) {
+
                     if (player.isOnline()) {
+
                         int added = amount - tooLow - tooHigh;
                         Message wrong = Message.empty();
                         if (tooHigh > 0) {
+
                             wrong.append(Message.fromKey("stack-tooHigh").replacements(tooHigh));
+
                         }
+
                         if (tooLow > 0) {
+
                             wrong.append(Message.fromKey("stack-tooLow").replacements(tooLow));
+
                         }
+
                         messageBridge.message(player, "stack-addComplete", added, wrong);
+
                     }
+
                     this.cancel();
+
                 }
+
             }
+
         };
+
     }
 
     /**
      * Build a name from a count, with the right length.
      *
-     * @param template Template to put the name in (# to put the count there, otherwise count is appended)
+     * @param template Template to put the name in (# to put the count there,
+     *                 otherwise count is appended)
      * @param count    Number to use
      * @return name with prepended 0's
      */
     private String countToName(String template, int count) {
+
         StringBuilder counterName = new StringBuilder().append(count);
         int minimumLength = plugin.getConfig().getInt("stackRegionNumberLength");
         while (counterName.length() < minimumLength) {
+
             counterName.insert(0, "0");
+
         }
 
         if (template.contains("#")) {
+
             return template.replace("#", counterName);
+
         } else {
+
             return template + counterName;
+
         }
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-

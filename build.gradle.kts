@@ -1,17 +1,16 @@
-import com.github.spotbugs.snom.Effort
-import com.github.spotbugs.snom.SpotBugsPlugin
-
 plugins {
     java
     `java-library`
     `maven-publish`
     id("io.papermc.paperweight.userdev") version "1.5.11" apply false
     id("com.github.spotbugs") version "5.1.3"
+    id("com.diffplug.spotless") version "8.1.0"
     idea
     eclipse
 }
 
 group = "me.wiefferink"
+
 version = "2.8.0"
 
 val targetJavaVersion = 17
@@ -19,6 +18,15 @@ val encoding = Charsets.UTF_8
 val encodingName: String = encoding.name()
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+
+repositories { mavenCentral() }
+
+spotless {
+    kotlinGradle {
+        ktfmt().kotlinlangStyle().configure { it.setMaxWidth(120) }
+        target("build.gradle.kts", "settings.gradle.kts")
+    }
+}
 
 subprojects {
 
@@ -37,9 +45,22 @@ subprojects {
         plugin<IdeaPlugin>()
         plugin<EclipsePlugin>()
         plugin<MavenPublishPlugin>()
+        plugin("com.diffplug.spotless")
         // plugin<SpotBugsPlugin>()
     }
-    
+
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            eclipse().configFile(rootProject.file("config/formatter/eclipse-java-formatter.xml"))
+            leadingTabsToSpaces()
+            removeUnusedImports()
+        }
+        kotlinGradle {
+            ktfmt().kotlinlangStyle().configure { it.setMaxWidth(120) }
+            target("build.gradle.kts")
+        }
+    }
+
     repositories {
         mavenCentral()
         maven("https://oss.sonatype.org/content/groups/public/")
@@ -48,21 +69,21 @@ subprojects {
         maven {
             name = "jitpack"
             url = uri("https://jitpack.io")
-            content {
-                includeGroupByRegex("com\\.github.*")
-            }
+            content { includeGroupByRegex("com\\.github.*") }
         }
         maven("https://repo.aikar.co/content/groups/aikar/")
         maven("https://maven.enginehub.org/repo/")
     }
 
-    dependencies {
-        implementation("org.jetbrains:annotations:24.0.1")
-    }
+    dependencies { implementation("org.jetbrains:annotations:24.0.1") }
 
     java.toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
 
     tasks {
+        named("compileJava") { dependsOn("spotlessApply") }
+
+        named("spotlessCheck") { dependsOn("spotlessApply") }
+
         withType(JavaCompile::class) {
             options.release.set(targetJavaVersion)
             options.encoding = encodingName
@@ -70,13 +91,9 @@ subprojects {
             options.isDeprecation = true
         }
 
-        withType(Javadoc::class) {
-            options.encoding = encodingName
-        }
+        withType(Javadoc::class) { options.encoding = encodingName }
 
-        withType(ProcessResources::class) {
-            filteringCharset = encodingName
-        }
+        withType(ProcessResources::class) { filteringCharset = encodingName }
     }
 
     publishing {

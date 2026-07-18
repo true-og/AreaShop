@@ -27,17 +27,18 @@ import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class UnrentCommand extends AreashopCommandBean {
+
     private final IFileManager fileManager;
     private final CommandFlag<RentRegion> regionFlag;
 
     @Inject
     public UnrentCommand(@Nonnull IFileManager fileManager) {
-        ParserDescriptor<CommandSender, RentRegion> regionParser =
-                ParserDescriptor.of(new RentRegionParser<>(fileManager, this::suggestRegions), RentRegion.class);
+
+        ParserDescriptor<CommandSender, RentRegion> regionParser = ParserDescriptor
+                .of(new RentRegionParser<>(fileManager, this::suggestRegions), RentRegion.class);
         this.fileManager = fileManager;
-        this.regionFlag = CommandFlag.builder("region")
-                .withComponent(regionParser)
-                .build();
+        this.regionFlag = CommandFlag.builder("region").withComponent(regionParser).build();
+
     }
 
     /**
@@ -48,73 +49,90 @@ public class UnrentCommand extends AreashopCommandBean {
      * @return true if the person can unrent it, otherwise false
      */
     public static boolean canUse(CommandSender person, GeneralRegion region) {
+
         if (person.hasPermission("areashop.unrent")) {
+
             return true;
+
         }
+
         if (person instanceof Player player) {
+
             return region.isOwner(player) && person.hasPermission("areashop.unrentown");
+
         }
+
         return false;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.unrent") || target.hasPermission("areashop.unrentown")) {
+
             return "help-unrent";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("unrent")
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("unrent").flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("unrent");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.unrent") && !sender.hasPermission("areashop.unrentown")) {
+
             throw new AreaShopCommandException("unrent-noPermission");
+
         }
+
         RentRegion rent = RegionParseUtil.getOrParseRentRegion(context, this.regionFlag);
         if (!rent.isRented()) {
+
             throw new AreaShopCommandException("unrent-notRented", rent);
+
         }
+
         rent.unRent(true, sender);
+
     }
 
     @Nonnull
-    private CompletableFuture<Iterable<Suggestion>> suggestRegions(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestRegions(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
-        List<Suggestion> suggestions = this.fileManager.getRentsRef().stream()
-                .filter(RentRegion::isRented)
-                .map(GeneralRegion::getName)
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+        List<Suggestion> suggestions = this.fileManager.getRentsRef().stream().filter(RentRegion::isRented)
+                .map(GeneralRegion::getName).filter(name -> name.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
+
 }
-
-
-
-
-
-
-
-

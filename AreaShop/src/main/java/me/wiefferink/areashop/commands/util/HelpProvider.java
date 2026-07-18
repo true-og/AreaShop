@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 public interface HelpProvider {
 
-    @Nullable String getHelpKey(@Nonnull CommandSender target);
-
+    @Nullable
+    String getHelpKey(@Nonnull CommandSender target);
 
 }

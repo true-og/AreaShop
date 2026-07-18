@@ -31,99 +31,118 @@ import java.util.Optional;
 @Singleton
 public class AddSignCommand extends AreashopCommandBean {
 
-	private static final CloudKey<GeneralRegion> KEY_REGION = CloudKey.of("region", GeneralRegion.class);
+    private static final CloudKey<GeneralRegion> KEY_REGION = CloudKey.of("region", GeneralRegion.class);
 
-	private final SignManager signManager;
-	private final Plugin plugin;
-	private final IFileManager fileManager;
+    private final SignManager signManager;
+    private final Plugin plugin;
+    private final IFileManager fileManager;
 
-	private final MessageBridge messageBridge;
+    private final MessageBridge messageBridge;
 
     @Inject
-    public AddSignCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager,
-            @Nonnull SignManager signManager,
-            @Nonnull Plugin plugin
-    ) {
-		this.messageBridge = messageBridge;
+    public AddSignCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager,
+            @Nonnull SignManager signManager, @Nonnull Plugin plugin)
+    {
+
+        this.messageBridge = messageBridge;
         this.signManager = signManager;
         this.plugin = plugin;
-		this.fileManager = fileManager;
+        this.fileManager = fileManager;
+
     }
 
-	@Override
-	public String stringDescription() {
-		return "Allows you to add signs to existing regions";
-	}
+    @Override
+    public String stringDescription() {
 
-	@Override
-	public String getHelpKey(CommandSender target) {
-		if(target.hasPermission("areashop.addsign")) {
-			return "help-addsign";
-		}
-		return null;
-	}
+        return "Allows you to add signs to existing regions";
 
-	@Override
-	protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-		return builder.literal("addsign")
-				.senderType(Player.class)
-				.optional(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
-				.flag(SignProfileUtil.DEFAULT_FLAG)
-				.handler(this::handleCommand);
-	}
+    }
 
-	private void handleCommand(@Nonnull CommandContext<Player> context) {
-		Player sender = context.sender();
-		if (!sender.hasPermission("areashop.addsign")) {
-			throw new AreaShopCommandException("addsign-noPermission");
-		}
-		// Get the sign
-		Block block = null;
-		BlockIterator blockIterator = new BlockIterator(sender, 100);
-		while(blockIterator.hasNext() && block == null) {
-			Block next = blockIterator.next();
-			if(next.getType() != Material.AIR) {
-				block = next;
-			}
-		}
-		if(block == null || !Materials.isSign(block.getType())) {
-			messageBridge.message(sender, "addsign-noSign");
-			return;
-		}
+    @Override
+    public String getHelpKey(CommandSender target) {
 
-		GeneralRegion region = RegionParseUtil.getOrParseRegion(context, KEY_REGION);
-		String profile = SignProfileUtil.getOrParseProfile(context, this.plugin);
-		Optional<RegionSign> optionalRegionSign = this.signManager.signFromLocation(block.getLocation());
-		if(optionalRegionSign.isPresent()) {
-			RegionSign regionSign = optionalRegionSign.get();
-			messageBridge.message(sender, "addsign-alreadyRegistered", regionSign.getRegion());
-			return;
-		}
+        if (target.hasPermission("areashop.addsign")) {
 
-		region.getSignsFeature().addSign(block.getLocation(), block.getType(), SignUtils.getSignFacing(block), profile);
-		if(profile == null) {
-			messageBridge.message(sender, "addsign-success", region);
-		} else {
-			messageBridge.message(sender, "addsign-successProfile", profile, region);
-		}
-		region.update();
-	}
+            return "help-addsign";
 
+        }
+
+        return null;
+
+    }
+
+    @Override
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("addsign").senderType(Player.class)
+                .optional(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
+                .flag(SignProfileUtil.DEFAULT_FLAG).handler(this::handleCommand);
+
+    }
+
+    private void handleCommand(@Nonnull CommandContext<Player> context) {
+
+        Player sender = context.sender();
+        if (!sender.hasPermission("areashop.addsign")) {
+
+            throw new AreaShopCommandException("addsign-noPermission");
+
+        }
+
+        // Get the sign
+        Block block = null;
+        BlockIterator blockIterator = new BlockIterator(sender, 100);
+        while (blockIterator.hasNext() && block == null) {
+
+            Block next = blockIterator.next();
+            if (next.getType() != Material.AIR) {
+
+                block = next;
+
+            }
+
+        }
+
+        if (block == null || !Materials.isSign(block.getType())) {
+
+            messageBridge.message(sender, "addsign-noSign");
+            return;
+
+        }
+
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, KEY_REGION);
+        String profile = SignProfileUtil.getOrParseProfile(context, this.plugin);
+        Optional<RegionSign> optionalRegionSign = this.signManager.signFromLocation(block.getLocation());
+        if (optionalRegionSign.isPresent()) {
+
+            RegionSign regionSign = optionalRegionSign.get();
+            messageBridge.message(sender, "addsign-alreadyRegistered", regionSign.getRegion());
+            return;
+
+        }
+
+        region.getSignsFeature().addSign(block.getLocation(), block.getType(), SignUtils.getSignFacing(block), profile);
+        if (profile == null) {
+
+            messageBridge.message(sender, "addsign-success", region);
+
+        } else {
+
+            messageBridge.message(sender, "addsign-successProfile", profile, region);
+
+        }
+
+        region.update();
+
+    }
 
     @Override
     protected @Nonnull CommandProperties properties() {
-		return CommandProperties.of("addsign");
-	}
+
+        return CommandProperties.of("addsign");
+
+    }
+
 }
-
-
-
-
-
-
-
-
-
-

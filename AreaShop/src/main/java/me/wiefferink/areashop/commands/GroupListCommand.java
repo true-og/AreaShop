@@ -18,60 +18,73 @@ import java.util.List;
 @Singleton
 public class GroupListCommand extends AreashopCommandBean {
 
-	private final MessageBridge messageBridge;
-	private final IFileManager fileManager;
+    private final MessageBridge messageBridge;
+    private final IFileManager fileManager;
 
-	@Inject
-	public GroupListCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
-		this.messageBridge = messageBridge;
-		this.fileManager = fileManager;
-	}
+    @Inject
+    public GroupListCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
 
-	@Override
-	public String stringDescription() {
-		return null;
-	}
+        this.messageBridge = messageBridge;
+        this.fileManager = fileManager;
 
-	@Override
-	public String getHelpKey(CommandSender target) {
-		if(target.hasPermission("areashop.grouplist")) {
-			return "help-grouplist";
-		}
-		return null;
-	}
+    }
 
-	@Override
-	protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-		return builder.literal("grouplist", "groups")
-				.handler(this::handleCommand);
-	}
+    @Override
+    public String stringDescription() {
+
+        return null;
+
+    }
+
+    @Override
+    public String getHelpKey(CommandSender target) {
+
+        if (target.hasPermission("areashop.grouplist")) {
+
+            return "help-grouplist";
+
+        }
+
+        return null;
+
+    }
+
+    @Override
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("grouplist", "groups").handler(this::handleCommand);
+
+    }
 
     @Override
     protected @Nonnull CommandProperties properties() {
-		return CommandProperties.of("grouplist", "groups");
-	}
 
-	private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
-		if (!context.hasPermission("areashop.grouplist")) {
-			throw new AreaShopCommandException("grouplist-noPermission");
-		}
-		List<String> groups = this.fileManager.getGroupNames();
-		CommandSender sender = context.sender();
-		if(groups.isEmpty()) {
-			messageBridge.message(sender, "grouplist-noGroups");
-		} else {
-			messageBridge.message(sender, "grouplist-success", Utils.createCommaSeparatedList(groups));
-		}
-	}
+        return CommandProperties.of("grouplist", "groups");
+
+    }
+
+    private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
+        if (!context.hasPermission("areashop.grouplist")) {
+
+            throw new AreaShopCommandException("grouplist-noPermission");
+
+        }
+
+        List<String> groups = this.fileManager.getGroupNames();
+        CommandSender sender = context.sender();
+        if (groups.isEmpty()) {
+
+            messageBridge.message(sender, "grouplist-noGroups");
+
+        } else {
+
+            messageBridge.message(sender, "grouplist-success", Utils.createCommaSeparatedList(groups));
+
+        }
+
+    }
 
 }
-
-
-
-
-
-
-
-
-
-

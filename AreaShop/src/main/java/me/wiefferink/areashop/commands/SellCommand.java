@@ -34,11 +34,13 @@ public class SellCommand extends AreashopCommandBean {
 
     @Inject
     public SellCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
-        ParserDescriptor<CommandSender, BuyRegion> regionParser =
-                ParserDescriptor.of(new BuyRegionParser<>(fileManager, this::suggestBuyRegions), BuyRegion.class);
+
+        ParserDescriptor<CommandSender, BuyRegion> regionParser = ParserDescriptor
+                .of(new BuyRegionParser<>(fileManager, this::suggestBuyRegions), BuyRegion.class);
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
         this.buyRegionFlag = CommandFlag.builder("region").withComponent(regionParser).build();
+
     }
 
     /**
@@ -49,82 +51,91 @@ public class SellCommand extends AreashopCommandBean {
      * @return true if the person can sell it, otherwise false
      */
     public static boolean canUse(CommandSender person, GeneralRegion region) {
+
         if (person.hasPermission("areashop.sell")) {
+
             return true;
+
         }
+
         if (person instanceof Player player) {
+
             return region.isOwner(player) && person.hasPermission("areashop.sellown");
+
         }
+
         return false;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("sell")
-                .flag(this.buyRegionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("sell").flag(this.buyRegionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("sell");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.sell") || target.hasPermission("areashop.sellown")) {
+
             return "help-sell";
+
         }
+
         return null;
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.sell") && !sender.hasPermission("areashop.sellown")) {
+
             this.messageBridge.message(sender, "sell-noPermission");
             return;
+
         }
+
         BuyRegion buy = RegionParseUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
         if (!buy.isSold()) {
+
             messageBridge.message(sender, "sell-notBought", buy);
             return;
+
         }
+
         buy.sell(true, sender);
+
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestBuyRegions(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestBuyRegions(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
-        List<Suggestion> suggestions = this.fileManager.getBuysRef().stream()
-                .filter(BuyRegion::isSold)
-                .map(GeneralRegion::getName)
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+        List<Suggestion> suggestions = this.fileManager.getBuysRef().stream().filter(BuyRegion::isSold)
+                .map(GeneralRegion::getName).filter(name -> name.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -29,61 +29,69 @@ public class GroupInfoCommand extends AreashopCommandBean {
 
     @Inject
     public GroupInfoCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.groupinfo")) {
+
+        if (target.hasPermission("areashop.groupinfo")) {
+
             return "help-groupinfo";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        ParserDescriptor<CommandSender, RegionGroup> regionGroupParser = ParserDescriptor.of(
-                new RegionGroupParser<>(this.fileManager, "groupinfo-noGroup"),
-                RegionGroup.class);
-        return builder
-                .literal("groupinfo")
-                .required(KEY_GROUP, regionGroupParser)
-                .handler(this::handleCommand);
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        ParserDescriptor<CommandSender, RegionGroup> regionGroupParser = ParserDescriptor
+                .of(new RegionGroupParser<>(this.fileManager, "groupinfo-noGroup"), RegionGroup.class);
+        return builder.literal("groupinfo").required(KEY_GROUP, regionGroupParser).handler(this::handleCommand);
 
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("groupinfo");
+
     }
 
     public void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         if (!context.hasPermission("groupinfo")) {
+
             throw new AreaShopCommandException("groupinfo-noPermission");
+
         }
+
         RegionGroup group = context.get(KEY_GROUP);
         Set<String> members = group.getMembers();
         if (members.isEmpty()) {
+
             throw new AreaShopCommandException("groupinfo-noMembers", group.getName());
+
         }
+
         String seperatedMembers = Utils.createCommaSeparatedList(members);
         this.messageBridge.message(context.sender(), "groupinfo-members", group.getName(), seperatedMembers);
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-

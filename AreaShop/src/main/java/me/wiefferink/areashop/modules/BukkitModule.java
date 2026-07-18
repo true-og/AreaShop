@@ -16,11 +16,14 @@ public class BukkitModule extends AbstractModule {
     private final Server server;
 
     public BukkitModule(@Nonnull Server server) {
+
         this.server = server;
+
     }
 
     @Override
     protected void configure() {
+
         bind(Server.class).toInstance(this.server);
         bind(PluginManager.class).toInstance(this.server.getPluginManager());
         bind(BukkitScheduler.class).toInstance(this.server.getScheduler());
@@ -29,6 +32,7 @@ public class BukkitModule extends AbstractModule {
         bind(ItemFactory.class).toInstance(this.server.getItemFactory());
         bind(ConsoleCommandSender.class).toInstance(this.server.getConsoleSender());
         bind(ScoreboardManager.class).toInstance(this.server.getScoreboardManager());
+
     }
 
 }

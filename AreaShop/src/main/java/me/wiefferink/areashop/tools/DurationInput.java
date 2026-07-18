@@ -14,6 +14,7 @@ public record DurationInput(long duration, TimeUnit timeUnit) {
     private static final Map<String, TimeUnit> SUFFIX_MAP = new HashMap<>();
 
     static {
+
         SUFFIX_MAP.put("d", TimeUnit.DAYS);
         SUFFIX_MAP.put("days", TimeUnit.DAYS);
 
@@ -42,15 +43,20 @@ public record DurationInput(long duration, TimeUnit timeUnit) {
         SUFFIX_MAP.put("nanoseconds", TimeUnit.NANOSECONDS);
 
         SUFFIXES = List.copyOf(SUFFIX_MAP.keySet());
+
     }
 
     public static Optional<TimeUnit> getTimeUnit(@Nonnull String input) {
+
         return Optional.ofNullable(SUFFIX_MAP.get(input.toLowerCase(Locale.ENGLISH)));
+
     }
 
     @Nonnull
     public static String getTinySuffix(@Nonnull TimeUnit timeUnit) {
+
         return switch (timeUnit) {
+
             case DAYS -> "d";
             case HOURS -> "h";
             case MINUTES -> "m";
@@ -58,12 +64,16 @@ public record DurationInput(long duration, TimeUnit timeUnit) {
             case MILLISECONDS -> "ms";
             case MICROSECONDS -> "us";
             case NANOSECONDS -> "ns";
+
         };
+
     }
 
     @Nonnull
     public static String getShortSuffix(@Nonnull TimeUnit timeUnit) {
+
         return switch (timeUnit) {
+
             case DAYS -> "days";
             case HOURS -> "hrs";
             case MINUTES -> "mins";
@@ -71,33 +81,44 @@ public record DurationInput(long duration, TimeUnit timeUnit) {
             case MILLISECONDS -> "millis";
             case MICROSECONDS -> "micros";
             case NANOSECONDS -> "nanos";
+
         };
+
     }
 
     @Nonnull
     public static String getSuffix(@Nonnull TimeUnit timeUnit) {
+
         return timeUnit.name().toLowerCase(Locale.ENGLISH);
+
     }
 
     @Nonnull
     public String toSpacedString() {
+
         return String.format("%d %s", duration(), getSuffix(timeUnit()));
+
     }
 
     @Nonnull
     public String toTinyString() {
+
         return String.format("%d%s", duration(), getTinySuffix(timeUnit()));
+
     }
 
     @Nonnull
     public String toTinySpacedString() {
-        return String.format("%d %s", duration(), getTinySuffix(timeUnit()));
-    }
 
+        return String.format("%d %s", duration(), getTinySuffix(timeUnit()));
+
+    }
 
     @Override
     public String toString() {
+
         return String.format("%d%s", duration(), getShortSuffix(timeUnit()));
+
     }
 
 }

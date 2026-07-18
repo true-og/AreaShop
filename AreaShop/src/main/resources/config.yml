@@ -51,14 +51,15 @@ signTags:
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │ ECONOMY: Options to change the display of prices.                                                                          │
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-# The characters displayed before a price.
-moneyCharacter: '$'
-# The characters displayed after a price.
-moneyCharacterAfter: ''
+# The characters displayed before a price ('&b' makes all prices aqua in chat and on signs).
+moneyCharacter: '&b'
+# The characters displayed after a price (all prices are measured in diamonds).
+moneyCharacterAfter: ' Diamonds'
 # The character(s) to use as decimal mark.
 decimalMark: '.'
-# How many numbers behind the dot should be shown (2 will make numbers like '8.55', '9.01', '5.20').
-fractionalNumbers: 2
+# How many numbers behind the dot should be shown. DiamondBank-OG uses one fractional digit:
+# 'X.Y' means X diamonds and Y diamond shards (9 shards = 1 diamond).
+fractionalNumbers: 1
 # How many numbers behind the dot should be shown when using a metric symbol suffix.
 fractionalNumbersShort: 3
 # Set this to true if you want to hide '.0' for a number like '15.0' ('4.50' will still stay '4.50').
@@ -199,7 +200,7 @@ maximumTries: 50000
 # %clicker%        The name of the player that clicked the sign (only to be used in the signProfiles section).
 # %resellprice%    The price of a region when it is in resell mode.
 # %rawresellprice% The resellprice without formatting.
-# %moneyback%      The amount of money the player will get back when unrenting/selling the region (formatted with currency layout).
+# %moneyback%      The amount of Diamonds the player will get back when unrenting/selling the region (formatted with currency layout).
 # %rawmoneyback%   The moneyback without formatting.
 # %moneybackpercent% The percentage of the price the player will get back when unrenting the region.
 # %timesExtended%  The number of times the region has been extended (zero when first rented)

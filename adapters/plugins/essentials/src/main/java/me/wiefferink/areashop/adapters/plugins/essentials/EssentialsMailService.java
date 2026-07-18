@@ -14,23 +14,28 @@ public class EssentialsMailService implements MailService {
     private final net.essentialsx.api.v2.services.mail.MailService mailService;
     private final IEssentials essentials;
 
-    public EssentialsMailService(
-            @Nonnull net.essentialsx.api.v2.services.mail.MailService mailService,
-            @Nonnull MailSender sender,
-            @Nonnull IEssentials essentials
-    ) {
+    public EssentialsMailService(@Nonnull net.essentialsx.api.v2.services.mail.MailService mailService,
+            @Nonnull MailSender sender, @Nonnull IEssentials essentials)
+    {
+
         this.sender = sender;
         this.mailService = mailService;
         this.essentials = essentials;
+
     }
 
     @Override
     public void sendMail(@Nonnull OfflinePlayer recipient, @Nonnull String message) {
+
         IUser user = this.essentials.getUser(recipient.getUniqueId());
         if (user == null) {
+
             return;
+
         }
+
         this.mailService.sendMail(user, this.sender, message);
+
     }
 
 }

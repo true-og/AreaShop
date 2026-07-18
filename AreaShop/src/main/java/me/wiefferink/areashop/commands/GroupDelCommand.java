@@ -30,7 +30,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class GroupDelCommand extends AreashopCommandBean {
-    
+
     private static final CloudKey<String> KEY_GROUP = CloudKey.of("group", String.class);
 
     private final IFileManager fileManager;
@@ -39,114 +39,134 @@ public class GroupDelCommand extends AreashopCommandBean {
     private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
-    public GroupDelCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager,
+    public GroupDelCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager,
             @Nonnull RegionFactory regionFactory
 
     ) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
         this.regionFactory = regionFactory;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.groupdel")) {
+
+        if (target.hasPermission("areashop.groupdel")) {
+
             return "help-groupdel";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("groupdel")
-                .required(KEY_GROUP, StringParser.stringParser(), this::suggestGroupNames)
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("groupdel").required(KEY_GROUP, StringParser.stringParser(), this::suggestGroupNames)
+                .flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("groupdel");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("groupdel")) {
+
             throw new AreaShopCommandException("groupdel-noPermission");
+
         }
+
         String rawGroup = context.get(KEY_GROUP);
         RegionGroup group = fileManager.getGroup(rawGroup);
         if (group == null) {
+
             group = regionFactory.createRegionGroup(rawGroup);
             fileManager.addGroup(group);
+
         }
+
         GeneralRegion declaredRegion = context.flags().get(this.regionFlag);
         if (declaredRegion != null) {
+
             if (!group.removeMember(declaredRegion)) {
+
                 throw new AreaShopCommandException("groupdel-failed", group.getName(), declaredRegion);
+
             }
-            this.messageBridge.message(sender,
-                    "groupdel-success",
-                    group.getName(),
-                    group.getMembers().size(),
+
+            this.messageBridge.message(sender, "groupdel-success", group.getName(), group.getMembers().size(),
                     declaredRegion);
             return;
+
         }
 
         Collection<GeneralRegion> regions = RegionParseUtil.getOrParseRegionsInSel(context, this.regionFlag);
         Set<GeneralRegion> regionsSuccess = new TreeSet<>();
         Set<GeneralRegion> regionsFailed = new TreeSet<>();
         for (GeneralRegion region : regions) {
+
             if (group.removeMember(region)) {
+
                 regionsSuccess.add(region);
+
             } else {
+
                 regionsFailed.add(region);
+
             }
+
         }
+
         if (!regionsSuccess.isEmpty()) {
-            messageBridge.message(sender,
-                    "groupdel-weSuccess",
-                    group.getName(),
+
+            messageBridge.message(sender, "groupdel-weSuccess", group.getName(),
                     Utils.combinedMessage(regionsSuccess, "region"));
+
         }
+
         if (!regionsFailed.isEmpty()) {
-            messageBridge.message(sender,
-                    "groupdel-weFailed",
-                    group.getName(),
+
+            messageBridge.message(sender, "groupdel-weFailed", group.getName(),
                     Utils.combinedMessage(regionsFailed, "region"));
+
         }
+
         // Update all regions, this does it in a task, updating them without lag
         fileManager.updateRegions(List.copyOf(regionsSuccess), sender);
         group.saveRequired();
+
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestGroupNames(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestGroupNames(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
-        List<Suggestion> suggestions = this.fileManager.getGroupNames().stream()
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+        List<Suggestion> suggestions = this.fileManager.getGroupNames().stream().filter(name -> name.startsWith(text))
+                .map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
+
 }
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,5 @@
 package me.wiefferink.areashop.tools;
 
-
 import jakarta.inject.Inject;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -15,12 +14,17 @@ public class BukkitSchedulerExecutor implements Executor {
 
     @Inject
     public BukkitSchedulerExecutor(@NotNull Plugin plugin, @NotNull BukkitScheduler scheduler) {
+
         this.plugin = plugin;
         this.scheduler = scheduler;
+
     }
 
     @Override
     public void execute(@NotNull Runnable command) {
+
         this.scheduler.runTask(this.plugin, command);
+
     }
+
 }

@@ -25,82 +25,123 @@ import javax.annotation.Nonnull;
 @Singleton
 public class SetPriceCommand extends AreashopCommandBean {
 
-
     private static final CloudKey<String> KEY_PRICE = CloudKey.of("price", String.class);
     private final CommandFlag<GeneralRegion> regionFlag;
     private final MessageBridge messageBridge;
 
     @Inject
     public SetPriceCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.setprice")) {
+
             return "help-setprice";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("setprice")
-                .required(KEY_PRICE, StringParser.stringParser())
-                .flag(this.regionFlag)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("setprice").required(KEY_PRICE, StringParser.stringParser()).flag(this.regionFlag)
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("setprice");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
-        if (!sender.hasPermission("areashop.setprice") && (!sender.hasPermission("areashop.setprice.landlord") && sender instanceof Player)) {
+        if (!sender.hasPermission("areashop.setprice")
+                && (!sender.hasPermission("areashop.setprice.landlord") && sender instanceof Player))
+        {
+
             this.messageBridge.message(sender, "setprice-noPermission");
             return;
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!sender.hasPermission("areashop.setprice")
-                && !(sender instanceof Player player && region.isLandlord(player.getUniqueId()))) {
+                && !(sender instanceof Player player && region.isLandlord(player.getUniqueId())))
+        {
+
             this.messageBridge.message(sender, "setprice-noLandlord", region);
             return;
+
         }
+
         String rawPrice = context.get(KEY_PRICE);
         if ("default".equalsIgnoreCase(rawPrice) || "reset".equalsIgnoreCase(rawPrice)) {
+
             if (region instanceof RentRegion rentRegion) {
+
                 rentRegion.setPrice(null);
+
             } else if (region instanceof BuyRegion buyRegion) {
+
                 buyRegion.setPrice(null);
+
             }
+
             region.update();
             this.messageBridge.message(sender, "setprice-successRemoved", region);
             return;
+
         }
+
         double price;
         try {
+
             price = Double.parseDouble(rawPrice);
+
         } catch (NumberFormatException e) {
+
             this.messageBridge.message(sender, "setprice-wrongPrice", rawPrice, region);
             return;
+
         }
+
         if (region instanceof RentRegion rentRegion) {
+
             rentRegion.setPrice(price);
             this.messageBridge.message(sender, "setprice-successRent", region);
+
         } else if (region instanceof BuyRegion buyRegion) {
+
             buyRegion.setPrice(price);
             this.messageBridge.message(sender, "setprice-successBuy", region);
+
         }
+
         region.update();
+
     }
 
 }

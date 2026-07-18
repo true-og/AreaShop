@@ -2,10 +2,7 @@ repositories {
     maven {
         name = "essentialsx"
         url = uri("https://repo.essentialsx.net/releases/")
-        mavenContent {
-            releasesOnly()
-        }
-
+        mavenContent { releasesOnly() }
     }
 }
 

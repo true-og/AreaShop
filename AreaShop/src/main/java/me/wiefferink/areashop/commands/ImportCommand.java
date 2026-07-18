@@ -22,74 +22,87 @@ public class ImportCommand extends AreashopCommandBean {
 
     private static final CloudKey<String> KEY_SOURCE = CloudKey.of("source", String.class);
 
-    /* RegionGroup priority usage:
-       0: Settings from /config.yml
-       1: Settings from /worlds/<world>/config.yml
-       2: Settings from /worlds/<world>/parent-regions.yml (if their priority is set it is added to this value)
+    /*
+     * RegionGroup priority usage: 0: Settings from /config.yml 1: Settings from
+     * /worlds/<world>/config.yml 2: Settings from
+     * /worlds/<world>/parent-regions.yml (if their priority is set it is added to
+     * this value)
      */
     private final ImportJobFactory importJobFactory;
     private final MessageBridge messageBridge;
 
     @Inject
     public ImportCommand(@Nonnull MessageBridge messageBridge, @Nonnull ImportJobFactory importJobFactory) {
+
         this.messageBridge = messageBridge;
         this.importJobFactory = importJobFactory;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.import")) {
+
+        if (target.hasPermission("areashop.import")) {
+
             return "help-import";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
         withConfirmation();
         var sourceParser = AcceptedValuesParser.ofConstant(List.of("RegionForSale"), "import-wrongSource", true);
-        return builder.literal("import")
-                .required(KEY_SOURCE, ParserDescriptor.of(sourceParser, String.class))
+        return builder.literal("import").required(KEY_SOURCE, ParserDescriptor.of(sourceParser, String.class))
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("import");
+
     }
 
     // TODO:
-    //  - Landlord?
-    //  - Friends
-    //  - Region flags?
-    //  - Settings from the 'permissions' section in RegionForSale/config.yml?
+    // - Landlord?
+    // - Friends
+    // - Region flags?
+    // - Settings from the 'permissions' section in RegionForSale/config.yml?
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.import")) {
+
             this.messageBridge.message(sender, "import-noPermission");
             return;
+
         }
+
         String importSource = context.get(KEY_SOURCE);
         if (!"RegionForSale".equalsIgnoreCase(importSource)) {
+
             throw new AreaShopCommandException("import-wrongSource");
+
         }
+
         importJobFactory.createImportJob(sender).execute();
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-

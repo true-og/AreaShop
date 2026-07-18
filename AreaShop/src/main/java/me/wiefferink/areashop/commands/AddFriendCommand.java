@@ -31,83 +31,111 @@ public class AddFriendCommand extends AreashopCommandBean {
     private final Plugin plugin;
 
     @Inject
-    public AddFriendCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager,
-            @Nonnull Plugin plugin
-    ) {
+    public AddFriendCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager,
+            @Nonnull Plugin plugin)
+    {
+
         this.messageBridge = messageBridge;
         this.plugin = plugin;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     @Override
     public String stringDescription() {
+
         return "Allows you to add friends to your regions";
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.addfriendall") || target.hasPermission("areashop.addfriend")) {
+
             return "help-addFriend";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("addfriend")
-                .senderType(Player.class)
-                .required(KEY_FRIEND, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
-                .flag(this.regionFlag)
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("addfriend").senderType(Player.class)
+                .required(KEY_FRIEND, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser()).flag(this.regionFlag)
                 .handler(this::handleCommand);
+
     }
 
     private void handleCommand(CommandContext<Player> context) {
+
         Player sender = context.sender();
         if (!sender.hasPermission("areashop.addfriend") && !sender.hasPermission("areashop.addfriendall")) {
-           this.messageBridge.message(sender, "addfriend-noPermission");
-            return;
-        }
-        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
-        OfflinePlayer friend = context.get(KEY_FRIEND);
-        if (sender.hasPermission("areashop.addfriendall") && ((region instanceof RentRegion rentRegion && !rentRegion.isRented())
-                || (region instanceof BuyRegion buyRegion && !buyRegion.isSold()))) {
-           this.messageBridge.message(sender, "addfriend-noOwner", region);
+
+            this.messageBridge.message(sender, "addfriend-noPermission");
             return;
 
         }
+
+        GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
+        OfflinePlayer friend = context.get(KEY_FRIEND);
+        if (sender.hasPermission("areashop.addfriendall")
+                && ((region instanceof RentRegion rentRegion && !rentRegion.isRented())
+                        || (region instanceof BuyRegion buyRegion && !buyRegion.isSold())))
+        {
+
+            this.messageBridge.message(sender, "addfriend-noOwner", region);
+            return;
+
+        }
+
         if (!sender.hasPermission("areashop.addfriend")) {
-           this.messageBridge.message(sender, "addfriend-noPermission", region);
+
+            this.messageBridge.message(sender, "addfriend-noPermission", region);
             return;
+
         }
+
         if (!region.isOwner(sender)) {
-           this.messageBridge.message(sender, "addfriend-noPermissionOther", region);
+
+            this.messageBridge.message(sender, "addfriend-noPermissionOther", region);
             return;
+
         }
-        if (!friend.hasPlayedBefore() && !friend.isOnline() && !plugin.getConfig()
-                .getBoolean("addFriendNotExistingPlayers")) {
-           this.messageBridge.message(sender, "addfriend-notVisited", friend.getName(), region);
+
+        if (!friend.hasPlayedBefore() && !friend.isOnline()
+                && !plugin.getConfig().getBoolean("addFriendNotExistingPlayers"))
+        {
+
+            this.messageBridge.message(sender, "addfriend-notVisited", friend.getName(), region);
+
         } else if (region.getFriendsFeature().getFriends().contains(friend.getUniqueId())) {
-           this.messageBridge.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
+
+            this.messageBridge.message(sender, "addfriend-alreadyAdded", friend.getName(), region);
+
         } else if (region.isOwner(friend.getUniqueId())) {
-           this.messageBridge.message(sender, "addfriend-self", friend.getName(), region);
+
+            this.messageBridge.message(sender, "addfriend-self", friend.getName(), region);
+
         } else if (region.getFriendsFeature().addFriend(friend.getUniqueId(), sender)) {
+
             region.update();
-           this.messageBridge.message(sender, "addfriend-success", friend.getName(), region);
+            this.messageBridge.message(sender, "addfriend-success", friend.getName(), region);
+
         }
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("addfriend");
+
     }
+
 }
-
-
-
-
-
-
-
-

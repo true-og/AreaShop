@@ -18,33 +18,25 @@ public class SignsModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
         bind(SignManager.class).asEagerSingleton();
         install(new FactoryModuleBuilder().build(SignFactory.class));
+
     }
 
     @Provides
     @Singleton
-    public SignListener provideSignListener(@Nonnull AreaShop plugin,
-                                            @Nonnull BlockBehaviourHelper behaviourHelper,
-                                            @Nonnull RegionFactory regionFactory,
-                                            @Nonnull MessageBridge messageBridge,
-                                            @Nonnull SignLinkerManager signLinkerManager,
-                                            @Nonnull WorldGuardInterface worldGuardInterface,
-                                            @Nonnull SignManager signManager,
-                                            @Nonnull IFileManager fileManager
-    ) {
-        final SignListener signListener = new SignListener(
-                plugin,
-                behaviourHelper,
-                regionFactory,
-                messageBridge,
-                signLinkerManager,
-                worldGuardInterface,
-                signManager,
-                fileManager
-        );
+    public SignListener provideSignListener(@Nonnull AreaShop plugin, @Nonnull BlockBehaviourHelper behaviourHelper,
+            @Nonnull RegionFactory regionFactory, @Nonnull MessageBridge messageBridge,
+            @Nonnull SignLinkerManager signLinkerManager, @Nonnull WorldGuardInterface worldGuardInterface,
+            @Nonnull SignManager signManager, @Nonnull IFileManager fileManager)
+    {
+
+        final SignListener signListener = new SignListener(plugin, behaviourHelper, regionFactory, messageBridge,
+                signLinkerManager, worldGuardInterface, signManager, fileManager);
         plugin.getServer().getPluginManager().registerEvents(signListener, plugin);
         return signListener;
+
     }
 
 }

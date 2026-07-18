@@ -39,53 +39,67 @@ public class QuickDeleteCommand extends AreashopCommandBean {
     private final MessageBridge messageBridge;
 
     @Inject
-    public QuickDeleteCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager,
-            @Nonnull WorldGuardInterface worldGuardInterface
-    ) {
+    public QuickDeleteCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager,
+            @Nonnull WorldGuardInterface worldGuardInterface)
+    {
+
         this.fileManager = fileManager;
         this.worldGuardInterface = worldGuardInterface;
         this.messageBridge = messageBridge;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Nonnull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("quickdelete", "quickdel")
-                .permission("areashop.quickdelete")
-                .senderType(Player.class)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("quickdelete", "quickdel").permission("areashop.quickdelete").senderType(Player.class)
                 .required(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
                 .handler(this::handleCommand);
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         GeneralRegion region = context.get(KEY_REGION);
         boolean giveMoneyBack = context.flags().isPresent(FLAG_RETURN_MONEY);
         DeletingRegionEvent event = this.fileManager.deleteRegion(region, giveMoneyBack);
         if (event.isCancelled()) {
+
             throw new AreaShopCommandException("general-cancelled", event.getReason());
+
         }
+
         this.messageBridge.message(player, "destroy-successRent", region);
         RegionManager regionManager = this.worldGuardInterface.getRegionManager(region.getWorld());
         regionManager.removeRegion(region.getRegion().getId());
         this.messageBridge.message(player, "quickdelete-WGRegionDeleted", region.getName());
+
     }
 
     @Nullable
     @Override
     public String getHelpKey(@Nonnull CommandSender target) {
+
         return "help-quickdelete";
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("quickdelete", "quickdel");
+
     }
+
 }

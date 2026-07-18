@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 
 public interface ImportJobFactory {
 
-    @Nonnull ImportJob createImportJob(@Nonnull CommandSender commandSender);
+    @Nonnull
+    ImportJob createImportJob(@Nonnull CommandSender commandSender);
 
 }

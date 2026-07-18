@@ -17,38 +17,55 @@ public class GeneralRegionParser<C> implements ArgumentParser<C, GeneralRegion> 
     private final SuggestionProvider<C> suggestionProvider;
 
     public GeneralRegionParser(@Nonnull IFileManager fileManager, @Nonnull SuggestionProvider<C> suggestionProvider) {
+
         this.fileManager = fileManager;
         this.suggestionProvider = suggestionProvider;
+
     }
 
     public GeneralRegionParser(@Nonnull IFileManager fileManager) {
+
         this(fileManager, defaultProvider(fileManager));
+
     }
 
     public static <C> ParserDescriptor<C, GeneralRegion> generalRegionParser(@Nonnull IFileManager fileManager) {
+
         return ParserDescriptor.of(new GeneralRegionParser<>(fileManager), GeneralRegion.class);
+
     }
 
     @Nonnull
     private static <C> SuggestionProvider<C> defaultProvider(@Nonnull IFileManager fileManager) {
+
         return SuggestionProvider.blockingStrings((ctx, input) -> fileManager.getRegionNames());
+
     }
 
     @Override
     public @Nonnull ArgumentParseResult<GeneralRegion> parse(@Nonnull CommandContext<C> commandContext,
-                                                             @Nonnull CommandInput commandInput) {
+            @Nonnull CommandInput commandInput)
+    {
+
         String input = commandInput.peekString();
         GeneralRegion region = this.fileManager.getRegion(input);
         if (region != null) {
+
             commandInput.readString();
             return ArgumentParseResult.success(region);
+
         }
+
         AreaShopCommandException exception = new AreaShopCommandException("cmd-notRegistered", input);
         return ArgumentParseResult.failure(exception);
+
     }
 
     @Override
     public @Nonnull SuggestionProvider<C> suggestionProvider() {
+
         return this.suggestionProvider;
+
     }
+
 }

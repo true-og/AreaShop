@@ -30,51 +30,73 @@ public class SchematicEventCommand extends AreashopCommandBean {
 
     @Inject
     public SchematicEventCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
         return builder.literal("schemevent")
                 .required(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
                 .required(KEY_EVENT_TYPE, EnumParser.enumParser(GeneralRegion.RegionEvent.class))
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("schemevent");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.schematicevents")) {
+
             return "help-schemevent";
+
         }
+
         return null;
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.schematicevents")) {
+
             throw new AreaShopCommandException("schemevent-noPermission");
+
         }
 
         GeneralRegion region = context.get(KEY_REGION);
         GeneralRegion.RegionEvent event = context.get(KEY_EVENT_TYPE);
         if (region.getRegion() == null) {
+
             throw new AreaShopCommandException("general-noRegion", region);
+
         }
+
         region.handleSchematicEvent(event);
         region.update();
         this.messageBridge.message(sender, "schemevent-success", event.getValue(), region);
+
     }
 
 }

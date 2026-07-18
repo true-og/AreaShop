@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import javax.annotation.Nonnull;
 
 public interface MessageBridge {
+
     /**
      * Send a message to a target without a prefix.
      *
@@ -23,7 +24,6 @@ public interface MessageBridge {
      */
     void message(Object target, String key, Object... replacements);
 
-    void messagePersistent(@Nonnull OfflinePlayer target,
-                           @Nonnull String key,
-                           @Nonnull Object... replacements);
+    void messagePersistent(@Nonnull OfflinePlayer target, @Nonnull String key, @Nonnull Object... replacements);
+
 }

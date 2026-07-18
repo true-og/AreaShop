@@ -8,11 +8,15 @@ import me.wiefferink.areashop.regions.GeneralRegion;
  */
 public class DeletedRegionEvent extends NotifyRegionEvent<GeneralRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that has been removed
-	 */
-	public DeletedRegionEvent(GeneralRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that has been removed
+     */
+    public DeletedRegionEvent(GeneralRegion region) {
+
+        super(region);
+
+    }
+
 }

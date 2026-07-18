@@ -9,30 +9,37 @@ import org.incendo.cloud.processors.confirmation.ConfirmationManager;
 import javax.annotation.Nonnull;
 
 /**
- * An extension of {@link CommandBean} which does extra pre-processing of the commands.
- * Adapted from <a href="https://github.com/Incendo/kitchensink">KitchenSink</a>
+ * An extension of {@link CommandBean} which does extra pre-processing of the
+ * commands. Adapted from
+ * <a href="https://github.com/Incendo/kitchensink">KitchenSink</a>
  */
 public abstract class AreashopCommandBean extends CommandBean<CommandSender> implements HelpProvider {
 
     private boolean requireConfirmation;
 
     protected void withConfirmation() {
+
         this.requireConfirmation = true;
+
     }
 
     @Override
     protected final @Nonnull Command.Builder<? extends CommandSender> configure(
-            final @Nonnull Command.Builder<CommandSender> builder
-    ) {
+            final @Nonnull Command.Builder<CommandSender> builder)
+    {
+
         return this.configureCommand(builder)
                 .meta(CloudKey.of("bukkit_description", String.class), this.stringDescription())
                 .meta(ConfirmationManager.META_CONFIRMATION_REQUIRED, this.requireConfirmation);
+
     }
 
     /**
      * Returns a simple string description of this command.
      *
-     * <p>This is primarily used in the platform-native help menus.</p>
+     * <p>
+     * This is primarily used in the platform-native help menus.
+     * </p>
      *
      * @return command description
      */
@@ -45,6 +52,6 @@ public abstract class AreashopCommandBean extends CommandBean<CommandSender> imp
      * @return the updated builder
      */
     protected abstract @Nonnull Command.Builder<? extends CommandSender> configureCommand(
-            @Nonnull Command.Builder<CommandSender> builder
-    );
+            @Nonnull Command.Builder<CommandSender> builder);
+
 }

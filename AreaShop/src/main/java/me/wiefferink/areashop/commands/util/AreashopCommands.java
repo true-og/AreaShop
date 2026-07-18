@@ -68,49 +68,17 @@ import java.util.List;
 @Singleton
 public class AreashopCommands {
 
-    private static final List<Class<? extends AreashopCommandBean>> COMMAND_CLASSES = List.of(
-            AddCommand.class,
-            AddFriendCommand.class,
-            AddSignCommand.class,
-            BuyCommand.class,
-            DelCommand.class,
-            DelFriendCommand.class,
-            DelSignCommand.class,
-            FindCommand.class,
-            GroupAddCommand.class,
-            GroupDelCommand.class,
-            GroupInfoCommand.class,
-            GroupListCommand.class,
-            HelpCommand.class,
-            InfoCommand.class,
-            InfoBaseCommand.class,
-            InfoPlayerCommand.class,
-            InfoRegionCommand.class,
-            LinkSignsCommand.class,
-            MeCommand.class,
-            MessageCommand.class,
-            QuickBuyCommand.class,
-            QuickDeleteCommand.class,
-            QuickRentCommand.class,
-            ReloadCommand.class,
-            RentCommand.class,
-            ResellCommand.class,
-            SchematicEventCommand.class,
-            SellCommand.class,
-            SetDurationCommand.class,
-            SetLandlordCommand.class,
-            SetOwnerCommand.class,
-            SetPriceCommand.class,
-            SetRestoreCommand.class,
-            SetTeleportCommand.class,
-            SetTransferCommand.class,
-            StackCommand.class,
-            StopResellCommand.class,
-            TeleportCommand.class,
-            ToggleHomeCommand.class,
-            TransferCommand.class,
-            UnrentCommand.class
-    );
+    private static final List<Class<? extends AreashopCommandBean>> COMMAND_CLASSES = List.of(AddCommand.class,
+            AddFriendCommand.class, AddSignCommand.class, BuyCommand.class, DelCommand.class, DelFriendCommand.class,
+            DelSignCommand.class, FindCommand.class, GroupAddCommand.class, GroupDelCommand.class,
+            GroupInfoCommand.class, GroupListCommand.class, HelpCommand.class, InfoCommand.class, InfoBaseCommand.class,
+            InfoPlayerCommand.class, InfoRegionCommand.class, LinkSignsCommand.class, MeCommand.class,
+            MessageCommand.class, QuickBuyCommand.class, QuickDeleteCommand.class, QuickRentCommand.class,
+            ReloadCommand.class, RentCommand.class, ResellCommand.class, SchematicEventCommand.class, SellCommand.class,
+            SetDurationCommand.class, SetLandlordCommand.class, SetOwnerCommand.class, SetPriceCommand.class,
+            SetRestoreCommand.class, SetTeleportCommand.class, SetTransferCommand.class, StackCommand.class,
+            StopResellCommand.class, TeleportCommand.class, ToggleHomeCommand.class, TransferCommand.class,
+            UnrentCommand.class);
 
     private final MessageBridge messageBridge;
 
@@ -122,36 +90,45 @@ public class AreashopCommands {
 
     @Inject
     AreashopCommands(@Nonnull Injector injector, @Nonnull Plugin plugin, @Nonnull MessageBridge messageBridge) {
+
         this.injector = injector;
-        this.commandManager = new PaperCommandManager<>(
-                plugin,
-                ExecutionCoordinator.simpleCoordinator(),
-                SenderMapper.identity()
-        );
+        this.commandManager = new PaperCommandManager<>(plugin, ExecutionCoordinator.simpleCoordinator(),
+                SenderMapper.identity());
         this.messageBridge = messageBridge;
+
     }
 
     public void registerCommands() {
+
         this.commands.clear();
         initCommandManager();
         var builder = this.commandManager.commandBuilder("areashop", "as");
         for (Class<? extends AreashopCommandBean> commandClass : COMMAND_CLASSES) {
+
             AreashopCommandBean commandBean = injector.getInstance(commandClass);
             this.commands.add(commandBean);
             var configuredBuilder = commandBean.configureCommand(builder);
             this.commandManager.command(configuredBuilder);
+
         }
+
         // Show help by default
         this.commandManager.command(builder.handler(context -> showHelp(context.sender())));
         this.helpRenderer = new HelpRenderer(this.messageBridge, this.commands);
+
     }
 
     private void initCommandManager() {
+
         if (this.commandManager.hasCapability(CloudBukkitCapabilities.NATIVE_BRIGADIER)) {
+
             this.commandManager.registerBrigadier();
+
         }
+
         ExceptionController<CommandSender> exceptionController = this.commandManager.exceptionController();
-        // We need to unwrap ArgumentParseException because they wrap the custom exception messages
+        // We need to unwrap ArgumentParseException because they wrap the custom
+        // exception messages
         exceptionController.registerHandler(ArgumentParseException.class,
                 ExceptionHandler.unwrappingHandler(AreaShopCommandException.class));
         exceptionController.registerHandler(CommandExecutionException.class,
@@ -161,21 +138,27 @@ public class AreashopCommands {
         exceptionController.registerHandler(AreaShopCommandException.class,
                 new ArgumentParseExceptionHandler<>(this.messageBridge));
         var confirmationConfiguration = ConfirmationConfiguration.<CommandSender>builder()
-                .cache(GuavaCache.of(CacheBuilder.newBuilder().build()))
-                .noPendingCommandNotifier(x -> {
-                })
-                .confirmationRequiredNotifier((x, y) -> {
-                })
-                .build();
+                .cache(GuavaCache.of(CacheBuilder.newBuilder().build())).noPendingCommandNotifier(x ->
+                {
+
+                }).confirmationRequiredNotifier((x, y) -> {
+
+                }).build();
         var confirmationManager = ConfirmationManager.confirmationManager(confirmationConfiguration);
         commandManager.registerCommandPostProcessor(confirmationManager.createPostprocessor());
+
     }
 
     public void showHelp(@Nonnull CommandSender sender) {
+
         if (this.helpRenderer == null) {
+
             throw new IllegalStateException("Command handler not yet initialized!");
+
         }
+
         this.helpRenderer.showHelp(sender);
+
     }
 
 }

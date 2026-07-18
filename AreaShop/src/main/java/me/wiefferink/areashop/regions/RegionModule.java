@@ -7,6 +7,9 @@ public class RegionModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
         install(new FactoryModuleBuilder().build(RegionFactory.class));
+
     }
+
 }

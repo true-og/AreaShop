@@ -19,36 +19,40 @@ public class RegionGroupParser<C> implements ArgumentParser<C, RegionGroup>, Sug
     private final String failureMessageKey;
 
     public RegionGroupParser(@Nonnull IFileManager fileManager, @Nonnull String failureMessageKey) {
+
         this.fileManager = fileManager;
         this.failureMessageKey = failureMessageKey;
+
     }
 
-
     @Override
-    public @Nonnull ArgumentParseResult<RegionGroup> parse(
-            @Nonnull CommandContext<C> commandContext,
-            @Nonnull CommandInput commandInput
-    ) {
+    public @Nonnull ArgumentParseResult<RegionGroup> parse(@Nonnull CommandContext<C> commandContext,
+            @Nonnull CommandInput commandInput)
+    {
+
         String input = commandInput.peekString();
         RegionGroup regionGroup = this.fileManager.getGroup(input);
         if (regionGroup != null) {
+
             commandInput.readString();
             return ArgumentParseResult.success(regionGroup);
+
         }
+
         return ArgumentParseResult.failure(new AreaShopCommandException(this.failureMessageKey, input));
+
     }
 
     @Override
-    public @Nonnull CompletableFuture<Iterable<Suggestion>> suggestionsFuture(
-            @Nonnull CommandContext<C> context,
-            @Nonnull CommandInput input
-    ) {
-        String text = input.peekString();
-        List<Suggestion> suggestions = this.fileManager.getGroupNames().stream()
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
-        return CompletableFuture.completedFuture(suggestions);
-    }
-}
+    public @Nonnull CompletableFuture<Iterable<Suggestion>> suggestionsFuture(@Nonnull CommandContext<C> context,
+            @Nonnull CommandInput input)
+    {
 
+        String text = input.peekString();
+        List<Suggestion> suggestions = this.fileManager.getGroupNames().stream().filter(name -> name.startsWith(text))
+                .map(Suggestion::suggestion).toList();
+        return CompletableFuture.completedFuture(suggestions);
+
+    }
+
+}

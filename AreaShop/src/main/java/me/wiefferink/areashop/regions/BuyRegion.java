@@ -29,516 +29,679 @@ import java.util.UUID;
 
 public class BuyRegion extends GeneralRegion {
 
-	private final DiamondBankAPIJava economy;
-	
-	@AssistedInject
-	BuyRegion(
-			@Nonnull AreaShop plugin,
-			@Nonnull FeatureManager featureManager,
-			@Nonnull WorldEditInterface worldEditInterface,
-			@Nonnull WorldGuardInterface worldGuardInterface,
-			@Nonnull MessageBridge messageBridge,
-			@Nullable DiamondBankAPIJava economy,
-			@Assisted @Nonnull YamlConfiguration config
-	) {
-		super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, config);
-		this.economy = economy;
-	}
+    private final DiamondBankAPIJava economy;
 
-	@AssistedInject
-	BuyRegion(
-			@Nonnull AreaShop plugin,
-			@Nonnull FeatureManager featureManager,
-			@Nonnull WorldEditInterface worldEditInterface,
-			@Nonnull WorldGuardInterface worldGuardInterface,
-			@Nonnull MessageBridge messageBridge,
-			@Nullable DiamondBankAPIJava economy,
-			@Assisted @Nonnull String name,
-			@Assisted @Nonnull World world
-	) {
-		super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, name, world);
-		this.economy = economy;
-	}
+    @AssistedInject
+    BuyRegion(@Nonnull AreaShop plugin, @Nonnull FeatureManager featureManager,
+            @Nonnull WorldEditInterface worldEditInterface, @Nonnull WorldGuardInterface worldGuardInterface,
+            @Nonnull MessageBridge messageBridge, @Nullable DiamondBankAPIJava economy,
+            @Assisted @Nonnull YamlConfiguration config)
+    {
 
-	@Override
-	public boolean isOwner(UUID player) {
-		return isBuyer(player);
-	}
+        super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, config);
+        this.economy = economy;
 
-	@Override
-	public UUID getOwner() {
-		return getBuyer();
-	}
+    }
 
-	@Override
-	public void setOwner(UUID player) {
-		setBuyer(player);
-	}
+    @AssistedInject
+    BuyRegion(@Nonnull AreaShop plugin, @Nonnull FeatureManager featureManager,
+            @Nonnull WorldEditInterface worldEditInterface, @Nonnull WorldGuardInterface worldGuardInterface,
+            @Nonnull MessageBridge messageBridge, @Nullable DiamondBankAPIJava economy, @Assisted @Nonnull String name,
+            @Assisted @Nonnull World world)
+    {
 
-	@Override
-	public RegionType getType() {
-		return RegionType.BUY;
-	}
+        super(plugin, featureManager, worldEditInterface, worldGuardInterface, messageBridge, name, world);
+        this.economy = economy;
 
-	@Override
-	public RegionState getState() {
-		if(isSold() && isInResellingMode()) {
-			return RegionState.RESELL;
-		} else if(isSold() && !isInResellingMode()) {
-			return RegionState.SOLD;
-		} else {
-			return RegionState.FORSALE;
-		}
-	}
+    }
 
-	@Override
-	public boolean isAvailable() {
-		return !isSold();
-	}
+    @Override
+    public boolean isOwner(UUID player) {
 
-	/**
-	 * Get the UUID of the owner of this region.
-	 * @return The UUID of the owner of this region
-	 */
-	public UUID getBuyer() {
-		String buyer = config.getString("buy.buyer");
-		if(buyer != null) {
-			try {
-				return UUID.fromString(buyer);
-			} catch(IllegalArgumentException e) {
-				// Incorrect UUID
-			}
-		}
-		return null;
-	}
+        return isBuyer(player);
 
-	/**
-	 * Check if a player is the buyer of this region.
-	 * @param player Player to check
-	 * @return true if this player owns this region, otherwise false
-	 */
-	public boolean isBuyer(OfflinePlayer player) {
-		return player != null && isBuyer(player.getUniqueId());
-	}
+    }
 
-	public boolean isBuyer(UUID player) {
-		UUID buyer = getBuyer();
-		return !(buyer == null || player == null) && buyer.equals(player);
-	}
+    @Override
+    public UUID getOwner() {
 
-	/**
-	 * Set the buyer of this region.
-	 * @param buyer The UUID of the player that should be set as buyer
-	 */
-	public void setBuyer(UUID buyer) {
-		if(buyer == null) {
-			setSetting("buy.buyer", null);
-			setSetting("buy.buyerName", null);
-		} else {
-			setSetting("buy.buyer", buyer.toString());
-			setSetting("buy.buyerName", Utils.toName(buyer));
-		}
-	}
+        return getBuyer();
 
-	/**
-	 * Get the name of the player that owns this region.
-	 * @return The name of the player that owns this region, if unavailable by UUID it will return the old cached name, if that is unavailable it will return &lt;UNKNOWN&gt;
-	 */
-	public String getPlayerName() {
-		String result = Utils.toName(getBuyer());
-		if(result == null || result.isEmpty()) {
-			result = getStringSetting("buy.buyerName");
-			if(result == null || result.isEmpty()) {
-				result = "<UNKNOWN>";
-			}
-		}
-		return result;
-	}
+    }
 
-	/**
-	 * Check if the region is sold.
-	 * @return true if the region is sold, otherwise false
-	 */
-	public boolean isSold() {
-		return getBuyer() != null;
-	}
+    @Override
+    public void setOwner(UUID player) {
 
-	/**
-	 * Check if the region is being resold.
-	 * @return true if the region is available for reselling, otherwise false
-	 */
-	public boolean isInResellingMode() {
-		return config.getBoolean("buy.resellMode");
-	}
+        setBuyer(player);
 
-	/**
-	 * Get the price of the region.
-	 * @return The price of the region
-	 */
-	public double getPrice() {
-		return Math.max(0, Utils.evaluateToDouble(getStringSetting("buy.price"), this));
-	}
+    }
 
-	/**
-	 * Get the resell price of this region.
-	 * @return The resell price if isInResellingMode(), otherwise 0.0
-	 */
-	public double getResellPrice() {
-		return Math.max(0, config.getDouble("buy.resellPrice"));
-	}
+    @Override
+    public RegionType getType() {
 
-	/**
-	 * Get the formatted string of the price (includes prefix and suffix).
-	 * @return The formatted string of the price
-	 */
-	public String getFormattedPrice() {
-		return Utils.formatCurrency(getPrice());
-	}
+        return RegionType.BUY;
 
-	/**
-	 * Get the formatted string of the resellprice (includes prefix and suffix).
-	 * @return The formatted string of the resellprice
-	 */
-	public String getFormattedResellPrice() {
-		return Utils.formatCurrency(getResellPrice());
-	}
+    }
 
-	/**
-	 * Change the price of the region.
-	 * @param price The price to set this region to
-	 */
-	public void setPrice(Double price) {
-		setSetting("buy.price", price);
-	}
+    @Override
+    public RegionState getState() {
 
-	/**
-	 * Set the region into resell mode with the given price.
-	 * @param price The price this region should be put up for sale
-	 */
-	public void enableReselling(double price) {
-		setSetting("buy.resellMode", true);
-		setSetting("buy.resellPrice", price);
-	}
+        if (isSold() && isInResellingMode()) {
 
-	/**
-	 * Stop this region from being in resell mode.
-	 */
-	public void disableReselling() {
-		setSetting("buy.resellMode", null);
-		setSetting("buy.resellPrice", null);
-	}
+            return RegionState.RESELL;
 
-	/**
-	 * Get the moneyBack percentage.
-	 * @return The % of money the player will get back when selling
-	 */
-	public double getMoneyBackPercentage() {
-		return Utils.evaluateToDouble(getStringSetting("buy.moneyBack"), this);
-	}
+        } else if (isSold() && !isInResellingMode()) {
 
-	/**
-	 * Get the amount of money that should be paid to the player when selling the region.
-	 * @return The amount of money the player should get back
-	 */
-	public double getMoneyBackAmount() {
-		return getPrice() * (getMoneyBackPercentage() / 100.0);
-	}
+            return RegionState.SOLD;
 
-	/**
-	 * Get the formatted string of the amount of the moneyBack amount.
-	 * @return String with currency symbols and proper fractional part
-	 */
-	public String getFormattedMoneyBackAmount() {
-		return Utils.formatCurrency(getMoneyBackAmount());
-	}
+        } else {
 
-	@Override
-	public Object provideReplacement(String variable) {
+            return RegionState.FORSALE;
+
+        }
+
+    }
+
+    @Override
+    public boolean isAvailable() {
+
+        return !isSold();
+
+    }
+
+    /**
+     * Get the UUID of the owner of this region.
+     * 
+     * @return The UUID of the owner of this region
+     */
+    public UUID getBuyer() {
+
+        String buyer = config.getString("buy.buyer");
+        if (buyer != null) {
+
+            try {
+
+                return UUID.fromString(buyer);
+
+            } catch (IllegalArgumentException e) {
+
+                // Incorrect UUID
+            }
+
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Check if a player is the buyer of this region.
+     * 
+     * @param player Player to check
+     * @return true if this player owns this region, otherwise false
+     */
+    public boolean isBuyer(OfflinePlayer player) {
+
+        return player != null && isBuyer(player.getUniqueId());
+
+    }
+
+    public boolean isBuyer(UUID player) {
+
+        UUID buyer = getBuyer();
+        return !(buyer == null || player == null) && buyer.equals(player);
+
+    }
+
+    /**
+     * Set the buyer of this region.
+     * 
+     * @param buyer The UUID of the player that should be set as buyer
+     */
+    public void setBuyer(UUID buyer) {
+
+        if (buyer == null) {
+
+            setSetting("buy.buyer", null);
+            setSetting("buy.buyerName", null);
+
+        } else {
+
+            setSetting("buy.buyer", buyer.toString());
+            setSetting("buy.buyerName", Utils.toName(buyer));
+
+        }
+
+    }
+
+    /**
+     * Get the name of the player that owns this region.
+     * 
+     * @return The name of the player that owns this region, if unavailable by UUID
+     *         it will return the old cached name, if that is unavailable it will
+     *         return &lt;UNKNOWN&gt;
+     */
+    public String getPlayerName() {
+
+        String result = Utils.toName(getBuyer());
+        if (result == null || result.isEmpty()) {
+
+            result = getStringSetting("buy.buyerName");
+            if (result == null || result.isEmpty()) {
+
+                result = "<UNKNOWN>";
+
+            }
+
+        }
+
+        return result;
+
+    }
+
+    /**
+     * Check if the region is sold.
+     * 
+     * @return true if the region is sold, otherwise false
+     */
+    public boolean isSold() {
+
+        return getBuyer() != null;
+
+    }
+
+    /**
+     * Check if the region is being resold.
+     * 
+     * @return true if the region is available for reselling, otherwise false
+     */
+    public boolean isInResellingMode() {
+
+        return config.getBoolean("buy.resellMode");
+
+    }
+
+    /**
+     * Get the price of the region.
+     * 
+     * @return The price of the region
+     */
+    public double getPrice() {
+
+        return Math.max(0, Utils.evaluateToDouble(getStringSetting("buy.price"), this));
+
+    }
+
+    /**
+     * Get the resell price of this region.
+     * 
+     * @return The resell price if isInResellingMode(), otherwise 0.0
+     */
+    public double getResellPrice() {
+
+        return Math.max(0, config.getDouble("buy.resellPrice"));
+
+    }
+
+    /**
+     * Get the formatted string of the price (includes prefix and suffix).
+     * 
+     * @return The formatted string of the price
+     */
+    public String getFormattedPrice() {
+
+        return Utils.formatCurrency(getPrice());
+
+    }
+
+    /**
+     * Get the formatted string of the resellprice (includes prefix and suffix).
+     * 
+     * @return The formatted string of the resellprice
+     */
+    public String getFormattedResellPrice() {
+
+        return Utils.formatCurrency(getResellPrice());
+
+    }
+
+    /**
+     * Change the price of the region.
+     * 
+     * @param price The price to set this region to
+     */
+    public void setPrice(Double price) {
+
+        setSetting("buy.price", price);
+
+    }
+
+    /**
+     * Set the region into resell mode with the given price.
+     * 
+     * @param price The price this region should be put up for sale
+     */
+    public void enableReselling(double price) {
+
+        setSetting("buy.resellMode", true);
+        setSetting("buy.resellPrice", price);
+
+    }
+
+    /**
+     * Stop this region from being in resell mode.
+     */
+    public void disableReselling() {
+
+        setSetting("buy.resellMode", null);
+        setSetting("buy.resellPrice", null);
+
+    }
+
+    /**
+     * Get the moneyBack percentage.
+     * 
+     * @return The % of money the player will get back when selling
+     */
+    public double getMoneyBackPercentage() {
+
+        return Utils.evaluateToDouble(getStringSetting("buy.moneyBack"), this);
+
+    }
+
+    /**
+     * Get the amount of money that should be paid to the player when selling the
+     * region.
+     * 
+     * @return The amount of money the player should get back
+     */
+    public double getMoneyBackAmount() {
+
+        return getPrice() * (getMoneyBackPercentage() / 100.0);
+
+    }
+
+    /**
+     * Get the formatted string of the amount of the moneyBack amount.
+     * 
+     * @return String with currency symbols and proper fractional part
+     */
+    public String getFormattedMoneyBackAmount() {
+
+        return Utils.formatCurrency(getMoneyBackAmount());
+
+    }
+
+    @Override
+    public Object provideReplacement(String variable) {
+
         return switch (variable) {
+
             case AreaShop.tagPrice -> getFormattedPrice();
             case AreaShop.tagRawPrice -> getPrice();
             case AreaShop.tagPlayerName -> getPlayerName();
+            case AreaShop.tagPlayerColor -> plugin.getPlayerPrefixColors(getBuyer());
             case AreaShop.tagPlayerUUID -> getBuyer();
             case AreaShop.tagResellPrice -> getFormattedResellPrice();
             case AreaShop.tagRawResellPrice -> getResellPrice();
             case AreaShop.tagMoneyBackAmount -> getFormattedMoneyBackAmount();
             case AreaShop.tagRawMoneyBackAmount -> getMoneyBackAmount();
             case AreaShop.tagMoneyBackPercentage ->
-                    getMoneyBackPercentage() % 1.0 == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
+                getMoneyBackPercentage() % 1.0 == 0.0 ? (int) getMoneyBackPercentage() : getMoneyBackPercentage();
             case AreaShop.tagMaxInactiveTime -> this.getFormattedInactiveTimeUntilSell();
             default -> super.provideReplacement(variable);
+
         };
-	}
 
-	/**
-	 * Minutes until automatic unrent when player is offline.
-	 * @return The number of milliseconds until the region is unrented while player is offline
-	 */
-	public long getInactiveTimeUntilSell() {
-		return Utils.getDurationFromMinutesOrStringInput(getStringSetting("buy.inactiveTimeUntilSell"));
-	}
+    }
 
-	/**
-	 * Get a human readable string indicating how long the player can be offline until automatic unrent.
-	 * @return String indicating the inactive time until unrent
-	 */
-	public String getFormattedInactiveTimeUntilSell() {
-		return Utils.millisToHumanFormat(getInactiveTimeUntilSell());
-	}
+    /**
+     * Minutes until automatic unrent when player is offline.
+     * 
+     * @return The number of milliseconds until the region is unrented while player
+     *         is offline
+     */
+    public long getInactiveTimeUntilSell() {
 
-	/**
-	 * Buy a region.
-	 * @param offlinePlayer The player that wants to buy the region
-	 * @return true if it succeeded and false if not
-	 */
-	@SuppressWarnings("deprecation")
-	public boolean buy(OfflinePlayer offlinePlayer) {
-		// Check if the player has permission
-		if(!plugin.hasPermission(offlinePlayer, "areashop.buy")) {
-			message(offlinePlayer, "buy-noPermission");
-			return false;
-		}
+        return Utils.getDurationFromMinutesOrStringInput(getStringSetting("buy.inactiveTimeUntilSell"));
 
-		if(economy == null) {
-			message(offlinePlayer, "general-noEconomy");
-			return false;
-		}
+    }
 
-		if(isInResellingMode()) {
-			if(!plugin.hasPermission(offlinePlayer, "areashop.buyresell")) {
-				message(offlinePlayer, "buy-noPermissionResell");
-				return false;
-			}
-		} else {
-			if(!plugin.hasPermission(offlinePlayer, "areashop.buynormal")) {
-				message(offlinePlayer, "buy-noPermissionNoResell");
-				return false;
-			}
-		}
+    /**
+     * Get a human readable string indicating how long the player can be offline
+     * until automatic unrent.
+     * 
+     * @return String indicating the inactive time until unrent
+     */
+    public String getFormattedInactiveTimeUntilSell() {
 
-		if(getWorld() == null) {
-			message(offlinePlayer, "general-noWorld");
-			return false;
-		}
+        return Utils.millisToHumanFormat(getInactiveTimeUntilSell());
 
-		if(getRegion() == null) {
-			message(offlinePlayer, "general-noRegion");
-			return false;
-		}
+    }
 
-		if (isSold() && !(isInResellingMode() && !isBuyer(offlinePlayer))) {
-			if(isBuyer(offlinePlayer)) {
-				message(offlinePlayer, "buy-yours");
-			} else {
-				message(offlinePlayer, "buy-someoneElse");
-			}
-			return false;
-		}
+    /**
+     * Buy a region.
+     * 
+     * @param offlinePlayer The player that wants to buy the region
+     * @return true if it succeeded and false if not
+     */
+    @SuppressWarnings("deprecation")
+    public boolean buy(OfflinePlayer offlinePlayer) {
 
-		boolean isResell = isInResellingMode();
+        // Check if the player has permission
+        if (!plugin.hasPermission(offlinePlayer, "areashop.buy")) {
 
-		// Only relevant if the player is online
-		Player player = offlinePlayer.getPlayer();
-		if(player != null) {
-			// Check if the players needs to be in the region for buying
-			if(restrictedToRegion() && (!player.getWorld().getName().equals(getWorldName())
-					|| !getRegion().contains(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ()))) {
-				message(offlinePlayer, "buy-restrictedToRegion");
-				return false;
-			}
-			// Check if the players needs to be in the world for buying
-			if(restrictedToWorld() && !player.getWorld().getName().equals(getWorldName())) {
-				message(offlinePlayer, "buy-restrictedToWorld", player.getWorld().getName());
-				return false;
-			}
-		}
+            message(offlinePlayer, "buy-noPermission");
+            return false;
 
-		// Check region limits
-		LimitResult limitResult = this.limitsAllow(RegionType.BUY, offlinePlayer);
-		AreaShop.debug("LimitResult: " + limitResult.toString());
-		if(!limitResult.actionAllowed()) {
-			if(limitResult.getLimitingFactor() == LimitType.TOTAL) {
-				message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(), limitResult.getLimitingGroup());
-				return false;
-			}
-			if(limitResult.getLimitingFactor() == LimitType.BUYS) {
-				message(offlinePlayer, "buy-maximum", limitResult.getMaximum(), limitResult.getCurrent(), limitResult.getLimitingGroup());
-				return false;
-			}
-			// Should not be reached, but is safe like this
-			return false;
-		}
+        }
 
-		// Buying is free during the jubilee (only rent regions are charged).
-		UUID oldOwner = getBuyer();
-		if(isResell && oldOwner != null) {
-			// Broadcast and check event
-			ResellingRegionEvent event = new ResellingRegionEvent(this, offlinePlayer);
-			Bukkit.getPluginManager().callEvent(event);
-			if(event.isCancelled()) {
-				message(offlinePlayer, "general-cancelled", event.getReason());
-				return false;
-			}
+        if (economy == null) {
 
-			getFriendsFeature().clearFriends();
-			double resellPrice = getResellPrice();
-			OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
-			String oldOwnerName = getPlayerName();
-			if(oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
-				oldOwnerName = oldOwnerPlayer.getName();
-			}
-			// Reselling is free during the jubilee (no economy transfer).
+            message(offlinePlayer, "general-noEconomy");
+            return false;
 
-			// Set the owner
-			setBuyer(offlinePlayer.getUniqueId());
-			updateLastActiveTime();
+        }
 
-			// Update everything
-			handleSchematicEvent(RegionEvent.RESELL);
+        if (isInResellingMode()) {
 
-			// Notify about updates
-			this.notifyAndUpdate(new ResoldRegionEvent(this, oldOwner));
+            if (!plugin.hasPermission(offlinePlayer, "areashop.buyresell")) {
 
-			// Resell is done, disable that now
-			disableReselling();
-			
-			// Send message to the player
-			message(offlinePlayer, "buy-successResale", oldOwnerName);
-			Player seller = Bukkit.getPlayer(oldOwner);
-			if(seller != null) {
-				message(seller, "buy-successSeller", resellPrice);
-			}
-		} else {
-			// Broadcast and check event
-			BuyingRegionEvent event = new BuyingRegionEvent(this, offlinePlayer);
-			Bukkit.getPluginManager().callEvent(event);
-			if(event.isCancelled()) {
-				message(offlinePlayer, "general-cancelled", event.getReason());
-				return false;
-			}
+                message(offlinePlayer, "buy-noPermissionResell");
+                return false;
 
-			// Buying is free during the jubilee (no economy transfer, no landlord payout).
+            }
 
-			// Set the owner
-			setBuyer(offlinePlayer.getUniqueId());
-			updateLastActiveTime();
+        } else {
 
-			// Send message to the player
-			message(offlinePlayer, "buy-succes");
+            if (!plugin.hasPermission(offlinePlayer, "areashop.buynormal")) {
 
-			// Update everything
-			handleSchematicEvent(RegionEvent.BOUGHT);
+                message(offlinePlayer, "buy-noPermissionNoResell");
+                return false;
 
-			// Notify about updates
-			this.notifyAndUpdate(new BoughtRegionEvent(this));
-		}
-		return true;
-	}
+            }
 
-	/**
-	 * Sell a buyed region, get part of the money back.
-	 * @param giveMoneyBack true if the player should be given money back, otherwise false
-	 * @param executor      CommandSender to receive a message when the sell fails, or null
-	 * @return true if the region has been sold, otherwise false
-	 */
-	@SuppressWarnings("deprecation")
-	public boolean sell(boolean giveMoneyBack, CommandSender executor) {
-		boolean own = executor instanceof Player player && this.isBuyer(player);
-		if(executor != null) {
-			if(!executor.hasPermission("areashop.sell") && !own) {
-				message(executor, "sell-noPermissionOther");
-				return false;
-			}
-			if(!executor.hasPermission("areashop.sell") && !executor.hasPermission("areashop.sellown") && own) {
-				message(executor, "sell-noPermission");
-				return false;
-			}
-			if(!executor.hasPermission("areashop.sell")
-					&& executor.hasPermission("areashop.sellown")
-					&& own
-					&& getBooleanSetting("buy.sellDisabled")) {
-				message(executor, "sell-disabled");
-				return false;
-			}
-		}
+        }
 
-		if(economy == null) {
-			return false;
-		}
+        if (getWorld() == null) {
 
-		// Broadcast and check event
-		SellingRegionEvent event = new SellingRegionEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
-		if(event.isCancelled()) {
-			message(executor, "general-cancelled", event.getReason());
-			return false;
-		}
+            message(offlinePlayer, "general-noWorld");
+            return false;
 
-		disableReselling();
-		// Money back is not paid out during the jubilee (no economy payouts). The amount is still
-		// computed and reported in the SoldRegionEvent below for informational purposes.
-		double moneyBack = getMoneyBackAmount();
+        }
 
-		// Handle schematic save/restore (while %uuid% is still available)
-		handleSchematicEvent(RegionEvent.SOLD);
+        if (getRegion() == null) {
 
-		// Send message: before actual removal of the buyer so that it is still available for variables
-		message(executor, "sell-sold");
+            message(offlinePlayer, "general-noRegion");
+            return false;
 
-		// Remove friends and the owner
-		getFriendsFeature().clearFriends();
-		UUID oldBuyer = getBuyer();
-		setBuyer(null);
-		removeLastActiveTime();
+        }
 
-		// Notify about updates
-		this.notifyAndUpdate(new SoldRegionEvent(this, oldBuyer, Math.max(moneyBack, 0)));
-		return true;
-	}
+        if (isSold() && !(isInResellingMode() && !isBuyer(offlinePlayer))) {
 
-	@Override
-	public boolean checkInactive() {
-		if(isDeleted() || !isSold()) {
-			return false;
-		}
-		long inactiveSetting = getInactiveTimeUntilSell();
-		OfflinePlayer player = Bukkit.getOfflinePlayer(getBuyer());
-		if(inactiveSetting <= 0 || player.isOp()) {
-			return false;
-		}
-		long lastPlayed = getLastActiveTime();
-		//AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis()-player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
-		if(Calendar.getInstance().getTimeInMillis() > (lastPlayed + inactiveSetting)) {
-			AreaShop.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
-			AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed()) + ", inactiveSetting=" + inactiveSetting);
-			return this.sell(true, null);
-		}
-		return false;
-	}
+            if (isBuyer(offlinePlayer)) {
+
+                message(offlinePlayer, "buy-yours");
+
+            } else {
+
+                message(offlinePlayer, "buy-someoneElse");
+
+            }
+
+            return false;
+
+        }
+
+        boolean isResell = isInResellingMode();
+
+        // Only relevant if the player is online
+        Player player = offlinePlayer.getPlayer();
+        if (player != null) {
+
+            // Check if the players needs to be in the region for buying
+            if (restrictedToRegion() && (!player.getWorld().getName().equals(getWorldName())
+                    || !getRegion().contains(player.getLocation().getBlockX(), player.getLocation().getBlockY(),
+                            player.getLocation().getBlockZ())))
+            {
+
+                message(offlinePlayer, "buy-restrictedToRegion");
+                return false;
+
+            }
+
+            // Check if the players needs to be in the world for buying
+            if (restrictedToWorld() && !player.getWorld().getName().equals(getWorldName())) {
+
+                message(offlinePlayer, "buy-restrictedToWorld", player.getWorld().getName());
+                return false;
+
+            }
+
+        }
+
+        // Check region limits
+        LimitResult limitResult = this.limitsAllow(RegionType.BUY, offlinePlayer);
+        AreaShop.debug("LimitResult: " + limitResult.toString());
+        if (!limitResult.actionAllowed()) {
+
+            if (limitResult.getLimitingFactor() == LimitType.TOTAL) {
+
+                message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                        limitResult.getLimitingGroup());
+                return false;
+
+            }
+
+            if (limitResult.getLimitingFactor() == LimitType.BUYS) {
+
+                message(offlinePlayer, "buy-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                        limitResult.getLimitingGroup());
+                return false;
+
+            }
+
+            // Should not be reached, but is safe like this
+            return false;
+
+        }
+
+        // Buying is free during the jubilee (only rent regions are charged).
+        UUID oldOwner = getBuyer();
+        if (isResell && oldOwner != null) {
+
+            // Broadcast and check event
+            ResellingRegionEvent event = new ResellingRegionEvent(this, offlinePlayer);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+
+                message(offlinePlayer, "general-cancelled", event.getReason());
+                return false;
+
+            }
+
+            getFriendsFeature().clearFriends();
+            double resellPrice = getResellPrice();
+            OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
+            String oldOwnerName = getPlayerName();
+            if (oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
+
+                oldOwnerName = oldOwnerPlayer.getName();
+
+            }
+            // Reselling is free during the jubilee (no economy transfer).
+
+            // Set the owner
+            setBuyer(offlinePlayer.getUniqueId());
+            updateLastActiveTime();
+
+            // Update everything
+            handleSchematicEvent(RegionEvent.RESELL);
+
+            // Notify about updates
+            this.notifyAndUpdate(new ResoldRegionEvent(this, oldOwner));
+
+            // Resell is done, disable that now
+            disableReselling();
+
+            // Send message to the player
+            message(offlinePlayer, "buy-successResale", oldOwnerName);
+            Player seller = Bukkit.getPlayer(oldOwner);
+            if (seller != null) {
+
+                message(seller, "buy-successSeller", resellPrice);
+
+            }
+
+        } else {
+
+            // Broadcast and check event
+            BuyingRegionEvent event = new BuyingRegionEvent(this, offlinePlayer);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+
+                message(offlinePlayer, "general-cancelled", event.getReason());
+                return false;
+
+            }
+
+            // Buying is free during the jubilee (no economy transfer, no landlord payout).
+
+            // Set the owner
+            setBuyer(offlinePlayer.getUniqueId());
+            updateLastActiveTime();
+
+            // Send message to the player
+            message(offlinePlayer, "buy-succes");
+
+            // Update everything
+            handleSchematicEvent(RegionEvent.BOUGHT);
+
+            // Notify about updates
+            this.notifyAndUpdate(new BoughtRegionEvent(this));
+
+        }
+
+        return true;
+
+    }
+
+    /**
+     * Sell a buyed region, get part of the money back.
+     * 
+     * @param giveMoneyBack true if the player should be given money back, otherwise
+     *                      false
+     * @param executor      CommandSender to receive a message when the sell fails,
+     *                      or null
+     * @return true if the region has been sold, otherwise false
+     */
+    @SuppressWarnings("deprecation")
+    public boolean sell(boolean giveMoneyBack, CommandSender executor) {
+
+        boolean own = executor instanceof Player player && this.isBuyer(player);
+        if (executor != null) {
+
+            if (!executor.hasPermission("areashop.sell") && !own) {
+
+                message(executor, "sell-noPermissionOther");
+                return false;
+
+            }
+
+            if (!executor.hasPermission("areashop.sell") && !executor.hasPermission("areashop.sellown") && own) {
+
+                message(executor, "sell-noPermission");
+                return false;
+
+            }
+
+            if (!executor.hasPermission("areashop.sell") && executor.hasPermission("areashop.sellown") && own
+                    && getBooleanSetting("buy.sellDisabled"))
+            {
+
+                message(executor, "sell-disabled");
+                return false;
+
+            }
+
+        }
+
+        if (economy == null) {
+
+            return false;
+
+        }
+
+        // Broadcast and check event
+        SellingRegionEvent event = new SellingRegionEvent(this);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+
+            message(executor, "general-cancelled", event.getReason());
+            return false;
+
+        }
+
+        disableReselling();
+        // Money back is not paid out during the jubilee (no economy payouts). The
+        // amount is still
+        // computed and reported in the SoldRegionEvent below for informational
+        // purposes.
+        double moneyBack = getMoneyBackAmount();
+
+        // Handle schematic save/restore (while %uuid% is still available)
+        handleSchematicEvent(RegionEvent.SOLD);
+
+        // Send message: before actual removal of the buyer so that it is still
+        // available for variables
+        message(executor, "sell-sold");
+
+        // Remove friends and the owner
+        getFriendsFeature().clearFriends();
+        UUID oldBuyer = getBuyer();
+        setBuyer(null);
+        removeLastActiveTime();
+
+        // Notify about updates
+        this.notifyAndUpdate(new SoldRegionEvent(this, oldBuyer, Math.max(moneyBack, 0)));
+        return true;
+
+    }
+
+    @Override
+    public boolean checkInactive() {
+
+        if (isDeleted() || !isSold()) {
+
+            return false;
+
+        }
+
+        long inactiveSetting = getInactiveTimeUntilSell();
+        OfflinePlayer player = Bukkit.getOfflinePlayer(getBuyer());
+        if (inactiveSetting <= 0 || player.isOp()) {
+
+            return false;
+
+        }
+
+        long lastPlayed = getLastActiveTime();
+        // AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ",
+        // getLastPlayed()=" + lastPlayed + ", timeInactive=" +
+        // (Calendar.getInstance().getTimeInMillis()-player.getLastPlayed()) + ",
+        // inactiveSetting=" + inactiveSetting);
+        if (Calendar.getInstance().getTimeInMillis() > (lastPlayed + inactiveSetting)) {
+
+            AreaShop.info("Region " + getName() + " unrented because of inactivity for player " + getPlayerName());
+            AreaShop.debug("currentTime=" + Calendar.getInstance().getTimeInMillis() + ", getLastPlayed()=" + lastPlayed
+                    + ", timeInactive=" + (Calendar.getInstance().getTimeInMillis() - player.getLastPlayed())
+                    + ", inactiveSetting=" + inactiveSetting);
+            return this.sell(true, null);
+
+        }
+
+        return false;
+
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

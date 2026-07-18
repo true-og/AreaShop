@@ -18,46 +18,53 @@ import java.util.concurrent.CompletableFuture;
 @Singleton
 public class RegionCreationUtil {
 
-
     private final Plugin plugin;
     private final IFileManager fileManager;
     private final Server server;
     private final WorldGuardInterface worldGuardInterface;
 
     @Inject
-    public RegionCreationUtil(
-            @Nonnull WorldGuardInterface worldGuardInterface,
-            @Nonnull IFileManager fileManager,
-            @Nonnull Server server,
-            @Nonnull Plugin plugin
-    ) {
+    public RegionCreationUtil(@Nonnull WorldGuardInterface worldGuardInterface, @Nonnull IFileManager fileManager,
+            @Nonnull Server server, @Nonnull Plugin plugin)
+    {
+
         this.worldGuardInterface = worldGuardInterface;
         this.fileManager = fileManager;
         this.plugin = plugin;
         this.server = server;
+
     }
 
-    public CompletableFuture<ProtectedRegion> createRegion(
-            @Nonnull CommandContext<Player> context,
-            @Nonnull CloudKey<String> regionKey
-    ) {
+    public CompletableFuture<ProtectedRegion> createRegion(@Nonnull CommandContext<Player> context,
+            @Nonnull CloudKey<String> regionKey)
+    {
+
         Player player = context.sender();
         World world = player.getWorld();
         String regionName = context.get(regionKey);
         if (this.fileManager.getRegion(regionName) != null) {
+
             return CompletableFuture.failedFuture(new AreaShopCommandException("add-failed", regionName));
+
         }
+
         this.server.dispatchCommand(player, String.format("rg define %s", regionName));
         CompletableFuture<ProtectedRegion> future = new CompletableFuture<>();
         this.server.getScheduler().runTaskLater(this.plugin, () -> {
+
             ProtectedRegion region = this.worldGuardInterface.getRegionManager(world).getRegion(regionName);
             if (region == null) {
+
                 future.completeExceptionally(new AreaShopCommandException("quickadd-failedCreateWGRegion"));
                 return;
+
             }
+
             future.complete(region);
+
         }, 10);
         return future;
+
     }
 
 }

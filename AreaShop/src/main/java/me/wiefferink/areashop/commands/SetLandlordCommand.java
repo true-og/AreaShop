@@ -30,53 +30,68 @@ public class SetLandlordCommand extends AreashopCommandBean {
     private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
-    public SetLandlordCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public SetLandlordCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
-    }
 
+    }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.setlandlord")) {
+
             return "help-setlandlord";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
         return builder.literal("setlandlord")
-                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
-                .flag(this.regionFlag)
+                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser()).flag(this.regionFlag)
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("setlandlord");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.setlandlord")) {
+
             throw new AreaShopCommandException("setlandlord-noPermission");
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         OfflinePlayer player = context.get(KEY_PLAYER);
         String playerName = player.getName();
         region.setLandlord(player.getUniqueId(), playerName);
         region.update();
         this.messageBridge.message(sender, "setlandlord-success", playerName, region);
+
     }
 
 }

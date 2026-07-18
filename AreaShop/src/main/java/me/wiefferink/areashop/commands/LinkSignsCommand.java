@@ -29,67 +29,74 @@ public class LinkSignsCommand extends AreashopCommandBean {
     private final CommandFlag<String> profileFlag;
 
     @Inject
-    public LinkSignsCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull SignLinkerManager signLinkerManager,
-            @Nonnull AreaShop plugin
-    ) {
+    public LinkSignsCommand(@Nonnull MessageBridge messageBridge, @Nonnull SignLinkerManager signLinkerManager,
+            @Nonnull AreaShop plugin)
+    {
+
         this.messageBridge = messageBridge;
         this.signLinkerManager = signLinkerManager;
         this.plugin = plugin;
         this.profileFlag = SignProfileUtil.createDefault(plugin);
+
     }
 
     @Override
     public String stringDescription() {
-        return null;
-    }
 
+        return null;
+
+    }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("linksign")
-                .senderType(Player.class)
-                .flag(this.profileFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("linksign").senderType(Player.class).flag(this.profileFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("linksign");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.linksigns")) {
+
             return "help-linksigns";
+
         }
+
         return null;
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         if (!player.hasPermission("linksigns")) {
+
             throw new AreaShopCommandException("linksigns-noPermission");
+
         }
+
         if (signLinkerManager.isInSignLinkMode(player)) {
+
             signLinkerManager.exitSignLinkMode(player);
             return;
+
         }
+
         // Get the profile
         String profile = SignProfileUtil.getOrParseProfile(context, this.plugin);
         this.signLinkerManager.enterSignLinkMode(player, profile);
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-

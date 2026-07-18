@@ -9,23 +9,31 @@ import org.bukkit.OfflinePlayer;
  */
 public class ResellingRegionEvent extends CancellableRegionEvent<BuyRegion> {
 
-	private final OfflinePlayer player;
+    private final OfflinePlayer player;
 
-	/**
-	 * Contructor.
-	 * @param region The region that the player is trying to resell
-	 * @param player The player that is trying to buy this region from the current owner
-	 */
-	public ResellingRegionEvent(BuyRegion region, OfflinePlayer player) {
-		super(region);
-		this.player = player;
-	}
+    /**
+     * Contructor.
+     * 
+     * @param region The region that the player is trying to resell
+     * @param player The player that is trying to buy this region from the current
+     *               owner
+     */
+    public ResellingRegionEvent(BuyRegion region, OfflinePlayer player) {
 
-	/**
-	 * Get the player that is trying to buy the region.
-	 * @return The player that is trying to buy the region
-	 */
-	public OfflinePlayer getBuyer() {
-		return player;
-	}
+        super(region);
+        this.player = player;
+
+    }
+
+    /**
+     * Get the player that is trying to buy the region.
+     * 
+     * @return The player that is trying to buy the region
+     */
+    public OfflinePlayer getBuyer() {
+
+        return player;
+
+    }
+
 }

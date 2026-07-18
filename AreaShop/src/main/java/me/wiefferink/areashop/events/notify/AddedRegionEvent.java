@@ -8,12 +8,15 @@ import me.wiefferink.areashop.regions.GeneralRegion;
  */
 public class AddedRegionEvent extends NotifyRegionEvent<GeneralRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that has been added
-	 */
-	public AddedRegionEvent(GeneralRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that has been added
+     */
+    public AddedRegionEvent(GeneralRegion region) {
+
+        super(region);
+
+    }
 
 }

@@ -19,52 +19,66 @@ import java.util.function.Supplier;
 public final class SignProfileUtil {
 
     public static final CommandFlag<String> DEFAULT_FLAG = CommandFlag.builder("profile")
-            .withComponent(StringParser.stringParser(StringParser.StringMode.SINGLE))
-            .build();
+            .withComponent(StringParser.stringParser(StringParser.StringMode.SINGLE)).build();
 
     private SignProfileUtil() {
+
         throw new IllegalArgumentException("Static utility class cannot be instantiated");
+
     }
 
     @Nonnull
     public static CommandFlag<String> createDefault(@Nonnull Plugin plugin) {
+
         Supplier<Collection<String>> valueSupplier = () -> {
+
             ConfigurationSection section = plugin.getConfig().getConfigurationSection("signProfiles");
             if (section == null) {
+
                 return Collections.emptyList();
+
             }
+
             return section.getKeys(false);
+
         };
         return CommandFlag.builder("profile")
-                .withComponent(
-                        ParserDescriptor.of(
-                        AcceptedValuesParser.of(valueSupplier, "addsign-wrongProfile", false),
-                        String.class)
-                )
+                .withComponent(ParserDescriptor
+                        .of(AcceptedValuesParser.of(valueSupplier, "addsign-wrongProfile", false), String.class))
                 .build();
+
     }
 
     @Nullable
     public static String getOrParseProfile(@Nonnull CommandContext<? extends CommandSender> context,
-                                           @Nonnull Plugin plugin) {
+            @Nonnull Plugin plugin)
+    {
+
         return getOrParseProfile(context, DEFAULT_FLAG, plugin);
+
     }
 
     @Nullable
-    public static String getOrParseProfile(
-            @Nonnull CommandContext<? extends CommandSender> context,
-            @Nonnull CommandFlag<String> flag,
-            @Nonnull Plugin plugin
-    ) throws AreaShopCommandException {
+    public static String getOrParseProfile(@Nonnull CommandContext<? extends CommandSender> context,
+            @Nonnull CommandFlag<String> flag, @Nonnull Plugin plugin) throws AreaShopCommandException
+    {
+
         String profile = context.flags().get(flag);
         if (profile == null) {
+
             return null;
+
         }
+
         Set<String> profiles = plugin.getConfig().getConfigurationSection("signProfiles").getKeys(false);
         if (profiles.contains(profile.toLowerCase(Locale.ENGLISH))) {
+
             return profile.toLowerCase(Locale.ENGLISH);
+
         }
+
         throw new AreaShopCommandException("addsign-wrongProfile");
+
     }
 
 }

@@ -10,11 +10,16 @@ public class PaperPlatform implements MinecraftPlatform {
     private final OfflinePlayerHelper offlinePlayerHelper;
 
     public PaperPlatform(@NotNull Plugin plugin) {
+
         this.offlinePlayerHelper = new PaperOfflinePlayerHelper(plugin);
+
     }
 
     @Override
     public OfflinePlayerHelper offlinePlayerHelper() {
+
         return this.offlinePlayerHelper;
+
     }
+
 }

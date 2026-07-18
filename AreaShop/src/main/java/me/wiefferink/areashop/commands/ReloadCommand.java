@@ -15,44 +15,63 @@ import javax.annotation.Nonnull;
 
 @Singleton
 public class ReloadCommand extends AreashopCommandBean {
+
     private final AreaShop plugin;
 
     @Inject
     public ReloadCommand(@Nonnull AreaShop plugin) {
-        this.plugin = plugin;
-    }
 
+        this.plugin = plugin;
+
+    }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Nonnull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("reload")
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("reload").handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
-        return CommandProperties.of("reload");
-    }
 
+        return CommandProperties.of("reload");
+
+    }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.reload")) {
+
             return "help-reload";
+
         }
+
         return null;
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         if (!context.hasPermission("areashop.reload")) {
+
             throw new AreaShopCommandException("reload-noPermission");
+
         }
+
         this.plugin.reload(context.sender());
+
     }
+
 }

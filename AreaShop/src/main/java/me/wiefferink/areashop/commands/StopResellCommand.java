@@ -35,97 +35,108 @@ public class StopResellCommand extends AreashopCommandBean {
 
     @Inject
     public StopResellCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
-        ParserDescriptor<CommandSender, BuyRegion> regionParser =
-                ParserDescriptor.of(new BuyRegionParser<>(fileManager, this::suggestBuyRegions), BuyRegion.class);
+
+        ParserDescriptor<CommandSender, BuyRegion> regionParser = ParserDescriptor
+                .of(new BuyRegionParser<>(fileManager, this::suggestBuyRegions), BuyRegion.class);
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
-        this.regionFlag = CommandFlag.builder("region")
-                .withComponent(regionParser)
-                .build();
+        this.regionFlag = CommandFlag.builder("region").withComponent(regionParser).build();
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.stopresellall") || target.hasPermission("areashop.stopresell")) {
+
             return "help-stopResell";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("stopresell")
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("stopresell").flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("stopresell");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.stopresell") && !sender.hasPermission("areashop.stopresellall")) {
+
             this.messageBridge.message(sender, "stopresell-noPermissionOther");
             return;
+
         }
 
         BuyRegion buy = RegionParseUtil.getOrParseBuyRegion(context, this.regionFlag);
         if (!buy.isInResellingMode()) {
+
             this.messageBridge.message(sender, "stopresell-notResell", buy);
             return;
+
         }
+
         if (sender.hasPermission("areashop.stopresellall")) {
+
             buy.disableReselling();
             buy.update();
             this.messageBridge.message(sender, "stopresell-success", buy);
+
         } else if (sender.hasPermission("areashop.stopresell") && sender instanceof Player player) {
+
             if (buy.isOwner(player)) {
+
                 buy.disableReselling();
                 buy.update();
                 this.messageBridge.message(sender, "stopresell-success", buy);
+
             } else {
+
                 this.messageBridge.message(sender, "stopresell-noPermissionOther", buy);
+
             }
+
         } else {
+
             this.messageBridge.message(sender, "stopresell-noPermission", buy);
+
         }
+
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestBuyRegions(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestBuyRegions(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
         List<Suggestion> suggestions = this.fileManager.getBuysRef().stream()
-                .filter(region -> region.isSold() && region.isInResellingMode())
-                .map(GeneralRegion::getName)
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+                .filter(region -> region.isSold() && region.isInResellingMode()).map(GeneralRegion::getName)
+                .filter(name -> name.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -8,12 +8,15 @@ import me.wiefferink.areashop.regions.BuyRegion;
  */
 public class BoughtRegionEvent extends NotifyRegionEvent<BuyRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that has been bought
-	 */
-	public BoughtRegionEvent(BuyRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that has been bought
+     */
+    public BoughtRegionEvent(BuyRegion region) {
+
+        super(region);
+
+    }
 
 }

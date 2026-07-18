@@ -15,16 +15,26 @@ public class InvalidCommandSenderHandler implements ExceptionHandler<CommandSend
     private final MessageBridge messageBridge;
 
     public InvalidCommandSenderHandler(@Nonnull MessageBridge messageBridge) {
+
         this.messageBridge = messageBridge;
+
     }
 
     @Override
-    public void handle(@NonNull ExceptionContext<CommandSender, InvalidCommandSenderException> context) throws Throwable {
+    public void handle(@NonNull ExceptionContext<CommandSender, InvalidCommandSenderException> context)
+            throws Throwable
+    {
+
         InvalidCommandSenderException exception = context.exception();
         if (exception.requiredSender().equals(Player.class)) {
+
             this.messageBridge.message(exception.commandSender(), "cmd-onlyByPlayer");
             return;
+
         }
+
         throw exception;
+
     }
+
 }

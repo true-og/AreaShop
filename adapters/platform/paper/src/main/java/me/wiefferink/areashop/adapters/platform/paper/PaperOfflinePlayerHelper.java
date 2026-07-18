@@ -16,29 +16,40 @@ public class PaperOfflinePlayerHelper implements OfflinePlayerHelper {
     private final Server server;
 
     public PaperOfflinePlayerHelper(Plugin plugin) {
+
         this.plugin = plugin;
         this.server = plugin.getServer();
+
     }
 
     @Override
     public CompletableFuture<Optional<UUID>> lookupUuidAsync(String username) {
+
         final PlayerProfile profile = this.server.createProfile(username);
         final CompletableFuture<Optional<UUID>> future = new CompletableFuture<>();
         this.server.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+
             profile.complete(false);
             future.complete(Optional.ofNullable(profile.getId()));
+
         });
         return future;
+
     }
 
     @Override
     public CompletableFuture<OfflinePlayer> lookupOfflinePlayerAsync(String username) {
+
         final CompletableFuture<OfflinePlayer> future = new CompletableFuture<>();
         this.server.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+
             @SuppressWarnings("deprecation")
             OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(username);
             future.complete(offlinePlayer);
+
         });
         return future;
+
     }
+
 }

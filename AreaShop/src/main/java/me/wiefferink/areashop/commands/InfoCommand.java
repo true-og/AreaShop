@@ -31,8 +31,7 @@ import java.util.stream.Stream;
 public class InfoCommand extends AreashopCommandBean {
 
     private static final CommandFlag<Integer> FLAG_PAGE = CommandFlag.builder("page")
-            .withComponent(IntegerParser.integerParser(1))
-            .build();
+            .withComponent(IntegerParser.integerParser(1)).build();
     private static final CloudKey<RegionStateFilterType> KEY_TYPE = CloudKey.of("type", RegionStateFilterType.class);
 
     private final MessageBridge messageBridge;
@@ -41,60 +40,76 @@ public class InfoCommand extends AreashopCommandBean {
     private final CommandFlag<RegionGroup> filterGroupFlag;
 
     @Inject
-    public InfoCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public InfoCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
-        this.filterGroupFlag = CommandFlag.builder("group")
-                .withComponent(ParserDescriptor.of(new RegionGroupParser<>(fileManager, "info-noFiltergroup"),
-                        RegionGroup.class))
+        this.filterGroupFlag = CommandFlag.builder("group").withComponent(
+                ParserDescriptor.of(new RegionGroupParser<>(fileManager, "info-noFiltergroup"), RegionGroup.class))
                 .build();
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.info")) {
+
+        if (target.hasPermission("areashop.info")) {
+
             return "help-info";
+
         }
+
         return null;
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("info")
-                .required(KEY_TYPE, EnumParser.enumParser(RegionStateFilterType.class))
-                .flag(FLAG_PAGE)
-                .flag(this.filterGroupFlag)
-                .handler(this::handleCommand);
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("info").required(KEY_TYPE, EnumParser.enumParser(RegionStateFilterType.class))
+                .flag(FLAG_PAGE).flag(this.filterGroupFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("info");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.info")) {
+
             messageBridge.message(sender, "info-noPermission");
             return;
+
         }
+
         RegionStateFilterType filterType = context.get(KEY_TYPE);
         processOtherFilters(context, filterType);
+
     }
 
     private void processOtherFilters(@Nonnull CommandContext<CommandSender> context,
-                                     @Nonnull RegionStateFilterType filterType) {
+            @Nonnull RegionStateFilterType filterType)
+    {
+
         RegionGroup filterGroup = context.flags().get(this.filterGroupFlag);
         int page = context.flags().getValue(FLAG_PAGE).orElse(1);
         Stream<? extends GeneralRegion> toShow = switch (filterType) {
+
             case ALL -> fileManager.getRegionsRef().stream();
             case SOLD -> fileManager.getBuysRef().stream().filter(BuyRegion::isSold);
             case RENTED -> fileManager.getRentsRef().stream().filter(RentRegion::isRented);
@@ -102,14 +117,21 @@ public class InfoCommand extends AreashopCommandBean {
             case FORSALE -> fileManager.getBuysRef().stream().filter(BuyRegion::isAvailable);
             case RESELLING -> fileManager.getBuysRef().stream().filter(BuyRegion::isInResellingMode);
             case NOGROUP -> {
+
                 List<GeneralRegion> regions = new LinkedList<>(fileManager.getRegions());
                 for (RegionGroup group : fileManager.getGroups()) {
+
                     regions.removeAll(group.getMemberRegions());
+
                 }
+
                 yield regions.stream();
+
             }
+
         };
         String header = switch (filterType) {
+
             case ALL -> "info-allHeader";
             case SOLD -> "info-soldHeader";
             case RENTED -> "info-rentedHeader";
@@ -117,8 +139,10 @@ public class InfoCommand extends AreashopCommandBean {
             case FORSALE -> "info-forsaleHeader";
             case RESELLING -> "info-resellingHeader";
             case NOGROUP -> "info-nogroupHeader";
+
         };
         String baseCommand = switch (filterType) {
+
             case ALL -> "info all";
             case SOLD -> "info sold";
             case RENTED -> "info rented";
@@ -126,10 +150,11 @@ public class InfoCommand extends AreashopCommandBean {
             case FORSALE -> "info forsale";
             case RESELLING -> "info reselling";
             case NOGROUP -> "info nogroup";
+
         };
         showSortedPagedList(context.sender(), toShow, filterGroup, header, page, baseCommand);
-    }
 
+    }
 
     /**
      * Display a page of a list of regions.
@@ -139,98 +164,153 @@ public class InfoCommand extends AreashopCommandBean {
      * @param filterGroup  The group to filter the regions by
      * @param keyHeader    The header to print above the page
      * @param pageInput    The page number, if any
-     * @param baseCommand  The command to execute for next/previous page (/areashop will be added)
+     * @param baseCommand  The command to execute for next/previous page (/areashop
+     *                     will be added)
      */
-    private void showSortedPagedList(
-            CommandSender sender,
-            Stream<? extends GeneralRegion> regionStream,
-            RegionGroup filterGroup,
-            String keyHeader,
-            int pageInput,
-            String baseCommand
-    ) {
+    private void showSortedPagedList(CommandSender sender, Stream<? extends GeneralRegion> regionStream,
+            RegionGroup filterGroup, String keyHeader, int pageInput, String baseCommand)
+    {
+
         int page = pageInput;
         int maximumItems = 20;
         int itemsPerPage = maximumItems - 2;
         List<? extends GeneralRegion> regions;
         if (filterGroup != null) {
+
             regions = regionStream.filter(generalRegion -> !filterGroup.isMember(generalRegion)).toList();
+
         } else {
+
             regions = regionStream.toList();
+
         }
+
         if (regions.isEmpty()) {
+
             messageBridge.message(sender, "info-noRegions");
             return;
+
         }
+
         // First sort by type, then by name
         regions = regions.stream().sorted((one, two) -> {
+
             int typeCompare = getTypeOrder(two).compareTo(getTypeOrder(one));
             if (typeCompare != 0) {
+
                 return typeCompare;
+
             } else {
+
                 return one.getName().compareTo(two.getName());
+
             }
+
         }).toList();
         // Header
         Message limitedToGroup = Message.empty();
         if (filterGroup != null) {
+
             limitedToGroup = Message.fromKey("info-limitedToGroup").replacements(filterGroup.getName());
+
         }
+
         messageBridge.message(sender, keyHeader, limitedToGroup);
         // Page entries
-        int totalPages = (int) Math.ceil(regions.size() / (double) itemsPerPage); // Clip page to correct boundaries, not much need to tell the user
+        int totalPages = (int) Math.ceil(regions.size() / (double) itemsPerPage); // Clip page to correct boundaries,
+                                                                                  // not much need to tell the user
         if (regions.size() == itemsPerPage + 1) { // 19 total items is mapped to 1 page of 19
+
             itemsPerPage++;
             totalPages = 1;
+
         }
+
         page = Math.max(1, Math.min(totalPages, page));
         int linesPrinted = 1; // header
         for (int i = (page - 1) * itemsPerPage; i < page * itemsPerPage && i < regions.size(); i++) {
+
             String state;
             GeneralRegion region = regions.get(i);
             if (region.getType() == GeneralRegion.RegionType.RENT) {
+
                 if (region.getOwner() == null) {
+
                     state = "Forrent";
+
                 } else {
+
                     state = "Rented";
+
                 }
+
             } else {
+
                 if (region.getOwner() == null) {
+
                     state = "Forsale";
+
                 } else if (!((BuyRegion) region).isInResellingMode()) {
+
                     state = "Sold";
+
                 } else {
+
                     state = "Reselling";
+
                 }
+
             }
+
             messageBridge.messageNoPrefix(sender, "info-entry" + state, region);
             linesPrinted++;
+
         }
+
         Message footer = Message.empty();
         // Previous button
         if (page > 1) {
+
             footer.append(Message.fromKey("info-pagePrevious").replacements(baseCommand + " --page " + (page - 1)));
+
         } else {
+
             footer.append(Message.fromKey("info-pageNoPrevious"));
+
         }
+
         // Page status
         if (totalPages > 1) {
+
             StringBuilder pageString = new StringBuilder("" + page);
             for (int i = pageString.length(); i < (totalPages + "").length(); i++) {
+
                 pageString.insert(0, "0");
+
             }
+
             footer.append(Message.fromKey("info-pageStatus").replacements(page, totalPages));
             if (page < totalPages) {
+
                 footer.append(Message.fromKey("info-pageNext").replacements(baseCommand + " --page " + (page + 1)));
+
             } else {
+
                 footer.append(Message.fromKey("info-pageNoNext"));
+
             }
+
             // Fill up space if the page is not full (aligns header nicely)
             for (int i = linesPrinted; i < maximumItems - 1; i++) {
+
                 sender.sendMessage(" ");
+
             }
+
             SimpleMessageBridge.send(footer, sender);
+
         }
+
     }
 
     /**
@@ -240,58 +320,41 @@ public class InfoCommand extends AreashopCommandBean {
      * @return An integer for sorting by type
      */
     private Integer getTypeOrder(GeneralRegion region) {
+
         if (region.getType() == GeneralRegion.RegionType.RENT) {
+
             if (region.getOwner() == null) {
+
                 return 1;
+
             } else {
+
                 return 2;
+
             }
+
         } else {
+
             if (region.getOwner() == null) {
+
                 return 3;
+
             } else if (!((BuyRegion) region).isInResellingMode()) {
+
                 return 4;
+
             } else {
+
                 return 5;
+
             }
+
         }
+
     }
 
-
     private enum RegionStateFilterType {
-        ALL,
-        RENTED,
-        FORRENT,
-        SOLD,
-        FORSALE,
-        RESELLING,
-        NOGROUP
+        ALL, RENTED, FORRENT, SOLD, FORSALE, RESELLING, NOGROUP
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

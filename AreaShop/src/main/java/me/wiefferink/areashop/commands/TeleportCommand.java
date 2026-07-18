@@ -30,66 +30,94 @@ public class TeleportCommand extends AreashopCommandBean {
 
     @Inject
     public TeleportCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
+
     }
 
     /**
-     * Check if a person can teleport to the region (assuming he is not teleporting to a sign).
+     * Check if a person can teleport to the region (assuming he is not teleporting
+     * to a sign).
      *
      * @param person The person to check
      * @param region The region to check for
      * @return true if the person can teleport to it, otherwise false
      */
     public static boolean canUse(CommandSender person, GeneralRegion region) {
+
         if (!(person instanceof Player player)) {
+
             return false;
+
         }
+
         return player.hasPermission("areashop.teleportall")
                 || region.isOwner(player) && player.hasPermission("areashop.teleport")
                 || region.isAvailable() && player.hasPermission("areashop.teleportavailable")
-                || region.getFriendsFeature().getFriends().contains(player.getUniqueId()) && player.hasPermission(
-                "areashop.teleportfriend");
+                || region.getFriendsFeature().getFriends().contains(player.getUniqueId())
+                        && player.hasPermission("areashop.teleportfriend");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.teleportall") || target.hasPermission("areashop.teleport")) {
+
             return "help-teleport";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("tp", "teleport")
-                .senderType(Player.class)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("tp", "teleport").senderType(Player.class)
                 .required(KEY_REGION, GeneralRegionParser.generalRegionParser(this.fileManager))
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("teleport", "tp");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
-        if (!player.hasPermission("areashop.teleport") && !player.hasPermission("areashop.teleportall") && !player.hasPermission(
-                "areashop.teleportavailable") && !player.hasPermission("areashop.teleportavailablesign") && !player.hasPermission(
-                "areashop.teleportsign") && !player.hasPermission("areashop.teleportsignall") && !player.hasPermission(
-                "areashop.teleportfriend") && !player.hasPermission("teleportfriendsign")) {
+        if (!player.hasPermission("areashop.teleport") && !player.hasPermission("areashop.teleportall")
+                && !player.hasPermission("areashop.teleportavailable")
+                && !player.hasPermission("areashop.teleportavailablesign")
+                && !player.hasPermission("areashop.teleportsign") && !player.hasPermission("areashop.teleportsignall")
+                && !player.hasPermission("areashop.teleportfriend") && !player.hasPermission("teleportfriendsign"))
+        {
+
             this.messageBridge.message(player, "teleport-noPermission");
             return;
+
         }
+
         GeneralRegion region = context.get(KEY_REGION);
         boolean toSign = context.flags().contains(KEY_TO_SIGN);
         region.getTeleportFeature().teleportPlayer(player, toSign);
+
     }
+
 }

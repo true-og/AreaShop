@@ -28,50 +28,66 @@ public class SetTransferCommand extends AreashopCommandBean {
     private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
-    public SetTransferCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public SetTransferCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.settransfer")) {
+
             return "help-settransfer";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("settransfer")
-                .required(KEY_ENABLED, BooleanParser.booleanParser(true))
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("settransfer").required(KEY_ENABLED, BooleanParser.booleanParser(true))
+                .flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("settransfer");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.settransfer")) {
+
             throw new AreaShopCommandException("settransfer-noPermission");
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         boolean enabled = context.get(KEY_ENABLED);
         region.setTransferEnabled(enabled);
         messageBridge.message(sender, "settransfer-success", enabled, region);
         region.update();
+
     }
+
 }

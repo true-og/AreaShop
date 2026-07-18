@@ -23,43 +23,58 @@ public class BuyCommand extends AreashopCommandBean {
 
     @Inject
     public BuyCommand(@Nonnull IFileManager fileManager) {
+
         this.buyRegionFlag = RegionParseUtil.createDefaultBuy(fileManager);
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
-        if(target.hasPermission("areashop.buy")) {
+
+        if (target.hasPermission("areashop.buy")) {
+
             return "help-buy";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return "Allows you to buy a region";
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("buy");
+
     }
 
-
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder
-                .literal("buy")
-                .flag(this.buyRegionFlag)
-                .senderType(Player.class)
-                .handler(this::handleCommand);
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("buy").flag(this.buyRegionFlag).senderType(Player.class).handler(this::handleCommand);
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         if (!context.hasPermission("areashop.buy")) {
+
             throw new AreaShopCommandException("buy-noPermission");
+
         }
+
         BuyRegion region = RegionParseUtil.getOrParseBuyRegion(context, this.buyRegionFlag);
         region.buy(context.sender());
+
     }
 
 }

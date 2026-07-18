@@ -1,13 +1,9 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.9"
     id("xyz.jpenilla.run-paper") version "2.2.3"
 }
 
-idea {
-    module {
-        isDownloadSources = true
-    }
-}
+idea { module { isDownloadSources = true } }
 
 description = "AreaShop"
 
@@ -27,18 +23,10 @@ dependencies {
     api("com.github.NLthijs48:InteractiveMessenger:e7749258ca")
     api("com.github.NLthijs48:BukkitDo:819d51ec2b")
     api("io.github.baked-libs:dough-data:1.2.0")
-    api("com.google.inject:guice:7.0.0") {
-        exclude("com.google.guava")
-    }
-    api("com.google.inject.extensions:guice-assistedinject:7.0.0") {
-        exclude("com.google.guava")
-    }
-    implementation("org.incendo:cloud-paper:2.0.0-beta.5") {
-        exclude("com.google.guava")
-    }
-    implementation("org.incendo:cloud-processors-confirmation:1.0.0-beta.2") {
-        exclude("com.google.guava")
-    }
+    api("com.google.inject:guice:7.0.0") { exclude("com.google.guava") }
+    api("com.google.inject.extensions:guice-assistedinject:7.0.0") { exclude("com.google.guava") }
+    implementation("org.incendo:cloud-paper:2.0.0-beta.5") { exclude("com.google.guava") }
+    implementation("org.incendo:cloud-processors-confirmation:1.0.0-beta.2") { exclude("com.google.guava") }
     implementation("net.kyori:adventure-text-minimessage:4.16.0")
     implementation("net.kyori:adventure-platform-bukkit:4.3.2")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
@@ -63,16 +51,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
 tasks {
-    processResources {
-        filesMatching("plugin.yml") {
-            expand("version" to project.version)
-        }
-    }
+    processResources { filesMatching("plugin.yml") { expand("version" to project.version) } }
 
     assemble {
         if (!providers.environmentVariable("JITPACK").isPresent) {
@@ -90,25 +72,17 @@ tasks {
     }
 
     if (providers.environmentVariable("JITPACK").isPresent) {
-        artifacts {
-            archives(jar)
-        }
+        artifacts { archives(jar) }
     }
 
-    java {
-        withSourcesJar()
-    }
+    java { withSourcesJar() }
 
     val javaComponent = project.components["java"] as AdhocComponentWithVariants
-    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
-        skip()
-    }
+    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) { skip() }
 
     shadowJar {
         archiveClassifier.set("")
-        base {
-            archiveBaseName.set("AreaShop")
-        }
+        base { archiveBaseName.set("AreaShop") }
         val base = "me.wiefferink.areashop.libraries"
         relocate("org.incendo.cloud", "${base}.cloud")
         relocate("me.wiefferink.interactivemessenger", "${base}.interactivemessenger")
@@ -155,8 +129,5 @@ tasks {
     }
 
     // Configure the build task to finalize with the custom task without the `tasks.` prefix
-    named("build") {
-        finalizedBy("runCopyJarScript")
-    }
+    named("build") { finalizedBy("runCopyJarScript") }
 }
-

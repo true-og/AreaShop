@@ -28,74 +28,64 @@ public class MeCommand extends AreashopCommandBean {
     private final MessageBridge messageBridge;
 
     @Inject
-    public MeCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public MeCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("me")
-                .senderType(Player.class)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("me").senderType(Player.class)
                 .optional(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("me");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.me")) {
+
             return "help-me";
+
         }
+
         return null;
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player sender = context.sender();
         if (!sender.hasPermission("areashop.me")) {
+
             throw new AreaShopCommandException("me-noPermission");
+
         }
+
         OfflinePlayer player = context.getOrDefault(KEY_PLAYER, sender);
         RegionInfoUtil.showRegionInfo(this.messageBridge, this.fileManager, sender, player);
+
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

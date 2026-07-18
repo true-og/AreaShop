@@ -39,66 +39,88 @@ public class TransferCommand extends AreashopCommandBean {
     private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
-    public TransferCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
-        ParserDescriptor<Player, GeneralRegion> regionParser =
-                ParserDescriptor.of(new GeneralRegionParser<>(fileManager, this::suggestRegions), GeneralRegion.class);
+    public TransferCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
+        ParserDescriptor<Player, GeneralRegion> regionParser = ParserDescriptor
+                .of(new GeneralRegionParser<>(fileManager, this::suggestRegions), GeneralRegion.class);
         this.messageBridge = messageBridge;
         this.fileManager = fileManager;
-        this.regionFlag = CommandFlag.builder("region")
-                .withComponent(regionParser)
-                .build();
+        this.regionFlag = CommandFlag.builder("region").withComponent(regionParser).build();
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (!target.hasPermission("areashop.transfer")) {
+
             return null;
+
         }
+
         return "help-transfer";
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("transfer")
-                .senderType(Player.class)
-                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
-                .flag(this.regionFlag)
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("transfer").senderType(Player.class)
+                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser()).flag(this.regionFlag)
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("transfer");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player sender = context.sender();
         if (!sender.hasPermission("areashop.transfer")) {
+
             throw new AreaShopCommandException("transfer-noPermission");
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (!region.isTransferEnabled()) {
+
             throw new AreaShopCommandException("transfer-disabled");
+
         }
+
         OfflinePlayer targetPlayer = context.get(KEY_PLAYER);
         String targetPlayerName = targetPlayer.getName();
         if (Objects.equals(sender, targetPlayer)) {
+
             throw new AreaShopCommandException("transfer-transferSelf");
+
         }
+
         if (!targetPlayer.hasPlayedBefore()) {
+
             // Unknown player
             throw new AreaShopCommandException("transfer-noPlayer", targetPlayerName);
+
         }
+
         if (region.isLandlord(sender.getUniqueId())) {
+
             // Transfer ownership if same as landlord
             region.getFriendsFeature().deleteFriend(region.getOwner(), null);
             region.setOwner(targetPlayer.getUniqueId());
@@ -108,11 +130,16 @@ public class TransferCommand extends AreashopCommandBean {
             region.update();
             region.saveRequired();
             return;
+
         }
+
         if (!region.isOwner(sender.getUniqueId())) {
+
             // Cannot transfer tenant if we aren't the current tenant
             throw new AreaShopCommandException("transfer-notCurrentTenant");
+
         }
+
         region.getFriendsFeature().deleteFriend(region.getOwner(), null);
         // Swap the owner/occupant (renter or buyer)
         region.setOwner(targetPlayer.getUniqueId());
@@ -121,22 +148,20 @@ public class TransferCommand extends AreashopCommandBean {
         this.messageBridge.messagePersistent(targetPlayer, "transfer-transferred-tenant", targetPlayerName, region);
         region.update();
         region.saveRequired();
+
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestRegions(
-            @Nonnull CommandContext<Player> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestRegions(@Nonnull CommandContext<Player> context,
+            @Nonnull CommandInput input)
+    {
+
         String text = input.peekString();
         UUID uuid = context.sender().getUniqueId();
-        List<Suggestion> suggestions = this.fileManager.getRegions()
-                .stream()
-                .filter(region -> region.isOwner(uuid) || region.isLandlord(uuid))
-                .map(GeneralRegion::getName)
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+        List<Suggestion> suggestions = this.fileManager.getRegions().stream()
+                .filter(region -> region.isOwner(uuid) || region.isLandlord(uuid)).map(GeneralRegion::getName)
+                .filter(name -> name.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestions);
+
     }
 
 }

@@ -8,11 +8,15 @@ import me.wiefferink.areashop.regions.RentRegion;
  */
 public class UnrentingRegionEvent extends CancellableRegionEvent<RentRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that is about to be unrented
-	 */
-	public UnrentingRegionEvent(RentRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that is about to be unrented
+     */
+    public UnrentingRegionEvent(RentRegion region) {
+
+        super(region);
+
+    }
+
 }

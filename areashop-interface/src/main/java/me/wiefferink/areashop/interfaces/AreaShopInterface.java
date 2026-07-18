@@ -9,17 +9,19 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public interface AreaShopInterface {
-	void debugI(Object... message);
 
-	void debugI(Supplier<String> message);
+    void debugI(Object... message);
 
-	YamlConfiguration getConfig();
+    void debugI(Supplier<String> message);
 
-	WorldGuardPlugin getWorldGuard();
+    YamlConfiguration getConfig();
 
-	WorldEditPlugin getWorldEdit();
+    WorldGuardPlugin getWorldGuard();
 
-	Logger getLogger();
+    WorldEditPlugin getWorldEdit();
 
-	Plugin pluginInstance();
+    Logger getLogger();
+
+    Plugin pluginInstance();
+
 }

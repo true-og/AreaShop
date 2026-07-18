@@ -28,7 +28,7 @@ general:
   restrictedToWorld: false
   # Restricts buying and renting of regions to the region itself (player needs to be inside the region).
   restrictedToRegion: false
-  # The UUID of the landlord, this player will receive all money from rents/buys (but not reselling with '/as resell').
+  # The UUID of the landlord, this player will receive all Diamonds from rents/buys (but not reselling with '/as resell').
   landlord: ''
   # Name of the landlord, if the landlord UUID setting is not provided then the name will be used instead.
   landlordName: ''
@@ -44,10 +44,10 @@ general:
   # Sections with 'Player' at the end will be run by the player that clicks the sign and 'Console' ones from the console.
   signProfile:
     forrent:
-      line1: '&2For Rent:'
-      line2: '&0%region%'
+      line1: '&2&lFor Rent:'
+      line2: '&6%region%'
       line3: '&eDuration: %duration% (12x)'
-      line4: '&b%rawprice% Diamonds'
+      line4: '&b%price%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
       rightClickConsole:
@@ -55,10 +55,10 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     rented:
-      line1: '&2Rented:'
-      line2: '&0%region%'
-      line3: '&3Shopkeeper:'
-      line4: '&0%player%'
+      line1: '&2&lRented:'
+      line2: '&6%region%'
+      line3: '&3&lShopkeeper:'
+      line4: '&0%playercolor%%player%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
       rightClickConsole:
@@ -68,9 +68,9 @@ general:
       shiftRightClickConsole:
         - 'areashop message %clicker% %lang:confirm-unrent|%region%|%'
     forsale:
-      line1: '&2For Sale:'
-      line2: '&0%region%'
-      line3: '&b%rawprice% Diamonds'
+      line1: '&2&lFor Sale:'
+      line2: '&6%region%'
+      line3: '&b%price%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -79,9 +79,9 @@ general:
       leftClickPlayer:
         - 'areashop info region --region %region%'
     resell:
-      line1: '&2For Sale:'
-      line2: '&0%region%'
-      line3: '&b%rawresellprice% Diamonds'
+      line1: '&2&lFor Sale:'
+      line2: '&6%region%'
+      line3: '&b%resellprice%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -92,9 +92,9 @@ general:
       shiftRightClickPlayer:
         - 'areashop stopresell --region %region%'
     sold:
-      line1: '&4Sold:'
-      line2: '&0%region%'
-      line3: '&l%player%'
+      line1: '&4&lSold:'
+      line2: '&6%region%'
+      line3: '&0%playercolor%%player%'
       line4: '&2No Expiry'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -122,14 +122,14 @@ general:
       block-place: 'allow g:members'
       chest-access: 'allow g:members'
     forrent:
-      greeting: '%lang:wgPrefix%&6This shop can be rented for &b%price% Diamonds &6per &2%duration%'
+      greeting: '%lang:wgPrefix%&6This shop can be rented for &b%price% &6per &2%duration%'
       use: 'allow g:all'
     rented:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
       use: 'allow g:members'
     forsale:
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%price% Diamonds'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%price%'
       use: 'allow g:all'
     sold:
       members: '%uuid%, %friendsuuid%'
@@ -137,7 +137,7 @@ general:
       use: 'allow g:members'
     resell:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%resellprice% Diamonds'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for &b%resellprice%'
       use: 'allow g:all'
 
   ##### Save and restore schematics to clean up regions.
@@ -205,7 +205,8 @@ general:
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 rent:
   # The default price of a rental region (variables, mathematical expressions and JavaScript can be used).
-  price: '%width% * %depth% * 32'
+  # Curve anchored on shop footprint: smallest shop (4x4) costs 16 diamonds, largest (13x13) costs 256.
+  price: 'round(16 * ((%width% * %depth%) / 16) ^ 1.176)'
   # The default duration of a rental region, you can find all time indicators in config.yml below the RENTING header.
   duration: '30 days'
   # Automatically extend the rental when it is running out (if the player meets the criteria)

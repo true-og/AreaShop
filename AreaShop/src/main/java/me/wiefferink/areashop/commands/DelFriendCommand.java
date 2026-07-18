@@ -31,18 +31,16 @@ import java.util.concurrent.CompletableFuture;
 @Singleton
 public class DelFriendCommand extends AreashopCommandBean {
 
-
     private static final CloudKey<OfflinePlayer> KEY_PLAYER = CloudKey.of("player", OfflinePlayer.class);
     private final MessageBridge messageBridge;
     private final CommandFlag<GeneralRegion> regionFlag;
 
     @Inject
-    public DelFriendCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public DelFriendCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     /**
@@ -53,114 +51,161 @@ public class DelFriendCommand extends AreashopCommandBean {
      * @return true if the person can remove friends, otherwise false
      */
     public static boolean canUse(CommandSender person, GeneralRegion region) {
+
         if (person.hasPermission("areashop.delfriendall")) {
+
             return true;
+
         }
+
         if (person instanceof Player player) {
+
             return region.isOwner(player) && player.hasPermission("areashop.delfriend");
+
         }
+
         return false;
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.delfriendall") || target.hasPermission("areashop.delfriend")) {
+
             return "help-delFriend";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("deletefriend", "delfriend");
+
     }
 
     @Override
-    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
+    protected @Nonnull Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
         return builder.literal("delfriend", "deletefriend")
                 .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser(), this::suggestFriends)
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+                .flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.delfriend") && !sender.hasPermission("areashop.delfriendall")) {
+
             throw new AreaShopCommandException("delfriend-noPermission");
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         OfflinePlayer friend = context.get(KEY_PLAYER);
         FriendsFeature friendsFeature = region.getFriendsFeature();
         if (sender.hasPermission("areashop.delfriendall")) {
+
             if ((region instanceof RentRegion rentRegion && !rentRegion.isRented())
-                    || (region instanceof BuyRegion buyRegion && !buyRegion.isSold())) {
+                    || (region instanceof BuyRegion buyRegion && !buyRegion.isSold()))
+            {
+
                 throw new AreaShopCommandException("delfriend-noOwner", region);
 
             }
+
             if (!friendsFeature.getFriends().contains(friend.getUniqueId())) {
+
                 throw new AreaShopCommandException("delfriend-notAdded", friend.getName(), region);
 
             }
+
             if (friendsFeature.deleteFriend(friend.getUniqueId(), sender)) {
+
                 region.update();
                 this.messageBridge.message(sender, "delfriend-successOther", friend.getName(), region);
+
             }
+
             return;
+
         }
+
         if (!sender.hasPermission("areashop.delfriend") || !(sender instanceof Player player)) {
+
             throw new AreaShopCommandException("delfriend-noPermission", region);
+
         }
+
         if (!region.isOwner(player)) {
+
             throw new AreaShopCommandException("delfriend-noPermissionOther", region);
+
         }
+
         if (!friendsFeature.getFriends().contains(friend.getUniqueId())) {
+
             throw new AreaShopCommandException("delfriend-notAdded", friend.getName(), region);
+
         } else if (friendsFeature.deleteFriend(friend.getUniqueId(), sender)) {
+
             region.update();
             this.messageBridge.message(sender, "delfriend-success", friend.getName(), region);
+
         }
 
     }
 
-    private CompletableFuture<Iterable<Suggestion>> suggestFriends(
-            @Nonnull CommandContext<CommandSender> context,
-            @Nonnull CommandInput input
-    ) {
+    private CompletableFuture<Iterable<Suggestion>> suggestFriends(@Nonnull CommandContext<CommandSender> context,
+            @Nonnull CommandInput input)
+    {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.delfriend")) {
+
             return CompletableFuture.completedFuture(Collections.emptyList());
+
         }
+
         GeneralRegion region;
         try {
+
             region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
+
         } catch (AreaShopCommandException ignored) {
+
             return CompletableFuture.completedFuture(Collections.emptyList());
+
         }
-        if (!sender.hasPermission("areashop.delfriendall")
-                && sender instanceof Player player
-                && !region.isOwner(player)
-        ) {
+
+        if (!sender.hasPermission("areashop.delfriendall") && sender instanceof Player player
+                && !region.isOwner(player))
+        {
+
             return CompletableFuture.completedFuture(Collections.emptyList());
+
         }
+
         String text = input.peekString();
         FriendsFeature friendsFeature = region.getFriendsFeature();
         Collection<Suggestion> suggestion = friendsFeature.getFriendNames().stream()
-                .filter(name -> name.startsWith(text))
-                .map(Suggestion::suggestion)
-                .toList();
+                .filter(name -> name.startsWith(text)).map(Suggestion::suggestion).toList();
         return CompletableFuture.completedFuture(suggestion);
+
     }
+
 }
-
-
-
-
-
-
-
-

@@ -43,7 +43,8 @@ public interface IFileManager {
     /**
      * Get the default region settings as provided by the user (default.yml).
      *
-     * @return YamlConfiguration with the settings (might miss settings, which should be filled in with {@link #getFallbackRegionSettings()})
+     * @return YamlConfiguration with the settings (might miss settings, which
+     *         should be filled in with {@link #getFallbackRegionSettings()})
      */
     YamlConfiguration getRegionSettings();
 
@@ -57,7 +58,8 @@ public interface IFileManager {
     /**
      * Get the config file (config.yml).
      *
-     * @return YamlConfiguration with the settings of users, with fallback to the settings provided by AreaShop
+     * @return YamlConfiguration with the settings of users, with fallback to the
+     *         settings provided by AreaShop
      */
     YamlConfiguration getConfig();
 
@@ -111,6 +113,7 @@ public interface IFileManager {
 
     /**
      * Get all buy regions (readonly)
+     * 
      * @return Unmodifiable collection of all buy regions
      */
     Collection<BuyRegion> getBuysRef();
@@ -166,7 +169,8 @@ public interface IFileManager {
     AddingRegionEvent addRegion(GeneralRegion region);
 
     /**
-     * Add a region to the list without saving it to disk (useful for loading at startup).
+     * Add a region to the list without saving it to disk (useful for loading at
+     * startup).
      *
      * @param region The region to add
      * @return true when successful, otherwise false (denied by an event listener)
@@ -194,16 +198,14 @@ public interface IFileManager {
      * @param type   The type the region should have in AreaShop
      * @return The result if a player would want to add this region
      */
-    AddResult checkRegionAdd(CommandSender sender,
-                             ProtectedRegion region,
-                             World world,
-                             GeneralRegion.RegionType type);
+    AddResult checkRegionAdd(CommandSender sender, ProtectedRegion region, World world, GeneralRegion.RegionType type);
 
     /**
      * Remove a region from the list.
      *
      * @param region        The region to remove
-     * @param giveMoneyBack use true to give money back to the player if someone is currently holding this region, otherwise false
+     * @param giveMoneyBack use true to give money back to the player if someone is
+     *                      currently holding this region, otherwise false
      * @return true if the region has been removed, false otherwise
      */
     DeletingRegionEvent deleteRegion(GeneralRegion region, boolean giveMoneyBack);
@@ -229,7 +231,8 @@ public interface IFileManager {
      * Update regions in a task to minimize lag.
      *
      * @param regions              Regions to update
-     * @param confirmationReceiver The CommandSender that should be notified at completion
+     * @param confirmationReceiver The CommandSender that should be notified at
+     *                             completion
      */
     void updateRegions(Collection<GeneralRegion> regions, CommandSender confirmationReceiver);
 
@@ -248,7 +251,8 @@ public interface IFileManager {
     /**
      * Update all regions.
      *
-     * @param confirmationReceiver Optional CommandSender that should receive progress messages
+     * @param confirmationReceiver Optional CommandSender that should receive
+     *                             progress messages
      */
     void updateAllRegions(CommandSender confirmationReceiver);
 
@@ -307,17 +311,20 @@ public interface IFileManager {
     boolean isBlacklisted(String region);
 
     /**
-     * Unrent regions that have no time left, regions to check per tick is in the config.
+     * Unrent regions that have no time left, regions to check per tick is in the
+     * config.
      */
     void checkRents();
 
     /**
-     * Check all regions and unrent/sell them if the player is inactive for too long.
+     * Check all regions and unrent/sell them if the player is inactive for too
+     * long.
      */
     void checkForInactiveRegions();
 
     /**
-     * Load the file with the versions, used to check if the other files need conversion.
+     * Load the file with the versions, used to check if the other files need
+     * conversion.
      */
     @SuppressWarnings("unchecked")
     void loadVersions();
@@ -380,20 +387,24 @@ public interface IFileManager {
 
     // Enum for region types
     public enum AddResult {
-        BLACKLISTED("blacklisted"),
-        NOPERMISSION("nopermission"),
-        ALREADYADDED("alreadyadded"),
-        ALREADYADDEDOTHERWORLD("alreadyaddedotherworld"),
-        SUCCESS("success");
+
+        BLACKLISTED("blacklisted"), NOPERMISSION("nopermission"), ALREADYADDED("alreadyadded"),
+        ALREADYADDEDOTHERWORLD("alreadyaddedotherworld"), SUCCESS("success");
 
         private final String value;
 
         AddResult(String value) {
+
             this.value = value;
+
         }
 
         public String getValue() {
+
             return value;
+
         }
+
     }
+
 }

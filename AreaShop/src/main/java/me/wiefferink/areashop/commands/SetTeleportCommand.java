@@ -33,8 +33,10 @@ public class SetTeleportCommand extends AreashopCommandBean {
 
     @Inject
     public SetTeleportCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     /**
@@ -45,81 +47,117 @@ public class SetTeleportCommand extends AreashopCommandBean {
      * @return true if the person can set the teleport location, otherwise false
      */
     public static boolean canUse(CommandSender person, GeneralRegion region) {
+
         if (!(person instanceof Player player)) {
+
             return false;
+
         }
+
         return player.hasPermission("areashop.setteleportall")
                 || region.isOwner(player) && player.hasPermission("areashop.setteleport");
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.setteleportall") || target.hasPermission("areashop.setteleport")) {
+
             return "help-setteleport";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-        return builder.literal("settp")
-                .senderType(Player.class)
-                .flag(this.regionFlag)
-                .handler(this::handleCommand);
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("settp").senderType(Player.class).flag(this.regionFlag).handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("settp");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         if (!player.hasPermission("areashop.setteleport") && !player.hasPermission("areashop.setteleportall")) {
+
             this.messageBridge.message(player, "setteleport-noPermission");
             return;
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
 
         boolean owner;
         if (region instanceof RentRegion rentRegion) {
+
             owner = player.getUniqueId().equals(rentRegion.getRenter());
+
         } else if (region instanceof BuyRegion buyRegion) {
+
             owner = player.getUniqueId().equals(buyRegion.getBuyer());
+
         } else {
+
             // FIXME log error
             return;
+
         }
+
         if (!player.hasPermission("areashop.setteleport")) {
+
             throw new AreaShopCommandException("setteleport-noPermission", region);
+
         } else if (!owner && !player.hasPermission("areashop.setteleportall")) {
+
             throw new AreaShopCommandException("setteleport-noPermissionOther", region);
+
         }
+
         boolean reset = context.flags().contains(FLAG_RESET);
         if (reset) {
+
             region.getTeleportFeature().setTeleport(null);
             region.update();
             this.messageBridge.message(player, "setteleport-reset", region);
+
         }
+
         ProtectedRegion wgRegion = region.getRegion();
         Location location = player.getLocation();
-        if (!player.hasPermission("areashop.setteleportoutsideregion") && (wgRegion == null || !wgRegion.contains(
-                location.getBlockX(),
-                location.getBlockY(),
-                location.getBlockZ()))
-        ) {
+        if (!player.hasPermission("areashop.setteleportoutsideregion") && (wgRegion == null
+                || !wgRegion.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ())))
+        {
+
             this.messageBridge.message(player, "setteleport-notInside", region);
             return;
+
         }
+
         region.getTeleportFeature().setTeleport(location);
         region.update();
         this.messageBridge.message(player, "setteleport-success", region);
+
     }
 
 }

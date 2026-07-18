@@ -33,91 +33,120 @@ public class SetOwnerCommand extends AreashopCommandBean {
     private final MessageBridge messageBridge;
 
     @Inject
-    public SetOwnerCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull IFileManager fileManager
-    ) {
+    public SetOwnerCommand(@Nonnull MessageBridge messageBridge, @Nonnull IFileManager fileManager) {
+
         this.messageBridge = messageBridge;
         this.regionFlag = RegionParseUtil.createDefault(fileManager);
+
     }
 
     @Override
     public String getHelpKey(CommandSender target) {
+
         if (target.hasPermission("areashop.setownerrent") || target.hasPermission("areashop.setownerbuy")) {
+
             return "help-setowner";
+
         }
+
         return null;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @NotNull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
         return builder.literal("setowner")
-                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
-                .flag(this.regionFlag)
+                .required(KEY_PLAYER, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser()).flag(this.regionFlag)
                 .handler(this::handleCommand);
+
     }
 
     @Override
     protected @NonNull CommandProperties properties() {
+
         return CommandProperties.of("setowner");
+
     }
 
     private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
         CommandSender sender = context.sender();
         if (!sender.hasPermission("areashop.setownerrent") && !sender.hasPermission("areashop.setownerbuy")) {
+
             this.messageBridge.message(sender, "setowner-noPermission");
             return;
+
         }
+
         GeneralRegion region = RegionParseUtil.getOrParseRegion(context, this.regionFlag);
         if (region instanceof RentRegion && !sender.hasPermission("areashop.setownerrent")) {
+
             this.messageBridge.message(sender, "setowner-noPermissionRent", region);
             return;
+
         }
+
         if (region instanceof BuyRegion && !sender.hasPermission("areashop.setownerbuy")) {
+
             this.messageBridge.message(sender, "setowner-noPermissionBuy", region);
             return;
+
         }
+
         OfflinePlayer player = context.get(KEY_PLAYER);
         if (!player.hasPlayedBefore()) {
+
             this.messageBridge.message(sender, "setowner-noPlayer", player.getName(), region);
             return;
+
         }
+
         final UUID uuid = player.getUniqueId();
         if (region instanceof RentRegion rent) {
+
             if (rent.isRenter(uuid)) {
+
                 // extend
                 rent.setRentedUntil(rent.getRentedUntil() + rent.getDuration());
                 rent.setRenter(uuid);
                 this.messageBridge.message(sender, "setowner-succesRentExtend", region);
+
             } else {
+
                 // change
                 if (!rent.isRented()) {
+
                     rent.setRentedUntil(Calendar.getInstance().getTimeInMillis() + rent.getDuration());
+
                 }
+
                 rent.setRenter(uuid);
                 this.messageBridge.message(sender, "setowner-succesRent", region);
+
             }
+
         } else if (region instanceof BuyRegion buy) {
+
             buy.setBuyer(uuid);
             this.messageBridge.message(sender, "setowner-succesBuy", region);
+
         }
+
         region.getFriendsFeature().deleteFriend(region.getOwner(), null);
         region.update();
         region.saveRequired();
+
     }
 
 }
-
-
-
-
-
-
-
-

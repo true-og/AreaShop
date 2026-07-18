@@ -40,88 +40,117 @@ public class QuickBuyCommand extends AreashopCommandBean {
     private final BukkitSchedulerExecutor executor;
 
     @Inject
-    public QuickBuyCommand(
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull RegionFactory regionFactory,
-            @Nonnull IFileManager fileManager,
-            @Nonnull RegionCreationUtil regionCreationUtil,
-            @Nonnull BukkitSchedulerExecutor executor
-    ) {
+    public QuickBuyCommand(@Nonnull MessageBridge messageBridge, @Nonnull RegionFactory regionFactory,
+            @Nonnull IFileManager fileManager, @Nonnull RegionCreationUtil regionCreationUtil,
+            @Nonnull BukkitSchedulerExecutor executor)
+    {
+
         this.messageBridge = messageBridge;
         this.regionFactory = regionFactory;
         this.fileManager = fileManager;
         this.regionCreationUtil = regionCreationUtil;
         this.executor = executor;
+
     }
 
     @Override
     public String stringDescription() {
+
         return null;
+
     }
 
     @Nonnull
     @Override
-    protected Command.Builder<? extends CommandSender> configureCommand(@Nonnull Command.Builder<CommandSender> builder) {
-        return builder.literal("quickbuy")
-                .permission("permission")
-                .senderType(Player.class)
-                .required(KEY_REGION, StringParser.stringParser())
-                .required(KEY_PRICE, DoubleParser.doubleParser(0))
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @Nonnull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("quickbuy").permission("permission").senderType(Player.class)
+                .required(KEY_REGION, StringParser.stringParser()).required(KEY_PRICE, DoubleParser.doubleParser(0))
                 .required(KEY_LANDLORD, ValidatedOfflinePlayerParser.validatedOfflinePlayerParser())
                 .handler(this::handleCommand);
+
     }
 
     // /as quickbuy <name> <price> <duration> <landlord>
 
     private void handleCommand(@Nonnull CommandContext<Player> context) {
+
         Player player = context.sender();
         if (!player.hasPermission("areashop.quickbuy")) {
+
             player.sendMessage("Insufficient permission");
             return;
+
         }
-        this.regionCreationUtil.createRegion(context, KEY_REGION)
-                .exceptionally(throwable -> {
-                    if (throwable instanceof AreaShopCommandException exception) {
-                        ArgumentParseExceptionHandler.handleException(this.messageBridge, player, exception);
-                    } else {
-                        throw new CommandExecutionException(throwable, context);
-                    }
-                    return null;
-                }).thenAcceptAsync(region -> {
-                    // Error handled previously
-                    if (region == null) {
-                        this.messageBridge.message(player, "quickadd-failedCreateWGRegion");
-                        return;
-                    }
-                    double price = context.get(KEY_PRICE);
 
-                    OfflinePlayer landlord = context.get(KEY_LANDLORD);
-                    if (!landlord.hasPlayedBefore()) {
-                        this.messageBridge.message(player, "me-noPlayer");
-                        return;
-                    }
-                    String regionName = region.getId();
-                    World world = player.getWorld();
+        this.regionCreationUtil.createRegion(context, KEY_REGION).exceptionally(throwable -> {
 
-                    BuyRegion buyRegion = this.regionFactory.createBuyRegion(regionName, world);
-                    buyRegion.setPrice(price);
-                    buyRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
-                    this.fileManager.addRegion(buyRegion);
-                    this.messageBridge.message(player, "add-success", "buy", regionName);
-                }, this.executor);
+            if (throwable instanceof AreaShopCommandException exception) {
+
+                ArgumentParseExceptionHandler.handleException(this.messageBridge, player, exception);
+
+            } else {
+
+                throw new CommandExecutionException(throwable, context);
+
+            }
+
+            return null;
+
+        }).thenAcceptAsync(region -> {
+
+            // Error handled previously
+            if (region == null) {
+
+                this.messageBridge.message(player, "quickadd-failedCreateWGRegion");
+                return;
+
+            }
+
+            double price = context.get(KEY_PRICE);
+
+            OfflinePlayer landlord = context.get(KEY_LANDLORD);
+            if (!landlord.hasPlayedBefore()) {
+
+                this.messageBridge.message(player, "me-noPlayer");
+                return;
+
+            }
+
+            String regionName = region.getId();
+            World world = player.getWorld();
+
+            BuyRegion buyRegion = this.regionFactory.createBuyRegion(regionName, world);
+            buyRegion.setPrice(price);
+            buyRegion.setLandlord(landlord.getUniqueId(), landlord.getName());
+            this.fileManager.addRegion(buyRegion);
+            this.messageBridge.message(player, "add-success", "buy", regionName);
+
+        }, this.executor);
+
     }
 
     @Nullable
     @Override
     public String getHelpKey(@Nonnull CommandSender target) {
+
         if (target.hasPermission("areashop.quickbuy")) {
+
             return "help-quickbuy";
+
         }
+
         return null;
+
     }
 
     @Override
     protected @Nonnull CommandProperties properties() {
+
         return CommandProperties.of("quickbuy");
+
     }
+
 }

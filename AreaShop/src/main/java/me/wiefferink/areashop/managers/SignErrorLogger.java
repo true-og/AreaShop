@@ -29,51 +29,84 @@ public class SignErrorLogger {
     private final File file;
 
     public SignErrorLogger(File file) {
+
         this.file = Objects.requireNonNull(file);
+
     }
 
     public void clearCache() {
+
         synchronized (this.cache) {
+
             this.cache.clear();
+
         }
+
     }
 
     public SignErrorLogger submitWarning(String message) {
+
         final String actual = FORMAT.format(Date.from(Instant.now())) + PREFIX_WARN + message;
         synchronized (this.cache) {
+
             this.cache.add(actual);
+
         }
+
         return this;
+
     }
 
     public void queueSave() {
+
         this.needsSaving.set(true);
+
     }
 
     public void saveIfDirty() {
+
         if (this.needsSaving.get()) {
+
             save();
+
         }
+
     }
 
     public synchronized void save() {
+
         AreaShop.debugTask("[Sign Feature] Dumping sign errors to disk...");
         final String[] copy;
         synchronized (this.cache) {
+
             copy = cache.toArray(new String[0]);
+
         }
+
         final StringJoiner joiner = new StringJoiner(System.lineSeparator());
         for (String s : copy) {
+
             joiner.add(s);
+
         }
+
         try (OutputStream os = new FileOutputStream(file);
-             OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+                OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8))
+        {
+
             writer.write(joiner.toString());
+
         } catch (IOException ex) {
+
             ex.printStackTrace();
             AreaShop.error("Failed to update the sign error log!");
+
         } finally {
+
             AreaShop.debugTask("[Sign Feature] Error dump complete.");
+
         }
+
     }
+
 }

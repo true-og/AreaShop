@@ -28,100 +28,143 @@ import java.util.List;
 @Singleton
 public class CommandsFeature extends RegionFeature {
 
-	@Inject
-	CommandsFeature(AreaShop plugin) {
-		super(plugin);
-	}
+    @Inject
+    CommandsFeature(AreaShop plugin) {
 
-	/**
-	 * Run command for a certain event.
-	 * @param region Region to execute the events for
-	 * @param event The event
-	 * @param before The 'before' or 'after' commands
-	 */
-	public void runEventCommands(GeneralRegion region, GeneralRegion.RegionEvent event, boolean before) {
-		ConfigurationSection eventCommandProfileSection = region.getConfigurationSectionSetting("general.eventCommandProfile", "eventCommandProfiles");
-		if(eventCommandProfileSection == null) {
-			return;
-		}
-		List<String> commands = eventCommandProfileSection.getStringList(event.getValue() + "." + (before ? "before" : "after"));
-		if(commands.isEmpty()) {
-			return;
-		}
-		region.runCommands(Bukkit.getConsoleSender(), commands);
-	}
+        super(plugin);
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void addingRegion(AddingRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.CREATED, true);
-	}
+    }
 
-	@EventHandler
-	public void addedRegion(AddedRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.CREATED, false);
-	}
+    /**
+     * Run command for a certain event.
+     * 
+     * @param region Region to execute the events for
+     * @param event  The event
+     * @param before The 'before' or 'after' commands
+     */
+    public void runEventCommands(GeneralRegion region, GeneralRegion.RegionEvent event, boolean before) {
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void deletingRegion(DeletingRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.DELETED, true);
-	}
+        ConfigurationSection eventCommandProfileSection = region
+                .getConfigurationSectionSetting("general.eventCommandProfile", "eventCommandProfiles");
+        if (eventCommandProfileSection == null) {
 
-	@EventHandler
-	public void deletedRegion(DeletedRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.DELETED, false);
-	}
+            return;
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void rentingRegion(RentingRegionEvent event) {
-		// Technically the rent can still be cancelled if the payment fails...
-		runEventCommands(event.getRegion(), event.isExtending() ? GeneralRegion.RegionEvent.EXTENDED : GeneralRegion.RegionEvent.RENTED, true);
-	}
+        }
 
-	@EventHandler
-	public void rentedRegion(RentedRegionEvent event) {
-		runEventCommands(event.getRegion(), event.hasExtended() ? GeneralRegion.RegionEvent.EXTENDED : GeneralRegion.RegionEvent.RENTED, false);
-	}
+        List<String> commands = eventCommandProfileSection
+                .getStringList(event.getValue() + "." + (before ? "before" : "after"));
+        if (commands.isEmpty()) {
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void buyingRegion(BuyingRegionEvent event) {
-		// Technically the buy can still be cancelled if the payment fails...
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.BOUGHT, true);
-	}
+            return;
 
-	@EventHandler
-	public void boughtRegion(BoughtRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.BOUGHT, false);
-	}
+        }
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void resellingRegion(ResellingRegionEvent event) {
-		// Technically the resell can still be cancelled if the payment fails...
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.RESELL, true);
-	}
+        region.runCommands(Bukkit.getConsoleSender(), commands);
 
-	@EventHandler
-	public void resoldRegion(ResoldRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.RESELL, false);
-	}
+    }
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void sellingRegion(SellingRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.SOLD, true);
-	}
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void addingRegion(AddingRegionEvent event) {
 
-	@EventHandler
-	public void soldRegion(SoldRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.SOLD, false);
-	}
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.CREATED, true);
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void unrentingRegion(UnrentingRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.UNRENTED, true);
-	}
+    }
 
-	@EventHandler
-	public void unrentedRegion(UnrentedRegionEvent event) {
-		runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.UNRENTED, false);
-	}
+    @EventHandler
+    public void addedRegion(AddedRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.CREATED, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void deletingRegion(DeletingRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.DELETED, true);
+
+    }
+
+    @EventHandler
+    public void deletedRegion(DeletedRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.DELETED, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void rentingRegion(RentingRegionEvent event) {
+
+        // Technically the rent can still be cancelled if the payment fails...
+        runEventCommands(event.getRegion(),
+                event.isExtending() ? GeneralRegion.RegionEvent.EXTENDED : GeneralRegion.RegionEvent.RENTED, true);
+
+    }
+
+    @EventHandler
+    public void rentedRegion(RentedRegionEvent event) {
+
+        runEventCommands(event.getRegion(),
+                event.hasExtended() ? GeneralRegion.RegionEvent.EXTENDED : GeneralRegion.RegionEvent.RENTED, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void buyingRegion(BuyingRegionEvent event) {
+
+        // Technically the buy can still be cancelled if the payment fails...
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.BOUGHT, true);
+
+    }
+
+    @EventHandler
+    public void boughtRegion(BoughtRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.BOUGHT, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void resellingRegion(ResellingRegionEvent event) {
+
+        // Technically the resell can still be cancelled if the payment fails...
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.RESELL, true);
+
+    }
+
+    @EventHandler
+    public void resoldRegion(ResoldRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.RESELL, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void sellingRegion(SellingRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.SOLD, true);
+
+    }
+
+    @EventHandler
+    public void soldRegion(SoldRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.SOLD, false);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void unrentingRegion(UnrentingRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.UNRENTED, true);
+
+    }
+
+    @EventHandler
+    public void unrentedRegion(UnrentedRegionEvent event) {
+
+        runEventCommands(event.getRegion(), GeneralRegion.RegionEvent.UNRENTED, false);
+
+    }
 
 }

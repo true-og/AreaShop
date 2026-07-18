@@ -23,59 +23,64 @@ import javax.annotation.Nonnull;
 @Singleton
 public class MessageCommand extends AreashopCommandBean {
 
-	private static final CloudKey<Player> KEY_PLAYER = CloudKey.of("player", Player.class);
-	private static final CloudKey<String> KEY_MESSAGE = CloudKey.of("message", String.class);
+    private static final CloudKey<Player> KEY_PLAYER = CloudKey.of("player", Player.class);
+    private static final CloudKey<String> KEY_MESSAGE = CloudKey.of("message", String.class);
 
-	private final MessageBridge messageBridge;
+    private final MessageBridge messageBridge;
 
-	@Inject
-	public MessageCommand(@Nonnull MessageBridge messageBridge) {
-		this.messageBridge = messageBridge;
-	}
+    @Inject
+    public MessageCommand(@Nonnull MessageBridge messageBridge) {
 
-	public String getHelpKey(CommandSender target) {
-		// Internal command, no need to show in the help list
-		return null;
-	}
+        this.messageBridge = messageBridge;
 
-	@Override
-	public String stringDescription() {
-		return null;
-	}
+    }
 
-	@NotNull
-	@Override
-	protected Command.Builder<? extends CommandSender> configureCommand(@NotNull Command.Builder<CommandSender> builder) {
-		return builder.literal("message")
-				.required(KEY_PLAYER, PlayerParser.playerParser())
-				.required(KEY_MESSAGE, StringParser.greedyStringParser())
-				.handler(this::handleCommand);
-	}
+    public String getHelpKey(CommandSender target) {
 
-	@Override
-	protected @NonNull CommandProperties properties() {
-		return CommandProperties.of("message");
-	}
+        // Internal command, no need to show in the help list
+        return null;
 
-	private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
-		CommandSender sender = context.sender();
-		if(!sender.hasPermission("areashop.message")) {
-			throw new AreaShopCommandException("message-noPermission");
-		}
-		Player player = context.get(KEY_PLAYER);
-		String message = context.get(KEY_MESSAGE);
-		Message m = Message.fromString(message);
-		SimpleMessageBridge.send(m, player);
-	}
+    }
+
+    @Override
+    public String stringDescription() {
+
+        return null;
+
+    }
+
+    @NotNull
+    @Override
+    protected Command.Builder<? extends CommandSender> configureCommand(
+            @NotNull Command.Builder<CommandSender> builder)
+    {
+
+        return builder.literal("message").required(KEY_PLAYER, PlayerParser.playerParser())
+                .required(KEY_MESSAGE, StringParser.greedyStringParser()).handler(this::handleCommand);
+
+    }
+
+    @Override
+    protected @NonNull CommandProperties properties() {
+
+        return CommandProperties.of("message");
+
+    }
+
+    private void handleCommand(@Nonnull CommandContext<CommandSender> context) {
+
+        CommandSender sender = context.sender();
+        if (!sender.hasPermission("areashop.message")) {
+
+            throw new AreaShopCommandException("message-noPermission");
+
+        }
+
+        Player player = context.get(KEY_PLAYER);
+        String message = context.get(KEY_MESSAGE);
+        Message m = Message.fromString(message);
+        SimpleMessageBridge.send(m, player);
+
+    }
 
 }
-
-
-
-
-
-
-
-
-
-

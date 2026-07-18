@@ -9,34 +9,46 @@ import org.bukkit.OfflinePlayer;
  */
 public class RentingRegionEvent extends CancellableRegionEvent<RentRegion> {
 
-	private final OfflinePlayer player;
-	private final boolean extending;
+    private final OfflinePlayer player;
+    private final boolean extending;
 
-	/**
-	 * Constructor.
-	 * @param region    The region that is about to be rented
-	 * @param player    The player that tries to rent the region
-	 * @param extending true if the player is extending the rental of the region, otherwise false
-	 */
-	public RentingRegionEvent(RentRegion region, OfflinePlayer player, boolean extending) {
-		super(region);
-		this.player = player;
-		this.extending = extending;
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region    The region that is about to be rented
+     * @param player    The player that tries to rent the region
+     * @param extending true if the player is extending the rental of the region,
+     *                  otherwise false
+     */
+    public RentingRegionEvent(RentRegion region, OfflinePlayer player, boolean extending) {
 
-	/**
-	 * Get the player that is trying to rent the region.
-	 * @return The player that is trying to rent the region
-	 */
-	public OfflinePlayer getPlayer() {
-		return player;
-	}
+        super(region);
+        this.player = player;
+        this.extending = extending;
 
-	/**
-	 * Check if the player is extending the region or renting it for the first time.
-	 * @return true if the player tries to extend the region, false if he tries to rent it the first time
-	 */
-	public boolean isExtending() {
-		return extending;
-	}
+    }
+
+    /**
+     * Get the player that is trying to rent the region.
+     * 
+     * @return The player that is trying to rent the region
+     */
+    public OfflinePlayer getPlayer() {
+
+        return player;
+
+    }
+
+    /**
+     * Check if the player is extending the region or renting it for the first time.
+     * 
+     * @return true if the player tries to extend the region, false if he tries to
+     *         rent it the first time
+     */
+    public boolean isExtending() {
+
+        return extending;
+
+    }
+
 }

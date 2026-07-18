@@ -6,6 +6,4 @@ dependencies {
 
 description = "AreaShop NMS Helper 1-19"
 
-tasks {
-
-}
+tasks {}

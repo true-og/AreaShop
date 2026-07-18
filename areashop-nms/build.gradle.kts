@@ -1,5 +1,3 @@
-dependencies {
-    compileOnly(libs.spigot)
-}
+dependencies { compileOnly(libs.spigot) }
 
 description = "AreaShop NMS Interface"

@@ -23,7 +23,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -37,60 +36,81 @@ public class HomeModificationListener implements Listener {
     private final Server server;
 
     @AssistedInject
-    public HomeModificationListener(
-            @Assisted AccessControlValidator validator,
-            @Nonnull IFileManager fileManager,
-            @Nonnull WorldGuardInterface worldGuardInterface,
-            @Nonnull MessageBridge messageBridge,
-            @Nonnull Server server
-    ) {
+    public HomeModificationListener(@Assisted AccessControlValidator validator, @Nonnull IFileManager fileManager,
+            @Nonnull WorldGuardInterface worldGuardInterface, @Nonnull MessageBridge messageBridge,
+            @Nonnull Server server)
+    {
+
         this.accessControlValidator = validator;
         this.fileManager = fileManager;
         this.worldGuardInterface = worldGuardInterface;
         this.server = server;
         this.messageBridge = messageBridge;
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHomeModification(@Nonnull final HomeModifyEvent event) {
+
         final IUser homeOwner = event.getHomeOwner();
         final HomeModifyEvent.HomeModifyCause cause = event.getCause();
         if (cause != HomeModifyEvent.HomeModifyCause.UPDATE && cause != HomeModifyEvent.HomeModifyCause.CREATE) {
+
             return;
+
         }
+
         final Location newLocation = event.getNewLocation();
         final RegionManager regionManager = this.worldGuardInterface.getRegionManager(newLocation.getWorld());
         if (regionManager == null) {
+
             return;
+
         }
+
         final BlockVector3 position = BukkitAdapter.adapt(newLocation).toVector().toBlockPoint();
         final ApplicableRegionSet protectedRegions = regionManager.getApplicableRegions(position);
         for (ProtectedRegion protectedRegion : protectedRegions.getRegions()) {
+
             processHomeModification(event, homeOwner, protectedRegion);
+
         }
+
     }
 
-    private void processHomeModification(
-            @Nonnull Cancellable event,
-            @Nonnull IUser homeOwner,
-            @Nonnull ProtectedRegion protectedRegion) {
+    private void processHomeModification(@Nonnull Cancellable event, @Nonnull IUser homeOwner,
+            @Nonnull ProtectedRegion protectedRegion)
+    {
+
         final GeneralRegion region = this.fileManager.getRegion(protectedRegion.getId());
         if (region == null) {
+
             return;
+
         }
+
         final Optional<HomeAccessFeature> optionalFeature = region.getFeature(HomeAccessFeature.class);
         if (optionalFeature.isEmpty()) {
+
             return;
+
         }
+
         final HomeAccessType accessType = optionalFeature.get().homeAccessType();
         if (this.accessControlValidator.canAccess(homeOwner.getUUID(), region, accessType)) {
+
             return;
+
         }
+
         event.setCancelled(true);
         Player player = this.server.getPlayer(homeOwner.getUUID());
         if (player != null) {
+
             this.messageBridge.message(player, "togglehome-sethomeDenied");
+
         }
+
     }
 
 }

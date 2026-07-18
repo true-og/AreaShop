@@ -15,218 +15,304 @@ import java.util.Set;
 // TODO consider switching to saving lowercase regions
 public class RegionGroup {
 
-	private final Plugin plugin;
-	private final IFileManager fileManager;
-	private final String name;
-	private final Set<String> regions;
-	private Set<String> autoRegions;
-	private boolean autoDirty;
-	private final Set<String> worlds;
+    private final Plugin plugin;
+    private final IFileManager fileManager;
+    private final String name;
+    private final Set<String> regions;
+    private Set<String> autoRegions;
+    private boolean autoDirty;
+    private final Set<String> worlds;
 
-	/**
-	 * Constructor, used when creating new groups or restoring them from groups.yml at server boot.
-	 * @param plugin The AreaShop plugin
-	 * @param name   Name of the group, has to be unique
-	 */
-	@AssistedInject
-	RegionGroup(@Nonnull Plugin plugin, @Nonnull IFileManager fileManager, @Assisted String name) {
-		this.plugin = plugin;
-		this.fileManager = fileManager;
-		this.name = name;
-		this.autoDirty = true;
-		setSetting("name", name);
+    /**
+     * Constructor, used when creating new groups or restoring them from groups.yml
+     * at server boot.
+     * 
+     * @param plugin The AreaShop plugin
+     * @param name   Name of the group, has to be unique
+     */
+    @AssistedInject
+    RegionGroup(@Nonnull Plugin plugin, @Nonnull IFileManager fileManager, @Assisted String name) {
 
-		// Load regions and worlds
-		regions = new HashSet<>(getSettings().getStringList("regions"));
-		worlds = new HashSet<>(getSettings().getStringList("worlds"));
-	}
+        this.plugin = plugin;
+        this.fileManager = fileManager;
+        this.name = name;
+        this.autoDirty = true;
+        setSetting("name", name);
 
-	/**
-	 * Get automatically added regions.
-	 * @return Set of regions automatically added by the configuration
-	 */
-	public Set<String> getAutoRegions() {
-		if(autoDirty) {
-			autoRegions = new HashSet<>();
-			for(GeneralRegion region : fileManager.getRegionsRef()) {
-				if(worlds.contains(region.getWorldName())) {
-					autoRegions.add(region.getName());
-				}
-			}
-			autoDirty = false;
-		}
-		return autoRegions;
-	}
+        // Load regions and worlds
+        regions = new HashSet<>(getSettings().getStringList("regions"));
+        worlds = new HashSet<>(getSettings().getStringList("worlds"));
 
-	/**
-	 * Mark that automatically added regions should be regenerated.
-	 */
-	public void autoDirty() {
-		autoDirty = true;
-	}
+    }
 
-	/**
-	 * Adds a world from which all regions should be added to the group.
-	 * @param world World from which all regions should be added
-	 * @return true if the region was not already added, otherwise false
-	 */
-	public boolean addWorld(String world) {
-		if(worlds.add(world)) {
-			setSetting("regionsFromWorlds", new ArrayList<>(worlds));
-			saveRequired();
-			autoDirty();
-			return true;
-		}
-		return false;
-	}
+    /**
+     * Get automatically added regions.
+     * 
+     * @return Set of regions automatically added by the configuration
+     */
+    public Set<String> getAutoRegions() {
 
-	/**
-	 * Remove a member from the group.
-	 * @param world World to remove
-	 * @return true if the region was in the group before, otherwise false
-	 */
-	public boolean removeWorld(String world) {
-		if(worlds.remove(world)) {
-			setSetting("regionsFromWorlds", new ArrayList<>(worlds));
-			saveRequired();
-			autoDirty();
-			return true;
-		}
-		return false;
-	}
+        if (autoDirty) {
 
-	/**
-	 * Get all worlds from which regions are added automatically.
-	 * @return A list with the names of all worlds (immutable)
-	 */
-	public Set<String> getWorlds() {
-		return new HashSet<>(worlds);
-	}
+            autoRegions = new HashSet<>();
+            for (GeneralRegion region : fileManager.getRegionsRef()) {
 
-	/**
-	 * Adds a member to a group.
-	 * @param region The region to add to the group (GeneralRegion or a subclass of it)
-	 * @return true if the region was not already added, otherwise false
-	 */
-	public boolean addMember(GeneralRegion region) {
-		if(regions.add(region.getName())) {
-			setSetting("regions", new ArrayList<>(regions));
-			saveRequired();
-			return true;
-		}
-		return false;
-	}
+                if (worlds.contains(region.getWorldName())) {
 
-	/**
-	 * Remove a member from the group.
-	 * @param region The region to remove
-	 * @return true if the region was in the group before, otherwise false
-	 */
-	public boolean removeMember(GeneralRegion region) {
-		if(regions.remove(region.getName())) {
-			setSetting("regions", new ArrayList<>(regions));
-			saveRequired();
-			return true;
-		}
-		return false;
-	}
+                    autoRegions.add(region.getName());
 
-	/**
-	 * Get all members of the group.
-	 * @return A list with the names of all members of the group (immutable)
-	 */
-	public Set<String> getMembers() {
-		HashSet<String> result = new HashSet<>(regions);
-		result.addAll(getAutoRegions());
-		return result;
-	}
+                }
 
-	/**
-	 * Get all manually added members of the group.
-	 * @return A list with the names of all members of the group (immutable)
-	 */
-	public Set<String> getManualMembers() {
-		return new HashSet<>(regions);
-	}
+            }
 
-	/**
-	 * Get all members of the group as GeneralRegions.
-	 * @return A Set with all group members
-	 */
-	public Set<GeneralRegion> getMemberRegions() {
-		Set<GeneralRegion> result = new HashSet<>();
-		for(String playerName : getMembers()) {
-			result.add(fileManager.getRegion(playerName));
-		}
-		return result;
-	}
+            autoDirty = false;
 
-	/**
-	 * Get the name of the group.
-	 * @return The name of the group
-	 */
-	public String getName() {
-		return name;
-	}
+        }
 
-	/**
-	 * Get the lowercase name of the group (used for getting the config etc).
-	 * @return The name of the group in lowercase
-	 */
-	public String getLowerCaseName() {
-		return getName().toLowerCase();
-	}
+        return autoRegions;
 
-	/**
-	 * Check if a region is member of the group.
-	 * @param region Region to check
-	 * @return true if the region is in the group, otherwise false
-	 */
-	public boolean isMember(GeneralRegion region) {
-		return getMembers().contains(region.getName());
-	}
+    }
 
-	/**
-	 * Get the priority of the group (higher overwrites).
-	 * @return The priority of the group
-	 */
-	public int getPriority() {
-		return getSettings().getInt("priority");
-	}
+    /**
+     * Mark that automatically added regions should be regenerated.
+     */
+    public void autoDirty() {
 
-	/**
-	 * Get the configurationsection with the settings of this group.
-	 * @return The ConfigurationSection with the settings of the group
-	 */
-	public ConfigurationSection getSettings() {
-		ConfigurationSection result =  fileManager.getGroupSettings(name);
-		if(result != null) {
-			return result;
-		} else {
-			return new YamlConfiguration();
-		}
-	}
+        autoDirty = true;
 
-	/**
-	 * Set a setting of this group.
-	 * @param path    The path to set
-	 * @param setting The value to set
-	 */
-	public void setSetting(String path, Object setting) {
-		fileManager.setGroupSetting(this, path, setting);
-	}
+    }
 
-	/**
-	 * Indicates this file needs to be saved, will actually get saved later by a task.
-	 */
-	public void saveRequired() {
-		fileManager.saveGroupsIsRequired();
-	}
+    /**
+     * Adds a world from which all regions should be added to the group.
+     * 
+     * @param world World from which all regions should be added
+     * @return true if the region was not already added, otherwise false
+     */
+    public boolean addWorld(String world) {
 
-	/**
-	 * Save the groups to disk now, normally saveRequired() is preferred because of performance.
-	 */
-	public void saveNow() {
-		fileManager.saveGroupsNow();
-	}
+        if (worlds.add(world)) {
+
+            setSetting("regionsFromWorlds", new ArrayList<>(worlds));
+            saveRequired();
+            autoDirty();
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Remove a member from the group.
+     * 
+     * @param world World to remove
+     * @return true if the region was in the group before, otherwise false
+     */
+    public boolean removeWorld(String world) {
+
+        if (worlds.remove(world)) {
+
+            setSetting("regionsFromWorlds", new ArrayList<>(worlds));
+            saveRequired();
+            autoDirty();
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Get all worlds from which regions are added automatically.
+     * 
+     * @return A list with the names of all worlds (immutable)
+     */
+    public Set<String> getWorlds() {
+
+        return new HashSet<>(worlds);
+
+    }
+
+    /**
+     * Adds a member to a group.
+     * 
+     * @param region The region to add to the group (GeneralRegion or a subclass of
+     *               it)
+     * @return true if the region was not already added, otherwise false
+     */
+    public boolean addMember(GeneralRegion region) {
+
+        if (regions.add(region.getName())) {
+
+            setSetting("regions", new ArrayList<>(regions));
+            saveRequired();
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Remove a member from the group.
+     * 
+     * @param region The region to remove
+     * @return true if the region was in the group before, otherwise false
+     */
+    public boolean removeMember(GeneralRegion region) {
+
+        if (regions.remove(region.getName())) {
+
+            setSetting("regions", new ArrayList<>(regions));
+            saveRequired();
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Get all members of the group.
+     * 
+     * @return A list with the names of all members of the group (immutable)
+     */
+    public Set<String> getMembers() {
+
+        HashSet<String> result = new HashSet<>(regions);
+        result.addAll(getAutoRegions());
+        return result;
+
+    }
+
+    /**
+     * Get all manually added members of the group.
+     * 
+     * @return A list with the names of all members of the group (immutable)
+     */
+    public Set<String> getManualMembers() {
+
+        return new HashSet<>(regions);
+
+    }
+
+    /**
+     * Get all members of the group as GeneralRegions.
+     * 
+     * @return A Set with all group members
+     */
+    public Set<GeneralRegion> getMemberRegions() {
+
+        Set<GeneralRegion> result = new HashSet<>();
+        for (String playerName : getMembers()) {
+
+            result.add(fileManager.getRegion(playerName));
+
+        }
+
+        return result;
+
+    }
+
+    /**
+     * Get the name of the group.
+     * 
+     * @return The name of the group
+     */
+    public String getName() {
+
+        return name;
+
+    }
+
+    /**
+     * Get the lowercase name of the group (used for getting the config etc).
+     * 
+     * @return The name of the group in lowercase
+     */
+    public String getLowerCaseName() {
+
+        return getName().toLowerCase();
+
+    }
+
+    /**
+     * Check if a region is member of the group.
+     * 
+     * @param region Region to check
+     * @return true if the region is in the group, otherwise false
+     */
+    public boolean isMember(GeneralRegion region) {
+
+        return getMembers().contains(region.getName());
+
+    }
+
+    /**
+     * Get the priority of the group (higher overwrites).
+     * 
+     * @return The priority of the group
+     */
+    public int getPriority() {
+
+        return getSettings().getInt("priority");
+
+    }
+
+    /**
+     * Get the configurationsection with the settings of this group.
+     * 
+     * @return The ConfigurationSection with the settings of the group
+     */
+    public ConfigurationSection getSettings() {
+
+        ConfigurationSection result = fileManager.getGroupSettings(name);
+        if (result != null) {
+
+            return result;
+
+        } else {
+
+            return new YamlConfiguration();
+
+        }
+
+    }
+
+    /**
+     * Set a setting of this group.
+     * 
+     * @param path    The path to set
+     * @param setting The value to set
+     */
+    public void setSetting(String path, Object setting) {
+
+        fileManager.setGroupSetting(this, path, setting);
+
+    }
+
+    /**
+     * Indicates this file needs to be saved, will actually get saved later by a
+     * task.
+     */
+    public void saveRequired() {
+
+        fileManager.saveGroupsIsRequired();
+
+    }
+
+    /**
+     * Save the groups to disk now, normally saveRequired() is preferred because of
+     * performance.
+     */
+    public void saveNow() {
+
+        fileManager.saveGroupsNow();
+
+    }
+
 }

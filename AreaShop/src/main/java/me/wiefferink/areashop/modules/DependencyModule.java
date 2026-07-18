@@ -16,22 +16,25 @@ public class DependencyModule extends AbstractModule {
     private final DiamondBankAPIJava economy;
     private final LuckPerms permission;
 
-   public DependencyModule(@Nonnull WorldEditPlugin worldEditPlugin,
-                           @Nonnull WorldGuardPlugin worldGuardPlugin,
-                           @Nullable DiamondBankAPIJava economy,
-                           @Nullable LuckPerms permission
-   ) {
-       this.worldEditPlugin = worldEditPlugin;
-       this.worldGuardPlugin = worldGuardPlugin;
-       this.economy = economy;
-       this.permission = permission;
-   }
+    public DependencyModule(@Nonnull WorldEditPlugin worldEditPlugin, @Nonnull WorldGuardPlugin worldGuardPlugin,
+            @Nullable DiamondBankAPIJava economy, @Nullable LuckPerms permission)
+    {
+
+        this.worldEditPlugin = worldEditPlugin;
+        this.worldGuardPlugin = worldGuardPlugin;
+        this.economy = economy;
+        this.permission = permission;
+
+    }
 
     @Override
     protected void configure() {
+
         bind(WorldEditPlugin.class).toInstance(this.worldEditPlugin);
         bind(WorldGuardPlugin.class).toInstance(this.worldGuardPlugin);
         bind(DiamondBankAPIJava.class).toInstance(this.economy);
         bind(LuckPerms.class).toInstance(this.permission);
+
     }
+
 }

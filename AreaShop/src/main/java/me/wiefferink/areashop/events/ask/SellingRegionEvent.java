@@ -8,11 +8,15 @@ import me.wiefferink.areashop.regions.BuyRegion;
  */
 public class SellingRegionEvent extends CancellableRegionEvent<BuyRegion> {
 
-	/**
-	 * Constructor.
-	 * @param region The region that is about to get sold
-	 */
-	public SellingRegionEvent(BuyRegion region) {
-		super(region);
-	}
+    /**
+     * Constructor.
+     * 
+     * @param region The region that is about to get sold
+     */
+    public SellingRegionEvent(BuyRegion region) {
+
+        super(region);
+
+    }
+
 }

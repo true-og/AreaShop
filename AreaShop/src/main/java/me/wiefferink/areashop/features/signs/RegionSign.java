@@ -31,265 +31,375 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sign that is connected to a region to display information and interact with the region.
+ * Sign that is connected to a region to display information and interact with
+ * the region.
  */
 public class RegionSign {
 
-	private final BlockBehaviourHelper blockHelper;
-	private final SignErrorLogger errorLogger;
+    private final BlockBehaviourHelper blockHelper;
+    private final SignErrorLogger errorLogger;
 
-	private final SignsFeature signsFeature;
-	private final String key;
+    private final SignsFeature signsFeature;
+    private final String key;
 
+    @AssistedInject
+    RegionSign(@Nonnull BlockBehaviourHelper blockBehaviourHelper, @Nonnull SignErrorLogger signErrorLogger,
+            @Assisted @Nonnull SignsFeature signsFeature, @Assisted @Nonnull String key)
+    {
 
-	@AssistedInject
-	RegionSign(
-			@Nonnull BlockBehaviourHelper blockBehaviourHelper,
-			@Nonnull SignErrorLogger signErrorLogger,
-			@Assisted @Nonnull SignsFeature signsFeature,
-			@Assisted @Nonnull String key
-	) {
-		this.blockHelper = blockBehaviourHelper;
-		this.errorLogger = signErrorLogger;
-		this.signsFeature = signsFeature;
-		this.key = key;
-	}
+        this.blockHelper = blockBehaviourHelper;
+        this.errorLogger = signErrorLogger;
+        this.signsFeature = signsFeature;
+        this.key = key;
 
-	public BlockPosition getPosition() {
-		return new BlockPosition(getLocation());
-	}
+    }
 
-	/**
-	 * Get the location of this sign.
-	 * @return The location of this sign
-	 */
-	public Location getLocation() {
-		return Utils.configToLocation(getRegion().getConfig().getConfigurationSection("general.signs." + key + ".location"));
-	}
+    public BlockPosition getPosition() {
 
-	/**
-	 * Location string to be used as key in maps.
-	 * @return Location string
-	 */
-	public String getStringLocation() {
-		return SignsFeature.locationToString(getLocation());
-	}
+        return new BlockPosition(getLocation());
 
-	/**
-	 * Chunk string to be used as key in maps.
-	 * @return Chunk string
-	 */
-	public String getStringChunk() {
-		return SignsFeature.chunkToString(getLocation());
-	}
+    }
 
-	/**
-	 * Get the region this sign is linked to.
-	 * @return The region this sign is linked to
-	 */
-	public GeneralRegion getRegion() {
-		return signsFeature.getRegion();
-	}
+    /**
+     * Get the location of this sign.
+     * 
+     * @return The location of this sign
+     */
+    public Location getLocation() {
 
-	/**
-	 * Remove this sign from the region.
-	 */
-	public void remove() {
-		Location location = getLocation();
-		if (location != null && location.getWorld() != null) {
-			location.getBlock().setType(Material.AIR);
-			this.signsFeature.signManager().removeSign(this);
-		}
-		getRegion().setSetting("general.signs." + key, null);
-		// Remove the sign from the region's sign manager
-	}
+        return Utils.configToLocation(
+                getRegion().getConfig().getConfigurationSection("general.signs." + key + ".location"));
 
-	/**
-	 * Get the ConfigurationSection defining the sign layout.
-	 * @return The sign layout config
-	 */
-	public ConfigurationSection getProfile() {
-		return getRegion().getConfigurationSectionSetting("general.signProfile", "signProfiles", getRegion().getConfig().get("general.signs." + key + ".profile"));
-	}
+    }
 
-	/**
-	 * Get the facing of the sign as saved in the config.
-	 * @return BlockFace the sign faces, or null if unknown
-	 */
-	public BlockFace getFacing() {
-		try {
-			return BlockFace.valueOf(getRegion().getConfig().getString("general.signs." + key + ".facing"));
-		} catch(NullPointerException | IllegalArgumentException e) {
-			return null;
-		}
-	}
+    /**
+     * Location string to be used as key in maps.
+     * 
+     * @return Location string
+     */
+    public String getStringLocation() {
 
-	/**
-	 * Get the material of the sign as saved in the config.
-	 * @return Material of the sign,Material.AIR if none.
-	 */
-	public Material getMaterial() {
-		String name = getRegion().getConfig().getString("general.signs." + key + ".signType");
-		Material result = Materials.signNameToMaterial(name);
-		return result == null ? Material.AIR : result;
-	}
+        return SignsFeature.locationToString(getLocation());
 
-	/**
-	 * Update this sign.
-	 * @return true if the update was successful, otherwise false
-	 */
-	public boolean update() {
-		// Ignore updates of signs in chunks that are not loaded
-		Location signLocation = getLocation();
-		if(signLocation == null
-				|| signLocation.getWorld() == null
-				|| !signLocation.getWorld().isChunkLoaded(signLocation.getBlockX() >> 4, signLocation.getBlockZ() >> 4)) {
-			return false;
-		}
+    }
 
-		if(getRegion().isDeleted()) {
-			return false;
-		}
+    /**
+     * Chunk string to be used as key in maps.
+     * 
+     * @return Chunk string
+     */
+    public String getStringChunk() {
 
-		YamlConfiguration regionConfig = getRegion().getConfig();
-		ConfigurationSection signConfig = getProfile();
-		Block block = signLocation.getBlock();
-		if(signConfig == null || !signConfig.isSet(getRegion().getState().getValue())) {
-			block.setType(Material.AIR);
-			return true;
-		}
+        return SignsFeature.chunkToString(getLocation());
 
-		ConfigurationSection stateConfig = signConfig.getConfigurationSection(getRegion().getState().getValue());
+    }
 
-		// Get the lines
-		String[] signLines = new String[4];
-		boolean signEmpty = true;
-		for(int i = 0; i < 4; i++) {
-			signLines[i] = stateConfig.getString("line" + (i + 1));
-			signEmpty &= (signLines[i] == null || signLines[i].isEmpty());
-		}
-		if(signEmpty) {
-			block.setType(Material.AIR);
-			return true;
-		}
+    /**
+     * Get the region this sign is linked to.
+     * 
+     * @return The region this sign is linked to
+     */
+    public GeneralRegion getRegion() {
 
-		// Place the sign back (with proper rotation and type) after it has been hidden or (indirectly) destroyed
-		if(!Materials.isSign(block.getType())) {
-			Material signType = getMaterial();
-			if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
-				errorLogger.submitWarning("Setting sign" +  key +  "of region" + getRegion().getName() +  "failed, could not set sign block back");
-				this.remove();
-				return false;
-			}
-			// Don't do physics here, we first need to update the direction
-			block.setType(signType, false);
+        return signsFeature.getRegion();
 
-			BlockState blockState = PaperLib.getBlockState(block, false).getState();
-			BlockData blockData = blockState.getBlockData();
+    }
 
-			if(blockData instanceof WallSign) {
-				((WallSign) blockData).setFacing(getFacing());
-			} else if(blockData instanceof org.bukkit.block.data.type.Sign) {
-				((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
-			} else {
-				errorLogger.submitWarning("Failed to update the facing direction of the sign at" + getStringLocation() + "to " + getFacing() + ", region:" + getRegion().getName());
-				return false;
-			}
-			block.setBlockData(blockData);
+    /**
+     * Remove this sign from the region.
+     */
+    public void remove() {
 
-			// Check if the sign has popped
-			if(!Materials.isSign(block.getType())) {
-				return false;
-			}
-		}
+        Location location = getLocation();
+        if (location != null && location.getWorld() != null) {
 
-		// Save current rotation and type
-		if(!regionConfig.isString("general.signs." + key + ".signType")) {
-			getRegion().setSetting("general.signs." + key + ".signType", block.getType().name());
-		}
-		if(!regionConfig.isString("general.signs." + key + ".facing")) {
-			BlockFace signFacing = SignUtils.getSignFacing(block);
-			getRegion().setSetting("general.signs." + key + ".facing", signFacing == null ? null : signFacing.toString());
-		}
+            location.getBlock().setType(Material.AIR);
+            this.signsFeature.signManager().removeSign(this);
 
-		// Apply replacements and color and then set it on the sign
-		Sign signState = (Sign) PaperLib.getBlockState(block, false).getState();
-		for(int i = 0; i < signLines.length; i++) {
-			if(signLines[i] == null) {
-				signState.setLine(i, "");
-				continue;
-			}
-			signLines[i] = Message.fromString(signLines[i]).replacements(getRegion()).getSingle();
-			signLines[i] = Utils.applyColors(signLines[i]);
-			signState.setLine(i, signLines[i]);
-		}
-		signState.update(false, false);
-		return true;
-	}
+        }
 
-	/**
-	 * Check if the sign needs to update periodically.
-	 * @return true if it needs periodic updates, otherwise false
-	 */
-	public boolean needsPeriodicUpdate() {
-		ConfigurationSection signConfig = getProfile();
-		if(signConfig == null || !signConfig.isSet(getRegion().getState().getValue().toLowerCase())) {
-			return false;
-		}
+        getRegion().setSetting("general.signs." + key, null);
 
-		ConfigurationSection stateConfig = signConfig.getConfigurationSection(getRegion().getState().getValue().toLowerCase());
-		if(stateConfig == null) {
-			return false;
-		}
+        // Remove the sign from the region's sign manager
+    }
 
-		// Check the lines for the timeleft tag
-		for(int i = 1; i <= 4; i++) {
-			String line = stateConfig.getString("line" + i);
-			if(line != null && line.contains(Message.VARIABLE_START + AreaShop.tagTimeLeft + Message.VARIABLE_END)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Get the ConfigurationSection defining the sign layout.
+     * 
+     * @return The sign layout config
+     */
+    public ConfigurationSection getProfile() {
 
-	/**
-	 * Run commands when a player clicks a sign.
-	 * @param clicker   The player that clicked the sign
-	 * @param clickType The type of clicking
-	 * @return true if the commands ran successfully, false if any of them failed
-	 */
-	public boolean runSignCommands(Player clicker, GeneralRegion.ClickType clickType) {
-		ConfigurationSection signConfig = getProfile();
-		if(signConfig == null) {
-			return false;
-		}
-		ConfigurationSection stateConfig = signConfig.getConfigurationSection(getRegion().getState().getValue().toLowerCase());
+        return getRegion().getConfigurationSectionSetting("general.signProfile", "signProfiles",
+                getRegion().getConfig().get("general.signs." + key + ".profile"));
 
-		// Run player commands if specified
-		List<String> playerCommands = new ArrayList<>();
-		for(String command : stateConfig.getStringList(clickType.getValue() + "Player")) {
-			// TODO move variable checking code to InteractiveMessenger?
-			playerCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
-		}
-		getRegion().runCommands(clicker, playerCommands);
+    }
 
-		// Run console commands if specified
-		List<String> consoleCommands = new ArrayList<>();
-		for(String command : stateConfig.getStringList(clickType.getValue() + "Console")) {
-			consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END, clicker.getName()));
-		}
-		getRegion().runCommands(Bukkit.getConsoleSender(), consoleCommands);
+    /**
+     * Get the facing of the sign as saved in the config.
+     * 
+     * @return BlockFace the sign faces, or null if unknown
+     */
+    public BlockFace getFacing() {
 
-		return !playerCommands.isEmpty() || !consoleCommands.isEmpty();
-	}
+        try {
 
-	@Override
-	public boolean equals(Object object) {
-		return object instanceof RegionSign && ((RegionSign)object).getRegion().equals(this.getRegion()) && ((RegionSign)object).key.equals(this.key);
-	}
+            return BlockFace.valueOf(getRegion().getConfig().getString("general.signs." + key + ".facing"));
 
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(key, getRegion().getName());
-	}
+        } catch (NullPointerException | IllegalArgumentException e) {
+
+            return null;
+
+        }
+
+    }
+
+    /**
+     * Get the material of the sign as saved in the config.
+     * 
+     * @return Material of the sign,Material.AIR if none.
+     */
+    public Material getMaterial() {
+
+        String name = getRegion().getConfig().getString("general.signs." + key + ".signType");
+        Material result = Materials.signNameToMaterial(name);
+        return result == null ? Material.AIR : result;
+
+    }
+
+    /**
+     * Update this sign.
+     * 
+     * @return true if the update was successful, otherwise false
+     */
+    public boolean update() {
+
+        // Ignore updates of signs in chunks that are not loaded
+        Location signLocation = getLocation();
+        if (signLocation == null || signLocation.getWorld() == null
+                || !signLocation.getWorld().isChunkLoaded(signLocation.getBlockX() >> 4, signLocation.getBlockZ() >> 4))
+        {
+
+            return false;
+
+        }
+
+        if (getRegion().isDeleted()) {
+
+            return false;
+
+        }
+
+        YamlConfiguration regionConfig = getRegion().getConfig();
+        ConfigurationSection signConfig = getProfile();
+        Block block = signLocation.getBlock();
+        if (signConfig == null || !signConfig.isSet(getRegion().getState().getValue())) {
+
+            block.setType(Material.AIR);
+            return true;
+
+        }
+
+        ConfigurationSection stateConfig = signConfig.getConfigurationSection(getRegion().getState().getValue());
+
+        // Get the lines
+        String[] signLines = new String[4];
+        boolean signEmpty = true;
+        for (int i = 0; i < 4; i++) {
+
+            signLines[i] = stateConfig.getString("line" + (i + 1));
+            signEmpty &= (signLines[i] == null || signLines[i].isEmpty());
+
+        }
+
+        if (signEmpty) {
+
+            block.setType(Material.AIR);
+            return true;
+
+        }
+
+        // Place the sign back (with proper rotation and type) after it has been hidden
+        // or (indirectly) destroyed
+        if (!Materials.isSign(block.getType())) {
+
+            Material signType = getMaterial();
+            if (!blockHelper.canPlace(block.getLocation(), Bukkit.createBlockData(signType))) {
+
+                errorLogger.submitWarning("Setting sign" + key + "of region" + getRegion().getName()
+                        + "failed, could not set sign block back");
+                this.remove();
+                return false;
+
+            }
+
+            // Don't do physics here, we first need to update the direction
+            block.setType(signType, false);
+
+            BlockState blockState = PaperLib.getBlockState(block, false).getState();
+            BlockData blockData = blockState.getBlockData();
+
+            if (blockData instanceof WallSign) {
+
+                ((WallSign) blockData).setFacing(getFacing());
+
+            } else if (blockData instanceof org.bukkit.block.data.type.Sign) {
+
+                ((org.bukkit.block.data.type.Sign) blockData).setRotation(getFacing());
+
+            } else {
+
+                errorLogger.submitWarning("Failed to update the facing direction of the sign at" + getStringLocation()
+                        + "to " + getFacing() + ", region:" + getRegion().getName());
+                return false;
+
+            }
+
+            block.setBlockData(blockData);
+
+            // Check if the sign has popped
+            if (!Materials.isSign(block.getType())) {
+
+                return false;
+
+            }
+
+        }
+
+        // Save current rotation and type
+        if (!regionConfig.isString("general.signs." + key + ".signType")) {
+
+            getRegion().setSetting("general.signs." + key + ".signType", block.getType().name());
+
+        }
+
+        if (!regionConfig.isString("general.signs." + key + ".facing")) {
+
+            BlockFace signFacing = SignUtils.getSignFacing(block);
+            getRegion().setSetting("general.signs." + key + ".facing",
+                    signFacing == null ? null : signFacing.toString());
+
+        }
+
+        // Apply replacements and color and then set it on the sign
+        Sign signState = (Sign) PaperLib.getBlockState(block, false).getState();
+        for (int i = 0; i < signLines.length; i++) {
+
+            if (signLines[i] == null) {
+
+                signState.setLine(i, "");
+                continue;
+
+            }
+
+            signLines[i] = Message.fromString(signLines[i]).replacements(getRegion()).getSingle();
+            signLines[i] = Utils.applyColors(signLines[i]);
+            signState.setLine(i, signLines[i]);
+
+        }
+
+        signState.update(false, false);
+        return true;
+
+    }
+
+    /**
+     * Check if the sign needs to update periodically.
+     * 
+     * @return true if it needs periodic updates, otherwise false
+     */
+    public boolean needsPeriodicUpdate() {
+
+        ConfigurationSection signConfig = getProfile();
+        if (signConfig == null || !signConfig.isSet(getRegion().getState().getValue().toLowerCase())) {
+
+            return false;
+
+        }
+
+        ConfigurationSection stateConfig = signConfig
+                .getConfigurationSection(getRegion().getState().getValue().toLowerCase());
+        if (stateConfig == null) {
+
+            return false;
+
+        }
+
+        // Check the lines for the timeleft tag
+        for (int i = 1; i <= 4; i++) {
+
+            String line = stateConfig.getString("line" + i);
+            if (line != null && line.contains(Message.VARIABLE_START + AreaShop.tagTimeLeft + Message.VARIABLE_END)) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Run commands when a player clicks a sign.
+     * 
+     * @param clicker   The player that clicked the sign
+     * @param clickType The type of clicking
+     * @return true if the commands ran successfully, false if any of them failed
+     */
+    public boolean runSignCommands(Player clicker, GeneralRegion.ClickType clickType) {
+
+        ConfigurationSection signConfig = getProfile();
+        if (signConfig == null) {
+
+            return false;
+
+        }
+
+        ConfigurationSection stateConfig = signConfig
+                .getConfigurationSection(getRegion().getState().getValue().toLowerCase());
+
+        // Run player commands if specified
+        List<String> playerCommands = new ArrayList<>();
+        for (String command : stateConfig.getStringList(clickType.getValue() + "Player")) {
+
+            // TODO move variable checking code to InteractiveMessenger?
+            playerCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END,
+                    clicker.getName()));
+
+        }
+
+        getRegion().runCommands(clicker, playerCommands);
+
+        // Run console commands if specified
+        List<String> consoleCommands = new ArrayList<>();
+        for (String command : stateConfig.getStringList(clickType.getValue() + "Console")) {
+
+            consoleCommands.add(command.replace(Message.VARIABLE_START + AreaShop.tagClicker + Message.VARIABLE_END,
+                    clicker.getName()));
+
+        }
+
+        getRegion().runCommands(Bukkit.getConsoleSender(), consoleCommands);
+
+        return !playerCommands.isEmpty() || !consoleCommands.isEmpty();
+
+    }
+
+    @Override
+    public boolean equals(Object object) {
+
+        return object instanceof RegionSign && ((RegionSign) object).getRegion().equals(this.getRegion())
+                && ((RegionSign) object).key.equals(this.key);
+
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hashCode(key, getRegion().getName());
+
+    }
+
 }

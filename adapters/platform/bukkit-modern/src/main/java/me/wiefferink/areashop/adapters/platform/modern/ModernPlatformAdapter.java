@@ -9,7 +9,9 @@ public class ModernPlatformAdapter implements PlatformAdapter {
 
     @Override
     public BlockBehaviourHelper blockBehaviourHelper() {
+
         return this.blockBehaviourHelper;
+
     }
 
 }
