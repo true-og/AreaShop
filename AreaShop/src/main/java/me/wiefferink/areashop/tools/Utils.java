@@ -13,7 +13,6 @@ import me.wiefferink.interactivemessenger.Log;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -780,14 +779,35 @@ public class Utils {
      */
     public static String applyColors(String input) {
 
-        String result = null;
-        if (input != null) {
+        if (input == null) {
 
-            result = ChatColor.translateAlternateColorCodes('&', input);
+            return null;
 
         }
 
-        return result;
+        StringBuilder result = new StringBuilder(input.length());
+        for (int index = 0; index < input.length(); index++) {
+
+            char character = input.charAt(index);
+            if (character == '&' && index + 1 < input.length() && isColorCode(input.charAt(index + 1))) {
+
+                result.append('\u00A7').append(Character.toLowerCase(input.charAt(++index)));
+
+            } else {
+
+                result.append(character);
+
+            }
+
+        }
+
+        return result.toString();
+
+    }
+
+    private static boolean isColorCode(char character) {
+
+        return "0123456789abcdefklmnorx".indexOf(Character.toLowerCase(character)) >= 0;
 
     }
 

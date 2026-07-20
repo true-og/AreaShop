@@ -182,7 +182,7 @@
   - "[bold]Kjøp for[/bold]"
   - "    hover: Kjøp %region% for %price%"
   - "    hover: %lang:action|Buy %region%|%"
-  - "    kommando: /areashop buy %region%"
+  - "    kommando: /areashop confirmbuy --region %region%"
   - ": [gray]%price%."
 "info-regionReselPrice": "[darkgreen][bold]►[reset] Videresalgs pris: [gray]%resellprice% (du kan kjøpe den fra %lang:player%)."
 "info-regionFriends": "[darkgreen][bold]►[reset] Venner lagt til: [gray]%0%."
@@ -199,7 +199,7 @@
   - "[bold]Penger tilbake etter salg[/bold]"
   - "    hover: Selg %region% å få igjen %moneyback%"
   - "    hover: %lang:action|Sell %region%|%"
-  - "    kommando: /areashop sell %region%"
+  - "    kommando: /areashop confirmsell --region %region%"
   - ": [gray]%moneyback% (%moneybackpercent%% av prisen)."
 "info-regionMoneyBackRent": "[darkgreen][bold]►[reset] Penger tilbake fra leie: [gray]%moneyback% (%moneybackpercent%% fra gjenstående tid)."
 "info-regionMoneyBackRentClick":

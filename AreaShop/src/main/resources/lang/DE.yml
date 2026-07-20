@@ -207,7 +207,7 @@
   - "[bold]Kaufen für[/bold]"
   - "    hover: Kaufe %region% für %price%"
   - "    hover: %lang:action|Kaufe %region%|%"
-  - "    command: /areashop buy %region%"
+  - "    command: /areashop confirmbuy --region %region%"
   - ": [gray]%price%."
 "info-regionReselPrice": "[darkgreen][bold]►[reset] Weiterverkaufspreis:  [gray]%resellprice% (Du kannst es von %lang:player% kaufen)."
 "info-regionFriends": "[darkgreen][bold]►[reset] Hinzugefügte Freunde: [gray]%0%."
@@ -224,7 +224,7 @@
   - "[bold]Verkaufsrückzahlung[/bold]"
   - "    hover: Verkaufe %region% und bekomme %moneyback% zurück"
   - "    hover: %lang:action|Verkaufe %region%|%"
-  - "    command: /areashop sell %region%"
+  - "    command: /areashop confirmsell --region %region%"
   - ": [gray]%moneyback% (%moneybackpercent%% des Kaufpreises)."
 "info-regionMoneyBackRent": "[darkgreen][bold]►[reset] Rückzahlung bei Mietkündigung: [gray]%moneyback% (%moneybackpercent%% der verbleibenden Zeit)."
 "info-regionMoneyBackRentClick":

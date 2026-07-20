@@ -119,7 +119,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
             if (buy.isInResellingMode()) {
 
                 messageBridge.messageNoPrefix(sender, "info-regionReselling", buy);
-                messageBridge.messageNoPrefix(sender, jubileeKey("info-regionReselPrice"), buy);
+                messageBridge.messageNoPrefix(sender, jubileeKey("info-regionReselPriceClick"), buy);
 
             } else {
 

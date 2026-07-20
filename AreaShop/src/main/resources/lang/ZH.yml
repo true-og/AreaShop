@@ -205,7 +205,7 @@
   - "[bold]Buy for[/bold]"
   - "    hover: Buy %region% for %price%"
   - "    hover: %lang:action|Buy %region%|%"
-  - "    command: /areashop buy %region%"
+  - "    command: /areashop confirmbuy --region %region%"
   - ": [gray]%price%."
 "info-regionReselPrice": "[darkgreen][bold]►[reset] 转售价格: [gray]%resellprice% (你可以购买 %lang:player%)."
 "info-regionFriends": "[darkgreen][bold]►[reset] 添加好友: [gray]%0%."
@@ -222,7 +222,7 @@
   - "[bold]点击执行出售和获得一部分金币[/bold]"
   - "    hover: 出售 %region% 可以收到：%moneyback% 金币"
   - "    hover: %lang:action|出售 %region%|%"
-  - "    command: /areashop sell %region%"
+  - "    command: /areashop confirmsell --region %region%"
   - ": [gray]%moneyback% (%moneybackpercent%% 的价格)."
 "info-regionMoneyBackRent": "[darkgreen][bold]►[reset] 放弃租用: [gray]%moneyback% (%moneybackpercent%% 剩余时间)."
 "info-regionMoneyBackRentClick":

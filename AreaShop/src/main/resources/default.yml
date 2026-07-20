@@ -45,8 +45,8 @@ general:
   signProfile:
     forrent:
       line1: '&2For Rent:'
-      line2: '&0&l%region%'
-      line3: '&e%durationshort% (12x)'
+      line2: '&f&l%region%'
+      line3: '&f%durationshort% (12x)'
       line4: '%price%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -56,7 +56,7 @@ general:
         - 'areashop info region --region %region%'
     rented:
       line1: '&2Rented:'
-      line2: '&0&l%region%'
+      line2: '&f&l%region%'
       line3: '&3&lShopkeeper:'
       line4: '&0%playercolor%%player%'
       rightClickPlayer:
@@ -65,13 +65,14 @@ general:
       #  - 'areashop message %clicker% %lang:confirm-extend|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region --region %region%'
+      # Every Shift-click opens a rent GUI; the current renter can also sell back the shop.
       shiftRightClickPlayer:
-        - 'areashop payrent --region %region%'
+        - 'areashop rentoptions --region %region%'
       shiftLeftClickPlayer:
-        - 'areashop payrent --region %region%'
+        - 'areashop rentoptions --region %region%'
     forsale:
       line1: '&2For Sale:'
-      line2: '&0&l%region%'
+      line2: '&f&l%region%'
       line3: '%price%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
@@ -80,9 +81,11 @@ general:
       #  - 'areashop message %clicker% %lang:confirm-buy|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region --region %region%'
+      shiftRightClickPlayer:
+        - 'areashop confirmbuy --region %region%'
     resell:
       line1: '&2For Sale:'
-      line2: '&0&l%region%'
+      line2: '&f&l%region%'
       line3: '%resellprice%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
@@ -93,17 +96,19 @@ general:
         - 'areashop info region --region %region%'
       shiftRightClickPlayer:
         - 'areashop stopresell --region %region%'
+      shiftLeftClickPlayer:
+        - 'areashop confirmbuy --region %region%'
     sold:
       line1: '&4Sold:'
-      line2: '&0&l%region%'
+      line2: '&f&l%region%'
       line3: '&0%playercolor%%player%'
       line4: '&2No Expiry'
       rightClickPlayer:
         - 'areashop info region --region %region%'
       leftClickPlayer:
         - 'areashop info region --region %region%'
-      shiftRightClickConsole:
-        - 'areashop message %clicker% %lang:confirm-sell|%region%|%'
+      shiftRightClickPlayer:
+        - 'areashop confirmsell --region %region%'
 
   ##### Set WorldGuard regions flags depending on the region state.
   # All normal region flags as present in WorldGuard can be used, in addition to 'members', 'owners', 'priority' and 'parent'.
@@ -123,24 +128,30 @@ general:
       block-break: 'allow g:members'
       block-place: 'allow g:members'
       chest-access: 'allow g:members'
+      can-flippy: allow
     forrent:
       greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%'
+      interact: 'allow g:all'
       use: 'allow g:all'
     rented:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
+      interact: 'deny g:non_members'
       use: 'allow g:members'
     forsale:
       greeting: '%lang:wgPrefix%&6This shop can be purchased for %price%'
+      interact: 'allow g:all'
       use: 'allow g:all'
     sold:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
+      interact: 'deny g:non_members'
       use: 'allow g:members'
     resell:
       members: '%uuid%, %friendsuuid%'
       greeting: '%lang:wgPrefix%&6This shop can be purchased for %resellprice%'
-      use: 'allow g:all'
+      interact: 'deny g:non_members'
+      use: 'allow g:members'
 
   ##### Save and restore schematics to clean up regions.
   # After 'save:' or 'restore:' you enter the name of the file to restore from/to (.schematic is added automatically).

@@ -9,6 +9,8 @@ import me.wiefferink.areashop.commands.AddCommand;
 import me.wiefferink.areashop.commands.AddFriendCommand;
 import me.wiefferink.areashop.commands.AddSignCommand;
 import me.wiefferink.areashop.commands.BuyCommand;
+import me.wiefferink.areashop.commands.ConfirmBuyCommand;
+import me.wiefferink.areashop.commands.ConfirmSellCommand;
 import me.wiefferink.areashop.commands.DelCommand;
 import me.wiefferink.areashop.commands.DelFriendCommand;
 import me.wiefferink.areashop.commands.DelSignCommand;
@@ -31,6 +33,7 @@ import me.wiefferink.areashop.commands.QuickDeleteCommand;
 import me.wiefferink.areashop.commands.QuickRentCommand;
 import me.wiefferink.areashop.commands.ReloadCommand;
 import me.wiefferink.areashop.commands.RentCommand;
+import me.wiefferink.areashop.commands.RentOptionsCommand;
 import me.wiefferink.areashop.commands.ResellCommand;
 import me.wiefferink.areashop.commands.SchematicEventCommand;
 import me.wiefferink.areashop.commands.SellCommand;
@@ -70,12 +73,13 @@ import java.util.List;
 public class AreashopCommands {
 
     private static final List<Class<? extends AreashopCommandBean>> COMMAND_CLASSES = List.of(AddCommand.class,
-            AddFriendCommand.class, AddSignCommand.class, BuyCommand.class, DelCommand.class, DelFriendCommand.class,
-            DelSignCommand.class, FindCommand.class, GroupAddCommand.class, GroupDelCommand.class,
-            GroupInfoCommand.class, GroupListCommand.class, HelpCommand.class, InfoCommand.class, InfoBaseCommand.class,
-            InfoPlayerCommand.class, InfoRegionCommand.class, LinkSignsCommand.class, MeCommand.class,
-            MessageCommand.class, PayRentCommand.class, QuickBuyCommand.class, QuickDeleteCommand.class,
-            QuickRentCommand.class, ReloadCommand.class, RentCommand.class, ResellCommand.class,
+            AddFriendCommand.class, AddSignCommand.class, BuyCommand.class, ConfirmBuyCommand.class,
+            ConfirmSellCommand.class, DelCommand.class, DelFriendCommand.class, DelSignCommand.class, FindCommand.class,
+            GroupAddCommand.class, GroupDelCommand.class, GroupInfoCommand.class, GroupListCommand.class,
+            HelpCommand.class, InfoCommand.class, InfoBaseCommand.class, InfoPlayerCommand.class,
+            InfoRegionCommand.class, LinkSignsCommand.class, MeCommand.class, MessageCommand.class,
+            PayRentCommand.class, QuickBuyCommand.class, QuickDeleteCommand.class, QuickRentCommand.class,
+            ReloadCommand.class, RentCommand.class, RentOptionsCommand.class, ResellCommand.class,
             SchematicEventCommand.class, SellCommand.class, SetDurationCommand.class, SetLandlordCommand.class,
             SetOwnerCommand.class, SetPriceCommand.class, SetRestoreCommand.class, SetTeleportCommand.class,
             SetTransferCommand.class, StackCommand.class, StopResellCommand.class, TeleportCommand.class,

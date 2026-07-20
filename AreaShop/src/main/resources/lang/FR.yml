@@ -216,7 +216,7 @@
   - "[bold]Prix d'achat[/bold]"
   - "    hover: Acheter%region% pour %price%"
   - "    hover: %lang:action|Acheter %region%|%"
-  - "    command: /areashop buy %region%"
+  - "    command: /areashop confirmbuy --region %region%"
   - ": [gray]%price%."
 "info-regionReselPrice": "[darkgreen][bold]►[reset] Prix de revente : [gray]%resellprice% (vous pouvez l'acheter à %player%)."
 "info-regionFriends": "[darkgreen][bold]►[reset] Ami(s) ajouté(s)  : [gray]%0%."
@@ -233,7 +233,7 @@
   - "[bold]Retour sur investissement de la vente[/bold]"
   - "    hover: Vendez %region% et recupérer %moneyback% de retour sur investissement"
   - "    hover: %lang:action|Vendre %region%|%"
-  - "    command: /areashop sell %region%"
+  - "    command: /areashop confirmsell --region %region%"
   - ": [gray]%moneyback% (%moneybackpercent%% du prix)."
 "info-regionMoneyBackRent": "[darkgreen][bold]►[reset] Remboursement de location : [gray]%moneyback% (%moneybackpercent%% du temps restant)"
 "info-regionMoneyBackRentClick":

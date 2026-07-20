@@ -206,7 +206,7 @@
   - "[bold]Купить за[/bold]"
   - "    hover: Купить %region% за %price%"
   - "    hover: %lang:action|Купить %region%|%"
-  - "    command: /areashop buy %region%"
+  - "    command: /areashop confirmbuy --region %region%"
   - ": [gray]%price%."
 "info-regionReselPrice": "[darkgreen][bold]►[reset] Стоимость перепродажи: [gray]%resellprice% (вы можете купить его у %lang:player%)."
 "info-regionFriends": "[darkgreen][bold]►[reset] Добавленные друзья: [gray]%0%."
@@ -223,7 +223,7 @@
   - "[bold]Окупаемость продажи[/bold]"
   - "    hover: Продать %region% и получить обратно %moneyback%"
   - "    hover: %lang:action|Продать %region%|%"
-  - "    command: /areashop sell %region%"
+  - "    command: /areashop confirmsell --region %region%"
   - ": [gray]%moneyback% (%moneybackpercent%% от стоимости)."
 "info-regionMoneyBackRent": "[darkgreen][bold]►[reset] Окупаемость снятия аренды: [gray]%moneyback% (%moneybackpercent%% от оставшиеся времени)."
 "info-regionMoneyBackRentClick":

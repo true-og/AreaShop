@@ -278,10 +278,19 @@ info-regionCanBeRented: |-
   <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop rent %region%'><hover:show_text:'Rent %region% for %price% per %duration%
   %lang:action|Rent %region%|%'><bold>Rent for</bold></hover></click>: <gray>%price% per %duration%.
 info-regionCanBeBought: |-
-  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop buy %region%'><hover:show_text:'Buy %region% for %price%
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmbuy --region %region%'><hover:show_text:'Buy %region% for %price%
   %lang:action|Buy %region%|%'><bold>Buy for</bold></hover></click>: <gray>%price%.
+info-regionCanBeBoughtJubilee: |-
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmbuy --region %region%'><hover:show_text:'Buy %region% for free (jubilee)
+  %lang:action|Buy %region%|%'><bold>Buy</bold></hover></click>: <gray>free (jubilee).
 info-regionReselPrice: '<bold><dark_green>►</dark_green></bold> Resell price: <gray>%resellprice%
     (you can buy it from %lang:player%).'
+info-regionReselPriceClick: |-
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmbuy --region %region%'><hover:show_text:'Buy %region% from %player% for %resellprice%
+  %lang:action|Buy %region%|%'><bold>Buy from %lang:player%</bold></hover></click>: <gray>%resellprice%.
+info-regionReselPriceClickJubilee: |-
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmbuy --region %region%'><hover:show_text:'Buy %region% from %player% for free (jubilee)
+  %lang:action|Buy %region%|%'><bold>Buy from %lang:player%</bold></hover></click>: <gray>free (jubilee).
 info-regionFriends: '<bold><dark_green>►</dark_green></bold> Added friends: <gray>%0%.'
 info-friend: '%lang:tPlayer|%0%|%'
 info-friendRemove: |-
@@ -290,8 +299,12 @@ info-friendRemove: |-
 info-regionMoneyBackBuy: '<bold><dark_green>►</dark_green></bold> Selling payback:
     <gray>%moneyback% (%moneybackpercent%% of the price).'
 info-regionMoneyBackBuyClick: |-
-  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop sell %region%'><hover:show_text:'Sell %region% and get back %moneyback%
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmsell --region %region%'><hover:show_text:'Sell %region% and get back %moneyback%
   %lang:action|Sell %region%|%'><bold>Selling payback</bold></hover></click>: <gray>%moneyback% (%moneybackpercent%% of the price).
+info-regionMoneyBackBuyJubilee: '<bold><dark_green>►</dark_green></bold> Selling: <gray>gives no Diamonds back (jubilee).'
+info-regionMoneyBackBuyClickJubilee: |-
+  <bold><dark_green>►</dark_green></bold> <click:run_command:'/areashop confirmsell --region %region%'><hover:show_text:'Sell %region% (no Diamonds back during the jubilee)
+  %lang:action|Sell %region%|%'><bold>Sell</bold></hover></click>: <gray>gives no Diamonds back (jubilee).
 info-regionMoneyBackRent: '<bold><dark_green>►</dark_green></bold> Unrenting payback:
     <gray>%moneyback% (%moneybackpercent%% of the remaining time).'
 info-regionMoneyBackRentClick: |-
