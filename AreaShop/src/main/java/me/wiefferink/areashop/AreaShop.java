@@ -163,6 +163,7 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
     public static final String tagMaxExtends = "maxextends";
     public static final String tagExtendsLeft = "extendsleft";
     public static final String tagMaxRentTime = "maxrenttime";
+    public static final String tagJubilee = "jubilee";
     public static final String tagMaxInactiveTime = "inactivetime";
     public static final String tagLandlord = "landlord";
     public static final String tagLandlordUUID = "landlorduuid";

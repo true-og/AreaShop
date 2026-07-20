@@ -1123,6 +1123,7 @@ public class FileManager extends Manager implements IFileManager {
 
             defaultConfig = YamlConfiguration.loadConfiguration(custom);
             migrateIncompleteArmDefaults(defaultFile);
+            migrateJubileeGreeting(defaultFile);
             if (defaultConfig.getKeys(false).isEmpty()) {
 
                 AreaShop.warn("File 'default.yml' is empty, check for errors in the log.");
@@ -1177,9 +1178,39 @@ public class FileManager extends Manager implements IFileManager {
 
     }
 
+    // Append the jubilee note to the for-rent entry greeting. The signatures are
+    // deliberately exact so user-customized greetings are untouched.
+    private void migrateJubileeGreeting(File defaultFile) {
+
+        String path = "general.flagProfile.forrent.greeting";
+        String greeting = defaultConfig.getString(path);
+        boolean armGreeting = "%lang:wgPrefix%&6This shop can be rented for &b%price% Diamonds &6per &2%duration%"
+                .equals(greeting);
+        boolean stockGreeting = "%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%"
+                .equals(greeting);
+        if (!armGreeting && !stockGreeting) {
+
+            return;
+
+        }
+
+        defaultConfig.set(path, greeting + "%jubilee%");
+        try {
+
+            defaultConfig.save(defaultFile);
+            AreaShop.info("Added the jubilee note to the for-rent greeting in default.yml");
+
+        } catch (IOException e) {
+
+            AreaShop.warn("Could not save the jubilee greeting to " + defaultFile.getAbsolutePath());
+
+        }
+
+    }
+
     /**
      * Load the default.yml file
-     * 
+     *
      * @return true if it has been loaded successfully, otherwise false
      */
     @Override
@@ -1222,6 +1253,7 @@ public class FileManager extends Manager implements IFileManager {
 
             config = YamlConfiguration.loadConfiguration(custom);
             migrateIncompleteArmConfig(configFile);
+            migratePrefixColors(configFile);
             if (config.getKeys(false).isEmpty()) {
 
                 AreaShop.warn("File 'config.yml' is empty, check for errors in the log.");
@@ -1285,6 +1317,84 @@ public class FileManager extends Manager implements IFileManager {
         } catch (IOException e) {
 
             AreaShop.warn("Could not save repaired AdvancedRegionMarket limits to " + configFile.getAbsolutePath());
+
+        }
+
+    }
+
+    // Recolor the AreaShop prefixes to dark gray brackets around a green name. The
+    // signatures are deliberately exact so user-customized prefixes are untouched.
+    private void migratePrefixColors(File configFile) {
+
+        boolean changed = false;
+        if (config.isList("chatPrefix")) {
+
+            List<String> chatPrefix = config.getStringList("chatPrefix");
+            if (!chatPrefix.isEmpty() && "[darkgreen][AreaShop][reset]".equals(chatPrefix.get(0))) {
+
+                chatPrefix.set(0, "[darkgray][[green]AreaShop[darkgray]][reset]");
+                config.set("chatPrefix", chatPrefix);
+                changed = true;
+
+            }
+
+        }
+
+        if ("&2[AreaShop] &r".equals(config.getString("wgPrefix"))) {
+
+            config.set("wgPrefix", "&8[&aAreaShop&8] &r");
+            changed = true;
+
+        }
+
+        String oldMmPrefix = "<click:run_command:/areashop help><hover:show_text:\"AreaShop region management plugin"
+                + "<newline>%lang:action|Click to check the available commands|%\"><dark_green>[AreaShop]<reset> ";
+        String newMmPrefix = "<click:run_command:/areashop help><hover:show_text:\"AreaShop region management plugin"
+                + "<newline>%lang:action|Click to check the available commands|%\"><dark_gray>[<green>AreaShop"
+                + "</green><dark_gray>]<reset> ";
+        if (config.isList("mmChatPrefix")) {
+
+            List<String> mmChatPrefix = config.getStringList("mmChatPrefix");
+            boolean mmChanged = false;
+            for (int i = 0; i < mmChatPrefix.size(); i++) {
+
+                if (oldMmPrefix.equals(mmChatPrefix.get(i))) {
+
+                    mmChatPrefix.set(i, newMmPrefix);
+                    mmChanged = true;
+
+                }
+
+            }
+
+            if (mmChanged) {
+
+                config.set("mmChatPrefix", mmChatPrefix);
+                changed = true;
+
+            }
+
+        } else if (oldMmPrefix.equals(config.getString("mmChatPrefix"))) {
+
+            config.set("mmChatPrefix", newMmPrefix);
+            changed = true;
+
+        }
+
+        if (!changed) {
+
+            return;
+
+        }
+
+        try {
+
+            config.save(configFile);
+            AreaShop.info("Recolored the AreaShop prefixes in config.yml");
+
+        } catch (IOException e) {
+
+            AreaShop.warn("Could not save the recolored prefixes to " + configFile.getAbsolutePath());
 
         }
 

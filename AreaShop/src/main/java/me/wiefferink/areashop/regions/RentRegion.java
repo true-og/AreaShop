@@ -270,6 +270,27 @@ public class RentRegion extends GeneralRegion {
             case AreaShop.tagMaxExtends -> this.getMaxExtends();
             case AreaShop.tagExtendsLeft -> getMaxExtends() - getTimesExtended();
             case AreaShop.tagMaxRentTime -> millisToHumanFormat(getMaxRentTime());
+            // Note for the shop entry greeting: during the jubilee one payment rents the
+            // shop for the maximum rent time, so tell the player up front
+            case AreaShop.tagJubilee -> {
+
+                if (!plugin.isJubilee()) {
+
+                    yield "";
+
+                }
+
+                long maxRentTime = getMaxRentTime();
+                if (maxRentTime == -1) {
+
+                    yield Message.fromString(" &6(jubilee: extending is free)");
+
+                }
+
+                yield Message.fromString(
+                        " &6(jubilee: one payment rents it for &2" + millisToHumanFormat(maxRentTime) + "&6)");
+
+            }
             case AreaShop.tagMaxInactiveTime -> this.getFormattedInactiveTimeUntilUnrent();
             default -> super.provideReplacement(variable);
 

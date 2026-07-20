@@ -130,7 +130,7 @@ general:
       chest-access: 'allow g:members'
       can-flippy: allow
     forrent:
-      greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%'
+      greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%%jubilee%'
       interact: 'allow g:all'
       use: 'allow g:all'
     rented:

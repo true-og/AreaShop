@@ -9,14 +9,14 @@
 
 # Chat prefix used for all messages in the chat
 chatPrefix:
-  - '[darkgreen][AreaShop][reset]'
+  - '[darkgray][[green]AreaShop[darkgray]][reset]'
   - '  hover: AreaShop region management plugin'
   - '  hover: %lang:action|Click to check the available commands|%'
   - '  command: /areashop help'
   - ' '
 
 # WorldGuard doesn't support MiniMessage, so when setting WorldGuard Greetings, this prefix is used instead. (Bukkit color codes)
-wgPrefix: '&2[AreaShop] &r'
+wgPrefix: '&8[&aAreaShop&8] &r'
 
 # Whether languages should be migrated to MiniMessage
 migrateLanguages: false
@@ -32,7 +32,7 @@ useMiniMessage: false
 # Chat prefix used for all messages in chat
 # **THIS IS ONLY APPLICABLE IF UseMiniMessage IS SET TO TRUE**
 mmChatPrefix:
-  - '<click:run_command:/areashop help><hover:show_text:"AreaShop region management plugin<newline>%lang:action|Click to check the available commands|%"><dark_green>[AreaShop]<reset> '
+  - '<click:run_command:/areashop help><hover:show_text:"AreaShop region management plugin<newline>%lang:action|Click to check the available commands|%"><dark_gray>[<green>AreaShop</green><dark_gray>]<reset> '
 
 # The language file that should be used, check the 'lang' folder for build-in languages (use the filename without .yml here).
 # **THIS IS ONLY APPLICABLE IF UseMiniMessage IS SET TO TRUE**
@@ -213,6 +213,7 @@ maximumTries: 50000
 # %maxextends%     The maximum number of extends a player can do on the region.
 # %extendsleft%    The number of extends that are left (maxextends - timesextended).
 # %maxrenttime%    The maximum time you can rent a region in advance (human readable).
+# %jubilee%        A note about the longer rent during the jubilee, empty when jubilee mode is off.
 # %inactivetime%   The maximum time a player may be inactive before unrent/sell (human readable).
 # %year%           The current year.
 # %month%          The current month in the year.
