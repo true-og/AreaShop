@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
@@ -854,8 +855,33 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
     }
 
     /**
+     * Run a blocking DiamondBank-OG operation off the main thread and hand its
+     * result back on the main thread. The DiamondBank-OG API blocks on database
+     * calls and on per-player transaction locks whose holders may themselves be
+     * waiting for the main thread, so calling it on the main thread can deadlock
+     * the server.
+     *
+     * @param blockingTask task performing the blocking economy calls, runs async
+     * @param syncHandler  receives the task result on the main thread; skipped when
+     *                     the plugin is disabled before completion
+     * @param <T>          result type produced by the blocking task
+     */
+    public <T> void runEconomyTask(Supplier<T> blockingTask, Consumer<T> syncHandler) {
+
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+
+            T result = blockingTask.get();
+            if (!isEnabled())
+                return;
+            getServer().getScheduler().runTask(this, () -> syncHandler.accept(result));
+
+        });
+
+    }
+
+    /**
      * Function to get the DiamondBank-OG economy API.
-     * 
+     *
      * @return DiamondBankAPIJava provider, or null if DiamondBank-OG is not present
      */
     private DiamondBankAPIJava getEconomy() {

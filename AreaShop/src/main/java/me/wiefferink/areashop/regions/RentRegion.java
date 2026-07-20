@@ -494,13 +494,30 @@ public class RentRegion extends GeneralRegion {
     }
 
     /**
+     * Get the amount of money that should be paid to the player when unrenting the
+     * region, in DiamondBank-OG shards. The percentage and proration are applied in
+     * shard space so the paid amount is exact.
+     *
+     * @return The amount of shards the player should get back
+     */
+    public long getMoneyBackShards() {
+
+        long currentTime = Calendar.getInstance().getTimeInMillis();
+        double timeLeft = getRentedUntil() - currentTime;
+        double percentage = getMoneyBackPercentage() / 100.0;
+        double periods = timeLeft / getDuration();
+        return Math.max(0, Math.round(periods * Utils.diamondsToShards(economy, getPrice()) * percentage));
+
+    }
+
+    /**
      * Get the formatted string of the amount of the moneyBack amount.
      * 
      * @return String with currency symbols and proper fractional part
      */
     public String getFormattedMoneyBackAmount() {
 
-        return Utils.formatCurrency(getMoneyBackAmount());
+        return Utils.formatCurrencyShards(getMoneyBackShards());
 
     }
 
@@ -669,6 +686,13 @@ public class RentRegion extends GeneralRegion {
 
         }
 
+        if (isEconomyTransactionInProgress()) {
+
+            message(offlinePlayer, "general-transactionInProgress");
+            return false;
+
+        }
+
         // Check if the player has permission
         if (!plugin.hasPermission(offlinePlayer, "areashop.rent")) {
 
@@ -794,7 +818,6 @@ public class RentRegion extends GeneralRegion {
 
         // Check if there is enough time left before hitting maxRentTime
         boolean extendToMax = false;
-        double price = getPrice();
         long timeNow = Calendar.getInstance().getTimeInMillis();
         long timeRented = 0;
         long maxRentTime = getMaxRentTime();
@@ -804,6 +827,9 @@ public class RentRegion extends GeneralRegion {
 
         }
 
+        // The price is tracked in shards (the atomic DiamondBank-OG unit) so the
+        // proration below stays exact
+        long priceShards = Utils.diamondsToShards(economy, getPrice());
         if ((timeRented + getDuration()) > (maxRentTime)
                 && !plugin.hasPermission(offlinePlayer, "areashop.renttimebypass") && maxRentTime != -1)
         {
@@ -820,7 +846,7 @@ public class RentRegion extends GeneralRegion {
 
                     long toRentPart = maxRentTime - timeRented;
                     extendToMax = true;
-                    price = ((double) toRentPart) / getDuration() * price;
+                    priceShards = Math.round(((double) toRentPart) / getDuration() * priceShards);
 
                 }
 
@@ -834,40 +860,16 @@ public class RentRegion extends GeneralRegion {
         }
 
         // During the jubilee only the first rent is charged, otherwise every rent and
-        // extend
-        // costs the (possibly prorated) price. Payment is taken from the paying
-        // player's physical
-        // diamonds through DiamondBank-OG, so the payer must be online.
-        boolean charged = price > 0 && (!extend || !plugin.isJubilee());
-        long priceShards = 0;
-        if (charged) {
+        // extend costs the (possibly prorated) price. Payment is taken from the
+        // paying player's physical diamonds through DiamondBank-OG, so the payer
+        // must be online. Rent revenue is an intentional money sink: the consumed
+        // diamonds are not paid out to anyone.
+        boolean charged = priceShards > 0 && (!extend || !plugin.isJubilee());
+        Player payingPlayer = payer != null ? payer : offlinePlayer.getPlayer();
+        if (charged && payingPlayer == null) {
 
-            Player payingPlayer = payer != null ? payer : offlinePlayer.getPlayer();
-            if (payingPlayer == null) {
-
-                message(offlinePlayer, "rent-payError");
-                return false;
-
-            }
-
-            priceShards = Utils.diamondsToShards(price);
-            try {
-
-                long balance = economy.getTotalShards(payingPlayer.getUniqueId());
-                if (balance < priceShards) {
-
-                    message(payingPlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent",
-                            economy.shardsToDiamonds(balance));
-                    return false;
-
-                }
-
-            } catch (DiamondBankException e) {
-
-                message(payingPlayer, "rent-payError");
-                return false;
-
-            }
+            message(offlinePlayer, "rent-payError");
+            return false;
 
         }
 
@@ -881,47 +883,96 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Subtract the money from the paying player's balance (physical diamonds)
-        if (charged) {
+        if (!charged) {
 
-            Player payingPlayer = payer != null ? payer : offlinePlayer.getPlayer();
-            if (payingPlayer == null) {
+            completeRent(offlinePlayer, payer, extend, extendToMax, maxRentTime);
+            return true;
 
-                message(offlinePlayer, "rent-payError");
-                return false;
+        }
 
-            }
+        // Charge on an async thread: the DiamondBank-OG API blocks and may not be
+        // called on the main thread (see AreaShop#runEconomyTask). The transaction
+        // guard blocks other economy actions on this region until completion.
+        if (!beginEconomyTransaction()) {
+
+            message(offlinePlayer, "general-transactionInProgress");
+            return false;
+
+        }
+
+        final long chargedShards = priceShards;
+        final boolean finalExtend = extend;
+        final boolean finalExtendToMax = extendToMax;
+        final Player finalPayingPlayer = payingPlayer;
+        plugin.runEconomyTask(() -> {
 
             try {
 
-                economy.consumeFromPlayer(payingPlayer.getUniqueId(), priceShards, "AreaShop rent: " + getName(), null);
+                economy.consumeFromPlayer(finalPayingPlayer.getUniqueId(), chargedShards, "AreaShop rent: " + getName(),
+                        null);
+                return ChargeResult.ofSuccess();
 
             } catch (DiamondBankException.InsufficientFundsException e) {
 
-                String have;
-                try {
-
-                    have = economy.shardsToDiamonds(economy.getTotalShards(payingPlayer.getUniqueId()));
-
-                } catch (DiamondBankException ignored) {
-
-                    have = economy.shardsToDiamonds(0);
-
-                }
-
-                message(payingPlayer, extend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent", have);
-                return false;
+                return ChargeResult.ofLowMoney(balanceString(finalPayingPlayer));
 
             } catch (DiamondBankException e) {
 
-                message(payingPlayer, "rent-payError");
-                AreaShop.debug("Something went wrong with getting money from " + payingPlayer.getName()
+                AreaShop.debug("Something went wrong with getting money from " + finalPayingPlayer.getName()
                         + " while renting " + getName() + ": " + e.getMessage());
-                return false;
+                return ChargeResult.ofError();
 
             }
 
-        }
+        }, result -> {
+
+            endEconomyTransaction();
+            if (result.lowMoney()) {
+
+                message(finalPayingPlayer, finalExtend ? "rent-lowMoneyExtend" : "rent-lowMoneyRent", result.balance());
+                return;
+
+            }
+
+            if (!result.success()) {
+
+                message(finalPayingPlayer, "rent-payError");
+                return;
+
+            }
+
+            // The charge succeeded but the region may have changed while it ran;
+            // in that case refund the payment instead of granting the rent
+            if (isDeleted() || (isRented() && !offlinePlayer.getUniqueId().equals(getRenter()))) {
+
+                refundShards(finalPayingPlayer.getUniqueId(), chargedShards, "AreaShop rent refund: " + getName());
+                message(finalPayingPlayer, "rent-payError");
+                return;
+
+            }
+
+            completeRent(offlinePlayer, payer, finalExtend, finalExtendToMax, maxRentTime);
+
+        });
+
+        return true;
+
+    }
+
+    /**
+     * Apply a successful (or free) rent to the region: set the renter and time,
+     * fire events and send messages. Runs on the main thread after the payment has
+     * been taken.
+     *
+     * @param offlinePlayer The player the rent is for
+     * @param payer         The player that paid, or null when the renter paid
+     * @param extend        true if this is an extension of a running rent
+     * @param extendToMax   true if the rent is topped up to the maximum time
+     * @param maxRentTime   The maximum rent time in milliseconds
+     */
+    private void completeRent(OfflinePlayer offlinePlayer, Player payer, boolean extend, boolean extendToMax,
+            long maxRentTime)
+    {
 
         // Get the time until the region will be rented
         Calendar calendar = Calendar.getInstance();
@@ -989,7 +1040,63 @@ public class RentRegion extends GeneralRegion {
 
         // Notify about updates
         this.notifyAndUpdate(new RentedRegionEvent(this, extend));
-        return true;
+
+    }
+
+    /**
+     * Get a player's total balance formatted for display. Only call from an async
+     * thread: the DiamondBank-OG API blocks.
+     *
+     * @param player The player to get the balance of
+     * @return The balance formatted through the DiamondBank-OG API
+     */
+    private String balanceString(Player player) {
+
+        try {
+
+            return Utils.shardsToDisplay(economy, economy.getTotalShards(player.getUniqueId()));
+
+        } catch (DiamondBankException e) {
+
+            return Utils.shardsToDisplay(economy, 0);
+
+        }
+
+    }
+
+    /**
+     * Deposit shards into a player's bank asynchronously, logging when it fails.
+     * Used for refunds that must not block or cancel the surrounding action.
+     *
+     * @param target The player to deposit to
+     * @param shards The amount of shards to deposit
+     * @param reason The transaction reason for the DiamondBank-OG log
+     */
+    private void refundShards(UUID target, long shards, String reason) {
+
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                economy.addToPlayerBankShards(target, shards, reason, null);
+                return true;
+
+            } catch (DiamondBankException e) {
+
+                return false;
+
+            }
+
+        }, success -> {
+
+            if (!success) {
+
+                AreaShop.warn("Could not deposit " + Utils.shardsToDisplay(economy, shards) + " Diamonds to " + target
+                        + " (" + reason + "), staff should compensate manually.");
+
+            }
+
+        });
 
     }
 
@@ -1030,6 +1137,13 @@ public class RentRegion extends GeneralRegion {
 
         }
 
+        if (isEconomyTransactionInProgress()) {
+
+            message(executor, "general-transactionInProgress");
+            return false;
+
+        }
+
         // Broadcast and check event
         UnrentingRegionEvent unrentingRegionEvent = new UnrentingRegionEvent(this);
         Bukkit.getPluginManager().callEvent(unrentingRegionEvent);
@@ -1040,32 +1154,82 @@ public class RentRegion extends GeneralRegion {
 
         }
 
-        // Pay back (part of) the price for the unused time, jubilee mode pays nothing
-        // back.
-        // If the payback fails the unrent is cancelled completely.
+        // Pay back (part of) the price for the unused time, jubilee mode pays
+        // nothing back. If the payback fails the unrent is cancelled completely.
         double moneyBack = getMoneyBackAmount();
-        if (giveMoneyBack && !plugin.isJubilee() && moneyBack > 0) {
+        long moneyBackShards = giveMoneyBack && !plugin.isJubilee() ? getMoneyBackShards() : 0;
+        UUID payBackTo = getRenter();
+        if (moneyBackShards <= 0 || payBackTo == null) {
 
-            UUID payBackTo = getRenter();
-            if (payBackTo != null) {
+            finishUnrent(executor, moneyBack);
+            return true;
 
-                try {
+        }
 
-                    economy.addToPlayerBankShards(payBackTo, Utils.diamondsToShards(moneyBack),
-                            "AreaShop unrent: " + getName(), null);
+        // A region being deleted must finish unrenting synchronously, so the
+        // refund becomes fire-and-forget instead of cancelling the unrent
+        if (isDeleted()) {
 
-                } catch (DiamondBankException e) {
+            refundShards(payBackTo, moneyBackShards, "AreaShop unrent: " + getName());
+            finishUnrent(executor, moneyBack);
+            return true;
 
-                    AreaShop.warn("Could not pay back " + moneyBack + " Diamonds to " + getPlayerName()
-                            + " for unrenting " + getName() + ", unrent cancelled");
-                    message(executor, "unrent-payError");
-                    return false;
+        }
 
-                }
+        // Pay back on an async thread: the DiamondBank-OG API blocks and may not
+        // be called on the main thread (see AreaShop#runEconomyTask)
+        if (!beginEconomyTransaction()) {
+
+            message(executor, "general-transactionInProgress");
+            return false;
+
+        }
+
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                economy.addToPlayerBankShards(payBackTo, moneyBackShards, "AreaShop unrent: " + getName(), null);
+                return true;
+
+            } catch (DiamondBankException e) {
+
+                return false;
 
             }
 
-        }
+        }, success -> {
+
+            endEconomyTransaction();
+            if (!success) {
+
+                AreaShop.warn("Could not pay back " + Utils.shardsToDisplay(economy, moneyBackShards) + " Diamonds to "
+                        + getPlayerName() + " for unrenting " + getName() + ", unrent cancelled");
+                message(executor, "unrent-payError");
+                return;
+
+            }
+
+            if (isRented()) {
+
+                finishUnrent(executor, moneyBack);
+
+            }
+
+        });
+
+        return true;
+
+    }
+
+    /**
+     * Apply the unrent to the region: fire events, send messages and clear the
+     * renter. Runs on the main thread after any payback has been deposited.
+     *
+     * @param executor  The CommandSender that gets the result message, or null
+     * @param moneyBack The amount of money paid back, for the event and messages
+     */
+    private void finishUnrent(CommandSender executor, double moneyBack) {
 
         // Handle schematic save/restore (while %uuid% is still available)
         handleSchematicEvent(RegionEvent.UNRENTED);
@@ -1087,8 +1251,6 @@ public class RentRegion extends GeneralRegion {
         setRenter(null);
         // Update world (has to be after setting renter to null)
         this.update();
-
-        return true;
 
     }
 

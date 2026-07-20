@@ -54,6 +54,7 @@ general-noWorld: "You cannot do that, the world of %lang:region% is currently un
 general-noRegion: "You cannot do that, the WorldGuard region is currently unavailable (region %lang:region%)."
 general-noEconomy: "There is no Economy plugin installed or it is not setup correctly, notify the server owner about this."
 general-cancelled: "%0%"
+general-transactionInProgress: "Another Diamond transaction for this region is still processing, try again in a moment."
 
 cmd-notValid: "That command is not valid, use '/as help' for info."
 cmd-onlyByPlayer: "This command can only be run by a player."

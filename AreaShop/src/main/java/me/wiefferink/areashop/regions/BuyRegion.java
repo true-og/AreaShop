@@ -324,13 +324,27 @@ public class BuyRegion extends GeneralRegion {
     }
 
     /**
+     * Get the amount of money that should be paid to the player when selling the
+     * region, in DiamondBank-OG shards. The percentage is applied in shard space so
+     * the paid amount is exact.
+     *
+     * @return The amount of shards the player should get back
+     */
+    public long getMoneyBackShards() {
+
+        return Math.max(0,
+                Math.round(Utils.diamondsToShards(economy, getPrice()) * (getMoneyBackPercentage() / 100.0)));
+
+    }
+
+    /**
      * Get the formatted string of the amount of the moneyBack amount.
      * 
      * @return String with currency symbols and proper fractional part
      */
     public String getFormattedMoneyBackAmount() {
 
-        return Utils.formatCurrency(getMoneyBackAmount());
+        return Utils.formatCurrencyShards(getMoneyBackShards());
 
     }
 
@@ -403,6 +417,13 @@ public class BuyRegion extends GeneralRegion {
         if (economy == null) {
 
             message(offlinePlayer, "general-noEconomy");
+            return false;
+
+        }
+
+        if (isEconomyTransactionInProgress()) {
+
+            message(offlinePlayer, "general-transactionInProgress");
             return false;
 
         }
@@ -526,8 +547,8 @@ public class BuyRegion extends GeneralRegion {
 
             }
 
-            getFriendsFeature().clearFriends();
             double resellPrice = getResellPrice();
+            long resellPriceShards = Utils.diamondsToShards(economy, resellPrice);
             OfflinePlayer oldOwnerPlayer = Bukkit.getOfflinePlayer(oldOwner);
             String oldOwnerName = getPlayerName();
             if (oldOwnerPlayer != null && oldOwnerPlayer.getName() != null) {
@@ -537,56 +558,83 @@ public class BuyRegion extends GeneralRegion {
             }
 
             // Pay the old owner through DiamondBank-OG, free during the jubilee
-            if (!jubilee && resellPrice > 0) {
+            if (jubilee || resellPriceShards <= 0) {
 
-                Player payingPlayer = offlinePlayer.getPlayer();
-                if (payingPlayer == null) {
+                completeResell(offlinePlayer, oldOwner, oldOwnerName, resellPrice);
+                return true;
 
-                    message(offlinePlayer, "buy-payError");
-                    return false;
+            }
 
-                }
+            Player payingPlayer = offlinePlayer.getPlayer();
+            if (payingPlayer == null) {
+
+                message(offlinePlayer, "buy-payError");
+                return false;
+
+            }
+
+            // Pay on an async thread: the DiamondBank-OG API blocks and may not be
+            // called on the main thread (see AreaShop#runEconomyTask)
+            if (!beginEconomyTransaction()) {
+
+                message(offlinePlayer, "general-transactionInProgress");
+                return false;
+
+            }
+
+            final String finalOldOwnerName = oldOwnerName;
+            plugin.runEconomyTask(() -> {
 
                 try {
 
-                    economy.playerPayPlayer(payingPlayer.getUniqueId(), oldOwner, Utils.diamondsToShards(resellPrice),
+                    economy.playerPayPlayer(payingPlayer.getUniqueId(), oldOwner, resellPriceShards,
                             "AreaShop resell: " + getName(), null);
+                    return ChargeResult.ofSuccess();
 
                 } catch (DiamondBankException.InsufficientFundsException e) {
 
-                    message(offlinePlayer, "buy-lowMoneyResell", getBalanceString(payingPlayer));
-                    return false;
+                    return ChargeResult.ofLowMoney(getBalanceString(payingPlayer));
 
                 } catch (DiamondBankException e) {
 
-                    message(offlinePlayer, "buy-payError");
-                    return false;
+                    return ChargeResult.ofError();
 
                 }
 
-            }
+            }, result -> {
 
-            // Set the owner
-            setBuyer(offlinePlayer.getUniqueId());
-            updateLastActiveTime();
+                endEconomyTransaction();
+                if (result.lowMoney()) {
 
-            // Update everything
-            handleSchematicEvent(RegionEvent.RESELL);
+                    message(offlinePlayer, "buy-lowMoneyResell", result.balance());
+                    return;
 
-            // Notify about updates
-            this.notifyAndUpdate(new ResoldRegionEvent(this, oldOwner));
+                }
 
-            // Resell is done, disable that now
-            disableReselling();
+                if (!result.success()) {
 
-            // Send message to the player
-            message(offlinePlayer, "buy-successResale", oldOwnerName);
-            Player seller = Bukkit.getPlayer(oldOwner);
-            if (seller != null) {
+                    message(offlinePlayer, "buy-payError");
+                    return;
 
-                message(seller, "buy-successSeller", resellPrice);
+                }
 
-            }
+                // The payment succeeded but the region may have changed while it
+                // ran; in that case reverse the payment instead of granting the
+                // region
+                if (isDeleted() || !isInResellingMode() || !oldOwner.equals(getBuyer())) {
+
+                    reversePayment(payingPlayer.getUniqueId(), oldOwner, resellPriceShards,
+                            "AreaShop resell reversal: " + getName());
+                    message(offlinePlayer, "buy-payError");
+                    return;
+
+                }
+
+                completeResell(offlinePlayer, oldOwner, finalOldOwnerName, resellPrice);
+
+            });
+
+            return true;
 
         } else {
 
@@ -601,83 +649,175 @@ public class BuyRegion extends GeneralRegion {
             }
 
             // Charge the price through DiamondBank-OG, free during the jubilee
-            double price = getPrice();
-            if (!jubilee && price > 0) {
+            long priceShards = Utils.diamondsToShards(economy, getPrice());
+            if (jubilee || priceShards <= 0) {
 
-                Player payingPlayer = offlinePlayer.getPlayer();
-                if (payingPlayer == null) {
+                completeBuy(offlinePlayer);
+                return true;
 
-                    message(offlinePlayer, "buy-payError");
-                    return false;
+            }
 
-                }
+            Player payingPlayer = offlinePlayer.getPlayer();
+            if (payingPlayer == null) {
+
+                message(offlinePlayer, "buy-payError");
+                return false;
+
+            }
+
+            // Charge on an async thread: the DiamondBank-OG API blocks and may not
+            // be called on the main thread (see AreaShop#runEconomyTask)
+            if (!beginEconomyTransaction()) {
+
+                message(offlinePlayer, "general-transactionInProgress");
+                return false;
+
+            }
+
+            UUID landlord = getLandlord();
+            plugin.runEconomyTask(() -> {
 
                 try {
 
-                    economy.consumeFromPlayer(payingPlayer.getUniqueId(), Utils.diamondsToShards(price),
-                            "AreaShop buy: " + getName(), null);
+                    economy.consumeFromPlayer(payingPlayer.getUniqueId(), priceShards, "AreaShop buy: " + getName(),
+                            null);
 
                 } catch (DiamondBankException.InsufficientFundsException e) {
 
-                    message(offlinePlayer, "buy-lowMoney", getBalanceString(payingPlayer));
-                    return false;
+                    return ChargeResult.ofLowMoney(getBalanceString(payingPlayer));
 
                 } catch (DiamondBankException e) {
 
-                    message(offlinePlayer, "buy-payError");
-                    return false;
+                    return ChargeResult.ofError();
 
                 }
 
                 // Pay the landlord if there is one, otherwise the diamonds stay consumed.
                 // If the landlord payout fails the buyer is refunded and the buy is cancelled.
-                UUID landlord = getLandlord();
                 if (landlord != null) {
 
                     try {
 
-                        economy.addToPlayerBankShards(landlord, Utils.diamondsToShards(price),
-                                "AreaShop buy: " + getName(), null);
+                        economy.addToPlayerBankShards(landlord, priceShards, "AreaShop buy: " + getName(), null);
 
                     } catch (DiamondBankException e) {
 
                         try {
 
-                            economy.addToPlayerBankShards(payingPlayer.getUniqueId(), Utils.diamondsToShards(price),
+                            economy.addToPlayerBankShards(payingPlayer.getUniqueId(), priceShards,
                                     "AreaShop buy refund: " + getName(), null);
 
                         } catch (DiamondBankException refundError) {
 
-                            AreaShop.warn("Could not refund " + price + " Diamonds to " + payingPlayer.getName()
-                                    + " after a failed landlord payout for " + getName());
+                            AreaShop.warn("Could not refund " + Utils.shardsToDisplay(economy, priceShards)
+                                    + " Diamonds to " + payingPlayer.getName() + " after a failed landlord payout for "
+                                    + getName());
 
                         }
 
-                        message(offlinePlayer, "buy-payError");
-                        return false;
+                        return ChargeResult.ofError();
 
                     }
 
                 }
 
-            }
+                return ChargeResult.ofSuccess();
 
-            // Set the owner
-            setBuyer(offlinePlayer.getUniqueId());
-            updateLastActiveTime();
+            }, result -> {
 
-            // Send message to the player
-            message(offlinePlayer, "buy-succes");
+                endEconomyTransaction();
+                if (result.lowMoney()) {
 
-            // Update everything
-            handleSchematicEvent(RegionEvent.BOUGHT);
+                    message(offlinePlayer, "buy-lowMoney", result.balance());
+                    return;
 
-            // Notify about updates
-            this.notifyAndUpdate(new BoughtRegionEvent(this));
+                }
+
+                if (!result.success()) {
+
+                    message(offlinePlayer, "buy-payError");
+                    return;
+
+                }
+
+                // The charge succeeded but the region may have changed while it
+                // ran; in that case refund the payment instead of granting the buy
+                if (isDeleted() || isSold()) {
+
+                    refundShards(payingPlayer.getUniqueId(), priceShards, "AreaShop buy refund: " + getName());
+                    message(offlinePlayer, "buy-payError");
+                    return;
+
+                }
+
+                completeBuy(offlinePlayer);
+
+            });
+
+            return true;
 
         }
 
-        return true;
+    }
+
+    /**
+     * Apply a successful (or free) resell to the region: transfer the owner, fire
+     * events and send messages. Runs on the main thread after the payment to the
+     * old owner went through.
+     *
+     * @param offlinePlayer The player that bought the region
+     * @param oldOwner      The previous owner that got paid
+     * @param oldOwnerName  Display name of the previous owner
+     * @param resellPrice   The resell price, for the seller message
+     */
+    private void completeResell(OfflinePlayer offlinePlayer, UUID oldOwner, String oldOwnerName, double resellPrice) {
+
+        getFriendsFeature().clearFriends();
+
+        // Set the owner
+        setBuyer(offlinePlayer.getUniqueId());
+        updateLastActiveTime();
+
+        // Update everything
+        handleSchematicEvent(RegionEvent.RESELL);
+
+        // Notify about updates
+        this.notifyAndUpdate(new ResoldRegionEvent(this, oldOwner));
+
+        // Resell is done, disable that now
+        disableReselling();
+
+        // Send message to the player
+        message(offlinePlayer, "buy-successResale", oldOwnerName);
+        Player seller = Bukkit.getPlayer(oldOwner);
+        if (seller != null) {
+
+            message(seller, "buy-successSeller", Utils.formatCurrency(resellPrice));
+
+        }
+
+    }
+
+    /**
+     * Apply a successful (or free) buy to the region: set the owner, fire events
+     * and send messages. Runs on the main thread after the charge went through.
+     *
+     * @param offlinePlayer The player that bought the region
+     */
+    private void completeBuy(OfflinePlayer offlinePlayer) {
+
+        // Set the owner
+        setBuyer(offlinePlayer.getUniqueId());
+        updateLastActiveTime();
+
+        // Send message to the player
+        message(offlinePlayer, "buy-succes");
+
+        // Update everything
+        handleSchematicEvent(RegionEvent.BOUGHT);
+
+        // Notify about updates
+        this.notifyAndUpdate(new BoughtRegionEvent(this));
 
     }
 
@@ -727,6 +867,13 @@ public class BuyRegion extends GeneralRegion {
 
         }
 
+        if (isEconomyTransactionInProgress()) {
+
+            message(executor, "general-transactionInProgress");
+            return false;
+
+        }
+
         // Broadcast and check event
         SellingRegionEvent event = new SellingRegionEvent(this);
         Bukkit.getPluginManager().callEvent(event);
@@ -740,28 +887,79 @@ public class BuyRegion extends GeneralRegion {
         // Pay back (part of) the price, jubilee mode pays nothing back.
         // If the payback fails the sell is cancelled completely.
         double moneyBack = getMoneyBackAmount();
-        if (giveMoneyBack && !plugin.isJubilee() && moneyBack > 0) {
+        long moneyBackShards = giveMoneyBack && !plugin.isJubilee() ? getMoneyBackShards() : 0;
+        UUID payBackTo = getBuyer();
+        if (moneyBackShards <= 0 || payBackTo == null) {
 
-            UUID payBackTo = getBuyer();
-            if (payBackTo != null) {
+            finishSell(executor, moneyBack);
+            return true;
 
-                try {
+        }
 
-                    economy.addToPlayerBankShards(payBackTo, Utils.diamondsToShards(moneyBack),
-                            "AreaShop sell: " + getName(), null);
+        // A region being deleted must finish selling synchronously, so the refund
+        // becomes fire-and-forget instead of cancelling the sell
+        if (isDeleted()) {
 
-                } catch (DiamondBankException e) {
+            refundShards(payBackTo, moneyBackShards, "AreaShop sell: " + getName());
+            finishSell(executor, moneyBack);
+            return true;
 
-                    AreaShop.warn("Could not pay back " + moneyBack + " Diamonds to " + getPlayerName()
-                            + " for selling " + getName() + ", sell cancelled");
-                    message(executor, "sell-payError");
-                    return false;
+        }
 
-                }
+        // Pay back on an async thread: the DiamondBank-OG API blocks and may not
+        // be called on the main thread (see AreaShop#runEconomyTask)
+        if (!beginEconomyTransaction()) {
+
+            message(executor, "general-transactionInProgress");
+            return false;
+
+        }
+
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                economy.addToPlayerBankShards(payBackTo, moneyBackShards, "AreaShop sell: " + getName(), null);
+                return true;
+
+            } catch (DiamondBankException e) {
+
+                return false;
 
             }
 
-        }
+        }, success -> {
+
+            endEconomyTransaction();
+            if (!success) {
+
+                AreaShop.warn("Could not pay back " + Utils.shardsToDisplay(economy, moneyBackShards) + " Diamonds to "
+                        + getPlayerName() + " for selling " + getName() + ", sell cancelled");
+                message(executor, "sell-payError");
+                return;
+
+            }
+
+            if (isSold()) {
+
+                finishSell(executor, moneyBack);
+
+            }
+
+        });
+
+        return true;
+
+    }
+
+    /**
+     * Apply the sell to the region: fire events, send messages and clear the owner.
+     * Runs on the main thread after any payback has been deposited.
+     *
+     * @param executor  The CommandSender that gets the result message, or null
+     * @param moneyBack The amount of money paid back, for the event and messages
+     */
+    private void finishSell(CommandSender executor, double moneyBack) {
 
         disableReselling();
 
@@ -780,7 +978,92 @@ public class BuyRegion extends GeneralRegion {
 
         // Notify about updates
         this.notifyAndUpdate(new SoldRegionEvent(this, oldBuyer, Math.max(moneyBack, 0)));
-        return true;
+
+    }
+
+    /**
+     * Deposit shards into a player's bank asynchronously, logging when it fails.
+     * Used for refunds that must not block or cancel the surrounding action.
+     *
+     * @param target The player to deposit to
+     * @param shards The amount of shards to deposit
+     * @param reason The transaction reason for the DiamondBank-OG log
+     */
+    private void refundShards(UUID target, long shards, String reason) {
+
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                economy.addToPlayerBankShards(target, shards, reason, null);
+                return true;
+
+            } catch (DiamondBankException e) {
+
+                return false;
+
+            }
+
+        }, success -> {
+
+            if (!success) {
+
+                AreaShop.warn("Could not deposit " + Utils.shardsToDisplay(economy, shards) + " Diamonds to " + target
+                        + " (" + reason + "), staff should compensate manually.");
+
+            }
+
+        });
+
+    }
+
+    /**
+     * Best-effort reversal of a resell payment for when the region changed while
+     * the payment ran: take the amount back from the receiver's bank and return it
+     * to the payer's bank. Logs for staff when either half fails.
+     *
+     * @param payer    The player that paid and should get the amount back
+     * @param receiver The player that received the payment
+     * @param shards   The amount of shards that was paid
+     * @param reason   The transaction reason for the DiamondBank-OG log
+     */
+    private void reversePayment(UUID payer, UUID receiver, long shards, String reason) {
+
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                economy.subtractFromPlayerBankShards(receiver, shards, reason, null);
+
+            } catch (DiamondBankException e) {
+
+                return false;
+
+            }
+
+            try {
+
+                economy.addToPlayerBankShards(payer, shards, reason, null);
+
+            } catch (DiamondBankException e) {
+
+                return false;
+
+            }
+
+            return true;
+
+        }, success -> {
+
+            if (!success) {
+
+                AreaShop.warn(
+                        "Could not reverse a payment of " + Utils.shardsToDisplay(economy, shards) + " Diamonds from "
+                                + payer + " to " + receiver + " (" + reason + "), staff should compensate manually.");
+
+            }
+
+        });
 
     }
 
@@ -788,11 +1071,11 @@ public class BuyRegion extends GeneralRegion {
 
         try {
 
-            return economy.shardsToDiamonds(economy.getTotalShards(player.getUniqueId()));
+            return Utils.shardsToDisplay(economy, economy.getTotalShards(player.getUniqueId()));
 
         } catch (DiamondBankException e) {
 
-            return economy.shardsToDiamonds(0);
+            return Utils.shardsToDisplay(economy, 0);
 
         }
 

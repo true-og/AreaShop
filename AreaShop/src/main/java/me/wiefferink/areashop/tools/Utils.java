@@ -11,6 +11,7 @@ import me.wiefferink.areashop.regions.GeneralRegion;
 import me.wiefferink.areashop.regions.RentRegion;
 import me.wiefferink.interactivemessenger.Log;
 import me.wiefferink.interactivemessenger.processing.Message;
+import net.trueog.diamondbankog.api.DiamondBankAPIJava;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -24,8 +25,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -811,11 +810,63 @@ public class Utils {
 
     }
 
-    // Convert an amount of diamonds to DiamondBank-OG shards (9 shards = 1
-    // diamond).
-    public static long diamondsToShards(double diamonds) {
+    // Convert a Diamond amount to DiamondBank-OG shards through the DiamondBank-OG
+    // API: diamondsToShards is the API's mandated conversion for calculations,
+    // while shardsToDiamonds is display-only. DiamondBank-OG reads the single
+    // decimal digit as a literal shard count (9 shards = 1 diamond, 9 diamonds =
+    // 1 diamond block), so 1.9 = 1 diamond + 9 shards = 18 shards = 2 diamonds.
+    // The API rejects amounts with more than one decimal digit, so amounts
+    // derived from percentages or proration are rounded to the nearest valid
+    // amount first.
+    public static long diamondsToShards(DiamondBankAPIJava economy, double diamonds) {
 
-        return Math.round(diamonds * 9.0);
+        if (diamonds <= 0) {
+
+            return 0;
+
+        }
+
+        long tenths = Math.round(diamonds * 10.0);
+        if (Math.abs(diamonds * 10.0 - tenths) > 1.0E-6) {
+
+            AreaShop.debug("Diamond amount " + diamonds + " has more than one decimal digit, which DiamondBank-OG"
+                    + " does not allow; using " + (tenths / 10) + "." + (tenths % 10) + " instead.");
+
+        }
+
+        if (economy != null) {
+
+            try {
+
+                return economy.diamondsToShards(tenths / 10.0);
+
+            } catch (Exception e) {
+
+                // The API parses the amount from its float representation, which
+                // breaks for very large amounts (scientific notation); fall back
+                // to the equivalent local conversion.
+
+            }
+
+        }
+
+        return (tenths / 10) * 9 + (tenths % 10);
+
+    }
+
+    // Format shards for display through the DiamondBank-OG API (its display-only
+    // conversion), dropping an empty ".0" fractional part: 1152 shards -> "128",
+    // 14 shards -> "1.5". Only for visual output, never for calculations.
+    public static String shardsToDisplay(DiamondBankAPIJava economy, long shards) {
+
+        String result = economy.shardsToDiamonds(shards);
+        if (result.endsWith(".0")) {
+
+            result = result.substring(0, result.length() - 2);
+
+        }
+
+        return result;
 
     }
 
@@ -827,10 +878,6 @@ public class Utils {
      */
     public static String formatCurrency(double amount) {
 
-        String before = config.getString("moneyCharacter");
-        before = before.replace(AreaShop.currencyEuro, "€");
-        String after = config.getString("moneyCharacterAfter");
-        after = after.replace(AreaShop.currencyEuro, "€");
         String result;
         // Check for infinite and NaN
         if (Double.isInfinite(amount)) {
@@ -843,64 +890,26 @@ public class Utils {
 
         } else {
 
-            BigDecimal bigDecimal = BigDecimal.valueOf(amount);
-            boolean stripTrailingZeros = false;
-            int fractionalNumber = config.getInt("fractionalNumbers");
-            // Add metric suffix if necessary
-            if (config.getDouble("metricSuffixesAbove") != -1) {
-
-                String suffix = null;
-                double divider = 1;
-                for (Double number : suffixes.keySet()) {
-
-                    if (amount >= number && number > divider) {
-
-                        divider = number;
-                        suffix = suffixes.get(number);
-
-                    }
-
-                }
-
-                if (suffix != null) {
-
-                    bigDecimal = BigDecimal.valueOf(amount / divider);
-                    after = suffix + after;
-                    fractionalNumber = config.getInt("fractionalNumbersShort");
-                    stripTrailingZeros = true;
-
-                }
-
-            }
-
-            // Round if necessary
-            if (fractionalNumber >= 0) {
-
-                bigDecimal = bigDecimal.setScale(fractionalNumber, RoundingMode.HALF_UP);
-
-            }
-
-            result = bigDecimal.toString();
-            if (config.getBoolean("hideEmptyFractionalPart")) {
-
-                // Strip zero fractional: 12.00 -> 12
-                if (bigDecimal.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0 && result.contains(".")) {
-
-                    result = result.substring(0, result.indexOf('.'));
-
-                }
-
-                // Strip zeros from suffixed numbers: 1.20M -> 1.2M
-                if (stripTrailingZeros && result.contains(".")) {
-
-                    result = result.replaceAll("0+$", "");
-
-                }
-
-            }
+            // DiamondBank-OG canonical form: whole diamonds plus a single
+            // decimal digit for the leftover shards (0-8), omitted when zero.
+            // Nine shards roll over into a whole diamond, so an amount of 18
+            // shards renders as 2 and never as 1.9.
+            long shards = Math.max(0, diamondsToShards(null, amount));
+            long leftover = shards % 9;
+            result = leftover == 0 ? String.valueOf(shards / 9) : (shards / 9) + "." + leftover;
 
         }
 
+        return formatCurrencyString(result);
+
+    }
+
+    private static String formatCurrencyString(String result) {
+
+        String before = config.getString("moneyCharacter");
+        before = before.replace(AreaShop.currencyEuro, "€");
+        String after = config.getString("moneyCharacterAfter");
+        after = after.replace(AreaShop.currencyEuro, "€");
         result = result.replace(".", config.getString("decimalMark"));
         Message resultMessage = Message.fromString(result);
         resultMessage.prepend(before);
@@ -910,8 +919,25 @@ public class Utils {
     }
 
     /**
+     * Format an amount of DiamondBank-OG shards with the currency characters before
+     * and after, in the same canonical form as {@link #formatCurrency(double)}. Use
+     * this when the exact shard amount is known so the display cannot diverge from
+     * what is paid.
+     *
+     * @param shards Amount of shards to format
+     * @return Currency character format string
+     */
+    public static String formatCurrencyShards(long shards) {
+
+        long whole = Math.max(0, shards) / 9;
+        long leftover = Math.max(0, shards) % 9;
+        return formatCurrencyString(leftover == 0 ? String.valueOf(whole) : whole + "." + leftover);
+
+    }
+
+    /**
      * Checks if the string is a correct time period.
-     * 
+     *
      * @param time String that has to be checked
      * @return true if format is correct, false if not
      */

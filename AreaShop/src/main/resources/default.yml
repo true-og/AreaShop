@@ -218,8 +218,12 @@ general:
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 rent:
   # The default price of a rental region (variables, mathematical expressions and JavaScript can be used).
-  # Curve anchored on shop footprint: smallest shop (4x4) costs 16 diamonds, largest (13x13) costs 256.
-  price: 'round(16 * ((%width% * %depth%) / 16) ^ 1.176)'
+  # Piecewise curve on the region footprint (side = sqrt(width * depth)):
+  #   up to 12x12 -> always 32 diamonds
+  #   12x12 to 24x24 -> 32 to 128 diamonds (only 24x24 or larger goes above 128)
+  #   24x24 to 48x48 -> 128 to 256 diamonds (only 48x48 or larger reaches 256)
+  #   48x48 and larger -> capped at 256 diamonds
+  price: 'round(min(256, max(32, min(32 + 8 * (sqrt(%width% * %depth%) - 12), 128 + (16 / 3) * (sqrt(%width% * %depth%) - 24)))))'
   # The default duration of a rental region, you can find all time indicators in config.yml below the RENTING header.
   duration: '30 days'
   # Automatically extend the rental when it is running out (if the player meets the criteria)

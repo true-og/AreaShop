@@ -2,6 +2,7 @@ package me.wiefferink.areashop.commands;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import me.wiefferink.areashop.AreaShop;
 import me.wiefferink.areashop.MessageBridge;
 import me.wiefferink.areashop.commands.util.AreaShopCommandException;
 import me.wiefferink.areashop.commands.util.AreashopCommandBean;
@@ -39,6 +40,7 @@ public class FindCommand extends AreashopCommandBean {
             GeneralRegion.RegionType.class);
     private static final CloudKey<Double> KEY_PRICE = CloudKey.of("maxPrice", Double.class);
 
+    private final AreaShop plugin;
     private final DiamondBankAPIJava economy;
     private final IFileManager fileManager;
     private final CommandFlag<RegionGroup> regionGroupFlag;
@@ -46,10 +48,11 @@ public class FindCommand extends AreashopCommandBean {
     private final MessageBridge messageBridge;
 
     @Inject
-    public FindCommand(@Nonnull MessageBridge messageBridge, @Nonnull DiamondBankAPIJava economy,
-            @Nonnull IFileManager fileManager)
+    public FindCommand(@Nonnull AreaShop plugin, @Nonnull MessageBridge messageBridge,
+            @Nonnull DiamondBankAPIJava economy, @Nonnull IFileManager fileManager)
     {
 
+        this.plugin = plugin;
         this.messageBridge = messageBridge;
         this.economy = economy;
         this.fileManager = fileManager;
@@ -108,35 +111,6 @@ public class FindCommand extends AreashopCommandBean {
 
         }
 
-        double balance;
-        if (economy != null) {
-
-            double diamonds = 0;
-            try {
-
-                // DiamondBank stores balances in shards; convert the player's total to
-                // diamonds.
-                long shardsPerDiamond = economy.diamondsToShards(1f);
-                if (shardsPerDiamond > 0) {
-
-                    diamonds = economy.getTotalShards(sender.getUniqueId()) / (double) shardsPerDiamond;
-
-                }
-
-            } catch (DiamondBankException e) {
-
-                diamonds = 0;
-
-            }
-
-            balance = diamonds;
-
-        } else {
-
-            balance = 0;
-
-        }
-
         boolean maxPriceSet = context.contains(KEY_PRICE);
         double maxPrice = context.getOrDefault(KEY_PRICE, Double.MAX_VALUE);
         RegionGroup group = context.flags().get(this.regionGroupFlag);
@@ -152,16 +126,50 @@ public class FindCommand extends AreashopCommandBean {
 
         }
 
+        // With an explicit maximum price the player's balance is not needed, so
+        // the blocking balance lookup can be skipped entirely
+        if (maxPriceSet || economy == null) {
+
+            long limitShards = maxPriceSet ? Utils.diamondsToShards(economy, maxPrice) : 0;
+            String limitDisplay = Utils.formatCurrency(maxPriceSet ? maxPrice : 0);
+            find(sender, regionType, limitShards, limitDisplay, maxPriceSet, onlyInGroup, group);
+            return;
+
+        }
+
+        // The balance lookup blocks on the database, so run it off the main
+        // thread and continue the search on the main thread afterwards
+        plugin.runEconomyTask(() -> {
+
+            try {
+
+                return economy.getTotalShards(sender.getUniqueId());
+
+            } catch (DiamondBankException e) {
+
+                return 0L;
+
+            }
+
+        }, balanceShards -> find(sender, regionType, balanceShards, Utils.shardsToDisplay(economy, balanceShards),
+                false, onlyInGroup, group));
+
+    }
+
+    private void find(@Nonnull Player sender, @Nonnull GeneralRegion.RegionType regionType, long limitShards,
+            @Nonnull String limitDisplay, boolean maxPriceSet, @Nonnull Message onlyInGroup, RegionGroup group)
+    {
+
         switch (regionType) {
 
-            case BUY -> handleBuy(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
-            case RENT -> handleRent(sender, balance, maxPrice, maxPriceSet, onlyInGroup, group);
+            case BUY -> handleBuy(sender, limitShards, limitDisplay, maxPriceSet, onlyInGroup, group);
+            case RENT -> handleRent(sender, limitShards, limitDisplay, maxPriceSet, onlyInGroup, group);
 
         }
 
     }
 
-    private void handleBuy(@Nonnull Player sender, double balance, double maxPrice, boolean maxPriceSet,
+    private void handleBuy(@Nonnull Player sender, long limitShards, @Nonnull String limitDisplay, boolean maxPriceSet,
             @Nonnull Message onlyInGroup, RegionGroup group)
     {
 
@@ -169,9 +177,7 @@ public class FindCommand extends AreashopCommandBean {
         List<BuyRegion> results = new LinkedList<>();
         for (BuyRegion region : regions) {
 
-            if (!region.isSold()
-                    && ((region.getPrice() <= balance && !maxPriceSet)
-                            || (region.getPrice() <= maxPrice && maxPriceSet))
+            if (!region.isSold() && Utils.diamondsToShards(economy, region.getPrice()) <= limitShards
                     && (group == null || group.isMember(region)) && (region.getBooleanSetting("general.findCrossWorld")
                             || sender.getWorld().equals(region.getWorld())))
             {
@@ -184,24 +190,23 @@ public class FindCommand extends AreashopCommandBean {
 
         if (results.isEmpty()) {
 
-            double currency = maxPriceSet ? maxPrice : balance;
             String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
-            throw new AreaShopCommandException(key, "buy", Utils.formatCurrency(currency), onlyInGroup);
+            this.messageBridge.message(sender, key, "buy", limitDisplay, onlyInGroup);
+            return;
 
         }
 
         // Draw a random one
         BuyRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
         // Teleport
-        double currency = maxPriceSet ? maxPrice : balance;
         String key = maxPriceSet ? "find-successMax" : "find-success";
-        this.messageBridge.message(sender, key, "buy", Utils.formatCurrency(currency), onlyInGroup, region);
+        this.messageBridge.message(sender, key, "buy", limitDisplay, onlyInGroup, region);
         boolean tpToSign = region.getBooleanSetting("general.findTeleportToSign");
         region.getTeleportFeature().teleportPlayer(sender, tpToSign, false);
 
     }
 
-    private void handleRent(@Nonnull Player sender, double balance, double maxPrice, boolean maxPriceSet,
+    private void handleRent(@Nonnull Player sender, long limitShards, @Nonnull String limitDisplay, boolean maxPriceSet,
             @Nonnull Message onlyInGroup, RegionGroup group)
     {
 
@@ -209,9 +214,7 @@ public class FindCommand extends AreashopCommandBean {
         List<RentRegion> results = new LinkedList<>();
         for (RentRegion region : regions) {
 
-            if (!region.isRented()
-                    && ((region.getPrice() <= balance && !maxPriceSet)
-                            || (region.getPrice() <= maxPrice && maxPriceSet))
+            if (!region.isRented() && Utils.diamondsToShards(economy, region.getPrice()) <= limitShards
                     && (group == null || group.isMember(region)) && (region.getBooleanSetting("general.findCrossWorld")
                             || sender.getWorld().equals(region.getWorld())))
             {
@@ -224,18 +227,17 @@ public class FindCommand extends AreashopCommandBean {
 
         if (results.isEmpty()) {
 
-            double currency = maxPriceSet ? maxPrice : balance;
             String key = maxPriceSet ? "find-noneFoundMax" : "find-noneFound";
-            throw new AreaShopCommandException(key, "rent", Utils.formatCurrency(currency), onlyInGroup);
+            this.messageBridge.message(sender, key, "rent", limitDisplay, onlyInGroup);
+            return;
 
         }
 
         // Draw a random one
         RentRegion region = results.get(ThreadLocalRandom.current().nextInt(results.size()));
         // Teleport
-        double currency = maxPriceSet ? maxPrice : balance;
         String key = maxPriceSet ? "find-successMax" : "find-success";
-        this.messageBridge.message(sender, key, "rent", Utils.formatCurrency(currency), onlyInGroup, region);
+        this.messageBridge.message(sender, key, "rent", limitDisplay, onlyInGroup, region);
         boolean tpToSign = region.getBooleanSetting("general.findTeleportToSign");
         region.getTeleportFeature().teleportPlayer(sender, tpToSign, false);
 

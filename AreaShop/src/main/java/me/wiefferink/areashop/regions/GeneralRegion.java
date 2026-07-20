@@ -61,6 +61,10 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
     protected final MessageBridge messageBridge;
     private boolean saveRequired = false;
     private boolean deleted = false;
+    // Set on the main thread while an async DiamondBank-OG transaction for this
+    // region is pending; volatile because completion handlers read it after a
+    // thread hop.
+    private volatile boolean economyTransactionInProgress = false;
     private long volume = -1;
 
     private Map<Class<? extends RegionFeature>, RegionFeature> features;
@@ -403,6 +407,42 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
     public void setDeleted() {
 
         deleted = true;
+
+    }
+
+    /**
+     * Check whether an asynchronous economy transaction is currently running for
+     * this region. While one is running no second economy action may start.
+     *
+     * @return true if a transaction is in progress, otherwise false
+     */
+    public boolean isEconomyTransactionInProgress() {
+
+        return economyTransactionInProgress;
+
+    }
+
+    /**
+     * Try to claim the region for an asynchronous economy transaction. Must be
+     * called on the main thread; release with {@link #endEconomyTransaction()}.
+     *
+     * @return true if claimed, false if another transaction is still running
+     */
+    protected boolean beginEconomyTransaction() {
+
+        if (economyTransactionInProgress)
+            return false;
+        economyTransactionInProgress = true;
+        return true;
+
+    }
+
+    /**
+     * Release the region after an asynchronous economy transaction finished.
+     */
+    protected void endEconomyTransaction() {
+
+        economyTransactionInProgress = false;
 
     }
 

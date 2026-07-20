@@ -1,5 +1,8 @@
 package me.wiefferink.areashop.tools;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Parse math from a string Adapted from:
  * https://stackoverflow.com/questions/3422673/how-to-evaluate-a-math-expression-given-in-string-form
@@ -152,16 +155,35 @@ public final class OperandParser {
             }
 
             String func = str.substring(startPos, this.pos);
-            x = parseFactor();
+            // Functions accept a single factor (`sqrt 9`) or a parenthesized
+            // argument list (`min(1, 2, 3)`)
+            List<Double> args = new ArrayList<>();
+            if (eat('(')) {
+
+                args.add(parseExpression());
+                while (eat(','))
+                    args.add(parseExpression());
+                eat(')');
+
+            } else {
+
+                args.add(parseFactor());
+
+            }
+
+            double first = args.get(0);
             x = switch (func) {
 
-                case "sqrt" -> Math.sqrt(x);
-                case "sin" -> Math.sin(Math.toRadians(x));
-                case "cos" -> Math.cos(Math.toRadians(x));
-                case "tan" -> Math.tan(Math.toRadians(x));
-                case "round" -> Math.round(x);
-                case "floor" -> Math.floor(x);
-                case "ceil" -> Math.ceil(x);
+                case "sqrt" -> Math.sqrt(first);
+                case "sin" -> Math.sin(Math.toRadians(first));
+                case "cos" -> Math.cos(Math.toRadians(first));
+                case "tan" -> Math.tan(Math.toRadians(first));
+                case "round" -> Math.round(first);
+                case "floor" -> Math.floor(first);
+                case "ceil" -> Math.ceil(first);
+                case "abs" -> Math.abs(first);
+                case "min" -> args.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+                case "max" -> args.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
                 default -> throw new ParseException("Unknown function: " + func);
 
             };
