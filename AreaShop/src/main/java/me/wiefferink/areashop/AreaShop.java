@@ -1147,9 +1147,6 @@ public final class AreaShop extends JavaPlugin implements AreaShopApi {
 
         }
 
-        Bukkit.getPluginManager()
-                .recalculatePermissionDefaults(Bukkit.getPluginManager().getPermission("playerwarps.limits"));
-
     }
 
     /**

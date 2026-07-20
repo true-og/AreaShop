@@ -110,18 +110,30 @@ years: [y, year, years]
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │ PERMISSION GROUPS: Assigned by giving players certain permissions.                                                         │
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-# Configure the max total regions, max rent regions and max buy regions with different groups (-1 is unlimited).
-# Assign a group to players by giving them the permission 'areashop.limits.<group>'.
-# Every player already has the group 'default', OPs bypass the limits because of the 'areashop.limitbypass' permission.
-# All the groups applied to the player will be checked and only if they all allow an extra region it will be allowed.
+# Each entry below is one rank. Assign it by giving players the permission 'areashop.limits.<entry>'.
+#   total:  how many shops the player may own at once, renting and buying counted together.
+#   rents:  how many of those may be rented shops.
+#   buys:   how many of those may be bought shops.
+# Use -1 for unlimited and 0 to forbid owning shops entirely.
+# When a player holds several ranks the highest number of those ranks is the one that applies, so ranks can simply
+# be stacked in LuckPerms. Players holding 'areashop.limitbypass' skip every limit below, so only grant it to staff.
+# Every player holds the 'default' entry, so it only describes players without a rank: as soon as a rank entry like
+# 'og' applies, 'default' is ignored. Otherwise its numbers would join the highest-wins comparison above and a
+# generous 'default' would make every rank meaningless.
+#
+# PER-GROUP LIMITS: 'groupLimits' caps how many shops of ONE region group (groups.yml) the rank may own, on top of
+# the totals above. Each key is a region group name as shown by '/as grouplist', each value is the maximum for it,
+# again with -1 for unlimited and 0 to forbid that group. Region groups are filled with '/as groupadd <group>
+# [region]' ('/as groupdel' removes). A group that no rank mentions is only bound by 'total'/'rents'/'buys'.
+# Example: 'og' below may own 2 shops in total, but at most 1 of them from the 'shop' group and 1 from 'union-shop'.
 # More information like limits for regions of a certain group or in a certain word can be found here:
 #   https://github.com/NLthijs48/AreaShop/wiki/Limitgroups-information-and-examples.
 limitGroups:
   default:
-    # ARM did not impose a limit on players without an arm.limit.* permission.
-    total: -1
-    rents: -1
-    buys: -1
+    # Players without any rank cannot own a shop, they have to be ranked up first.
+    total: 0
+    rents: 0
+    buys: 0
   og:
     total: 2
     rents: 2

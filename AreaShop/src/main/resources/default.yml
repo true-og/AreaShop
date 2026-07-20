@@ -54,6 +54,11 @@ general:
       #  - 'areashop message %clicker% %lang:confirm-rent|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region --region %region%'
+      # Every Shift-click opens the rent confirmation screen.
+      shiftRightClickPlayer:
+        - 'areashop confirmrent --region %region%'
+      shiftLeftClickPlayer:
+        - 'areashop confirmrent --region %region%'
     rented:
       line1: '&2Rented:'
       line2: '&0&l%region%'
@@ -81,7 +86,10 @@ general:
       #  - 'areashop message %clicker% %lang:confirm-buy|%region%|%' # Alternative to first ask for confirmation (remove rightClickPlayer section)
       leftClickPlayer:
         - 'areashop info region --region %region%'
+      # Every Shift-click opens the buy confirmation screen.
       shiftRightClickPlayer:
+        - 'areashop confirmbuy --region %region%'
+      shiftLeftClickPlayer:
         - 'areashop confirmbuy --region %region%'
     resell:
       line1: '&2For Sale:'
@@ -107,7 +115,10 @@ general:
         - 'areashop info region --region %region%'
       leftClickPlayer:
         - 'areashop info region --region %region%'
+      # Every Shift-click opens the sell-back confirmation screen.
       shiftRightClickPlayer:
+        - 'areashop confirmsell --region %region%'
+      shiftLeftClickPlayer:
         - 'areashop confirmsell --region %region%'
 
   ##### Set WorldGuard regions flags depending on the region state.
@@ -130,7 +141,7 @@ general:
       chest-access: 'allow g:members'
       can-flippy: allow
     forrent:
-      greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%%jubilee%'
+      greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%%jubilee% &7(shift-click the sign)'
       interact: 'allow g:all'
       use: 'allow g:all'
     rented:
@@ -139,7 +150,7 @@ general:
       interact: 'deny g:non_members'
       use: 'allow g:members'
     forsale:
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for %price%'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for %price% &7(shift-click the sign)'
       interact: 'allow g:all'
       use: 'allow g:all'
     sold:
@@ -149,7 +160,7 @@ general:
       use: 'allow g:members'
     resell:
       members: '%uuid%, %friendsuuid%'
-      greeting: '%lang:wgPrefix%&6This shop can be purchased for %resellprice%'
+      greeting: '%lang:wgPrefix%&6This shop can be purchased for %resellprice% &7(shift-left-click the sign)'
       interact: 'deny g:non_members'
       use: 'allow g:members'
 

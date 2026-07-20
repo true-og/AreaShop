@@ -779,49 +779,11 @@ public class RentRegion extends GeneralRegion {
         }
 
         // Check region limits if this is not extending
-        if (!(extend && config.getBoolean("allowRegionExtendsWhenAboveLimits"))) {
+        if (!(extend && config.getBoolean("allowRegionExtendsWhenAboveLimits"))
+                && !checkLimitsAndInform(offlinePlayer, RegionType.RENT, extend))
+        {
 
-            LimitResult limitResult;
-            if (extend) {
-
-                limitResult = this.limitsAllow(RegionType.RENT, offlinePlayer, true);
-
-            } else {
-
-                limitResult = this.limitsAllow(RegionType.RENT, offlinePlayer);
-
-            }
-
-            AreaShop.debug("LimitResult: " + limitResult.toString());
-            if (!limitResult.actionAllowed()) {
-
-                if (limitResult.getLimitingFactor() == LimitType.TOTAL) {
-
-                    message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
-                            limitResult.getLimitingGroup());
-                    return false;
-
-                }
-
-                if (limitResult.getLimitingFactor() == LimitType.RENTS) {
-
-                    message(offlinePlayer, "rent-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
-                            limitResult.getLimitingGroup());
-                    return false;
-
-                }
-
-                if (limitResult.getLimitingFactor() == LimitType.EXTEND) {
-
-                    message(offlinePlayer, "rent-maximumExtend", limitResult.getMaximum(), limitResult.getCurrent() + 1,
-                            limitResult.getLimitingGroup());
-                    return false;
-
-                }
-
-                return false;
-
-            }
+            return false;
 
         }
 

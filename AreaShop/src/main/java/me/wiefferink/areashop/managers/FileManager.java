@@ -1125,6 +1125,8 @@ public class FileManager extends Manager implements IFileManager {
             migrateIncompleteArmDefaults(defaultFile);
             migrateJubileeGreeting(defaultFile);
             migrateSignColors(defaultFile);
+            migrateShiftClickActions(defaultFile);
+            migrateGreetingClickHint(defaultFile);
             if (defaultConfig.getKeys(false).isEmpty()) {
 
                 AreaShop.warn("File 'default.yml' is empty, check for errors in the log.");
@@ -1255,6 +1257,101 @@ public class FileManager extends Manager implements IFileManager {
 
     }
 
+    // Give every sign state a shift-click action, so shift-clicking a sign always
+    // opens the confirmation screen for what that sign offers. Sign states that
+    // already have an action configured are left alone, which keeps
+    // user-customized sign profiles and the split resell actions untouched.
+    private void migrateShiftClickActions(File defaultFile) {
+
+        Map<String, String> actions = Map.of("forrent", "areashop confirmrent --region %region%", "forsale",
+                "areashop confirmbuy --region %region%", "sold", "areashop confirmsell --region %region%");
+        boolean changed = false;
+        for (Map.Entry<String, String> entry : actions.entrySet()) {
+
+            String prefix = "general.signProfile." + entry.getKey() + ".";
+            if (!defaultConfig.isConfigurationSection("general.signProfile." + entry.getKey())) {
+
+                continue;
+
+            }
+
+            for (String click : new String[] { "shiftRightClickPlayer", "shiftLeftClickPlayer" }) {
+
+                if (defaultConfig.getStringList(prefix + click).isEmpty()
+                        && !defaultConfig.isSet(prefix + click.replace("Player", "Console")))
+                {
+
+                    defaultConfig.set(prefix + click, List.of(entry.getValue()));
+                    changed = true;
+
+                }
+
+            }
+
+        }
+
+        if (!changed) {
+
+            return;
+
+        }
+
+        try {
+
+            defaultConfig.save(defaultFile);
+            AreaShop.info("Added the missing shift-click sign actions to default.yml");
+
+        } catch (IOException e) {
+
+            AreaShop.warn("Could not save the shift-click sign actions to " + defaultFile.getAbsolutePath());
+
+        }
+
+    }
+
+    // Tell players how to claim a shop in the greeting they get when walking into
+    // it. The signatures are deliberately exact so user-customized greetings are
+    // untouched.
+    private void migrateGreetingClickHint(File defaultFile) {
+
+        Map<String, String> hints = Map.of(
+                "%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%%jubilee%",
+                " &7(shift-click the sign)", "%lang:wgPrefix%&6This shop can be purchased for %price%",
+                " &7(shift-click the sign)", "%lang:wgPrefix%&6This shop can be purchased for %resellprice%",
+                " &7(shift-left-click the sign)");
+        boolean changed = false;
+        for (String state : new String[] { "forrent", "forsale", "resell" }) {
+
+            String path = "general.flagProfile." + state + ".greeting";
+            String hint = hints.get(defaultConfig.getString(path));
+            if (hint != null) {
+
+                defaultConfig.set(path, defaultConfig.getString(path) + hint);
+                changed = true;
+
+            }
+
+        }
+
+        if (!changed) {
+
+            return;
+
+        }
+
+        try {
+
+            defaultConfig.save(defaultFile);
+            AreaShop.info("Added the shift-click hint to the region greetings in default.yml");
+
+        } catch (IOException e) {
+
+            AreaShop.warn("Could not save the greeting shift-click hints to " + defaultFile.getAbsolutePath());
+
+        }
+
+    }
+
     /**
      * Load the default.yml file
      *
@@ -1350,9 +1447,9 @@ public class FileManager extends Manager implements IFileManager {
 
         }
 
-        config.set("limitGroups.default.total", -1);
-        config.set("limitGroups.default.rents", -1);
-        config.set("limitGroups.default.buys", -1);
+        config.set("limitGroups.default.total", 0);
+        config.set("limitGroups.default.rents", 0);
+        config.set("limitGroups.default.buys", 0);
         setArmLimitGroup("og", 2);
         setArmLimitGroup("og-pro", 3);
         setArmLimitGroup("og-master", 4);

@@ -65,6 +65,13 @@ public class RentOptionsGui implements Listener {
 
     }
 
+    // Ask a player to confirm whether they want to start renting a free shop
+    public void openRentConfirmation(Player player, RentRegion region) {
+
+        open(player, region, Screen.RENT_CONFIRMATION);
+
+    }
+
     /**
      * Pay rent on behalf of the renter, using the same checks as /as payrent.
      *
@@ -112,8 +119,14 @@ public class RentOptionsGui implements Listener {
         Inventory inventory = Bukkit.createInventory(holder, INVENTORY_SIZE, Utils.applyColors(screen.title()));
         holder.setInventory(inventory);
 
-        inventory.setItem(PRIMARY_SLOT, screen == Screen.UNRENT_CONFIRMATION ? createUnrentItem(region)
-                : createPayRentItem(region, screen == Screen.OPTIONS));
+        inventory.setItem(PRIMARY_SLOT, switch (screen) {
+
+            case OPTIONS -> createPayRentItem(region, true);
+            case PAY_RENT_CONFIRMATION -> createPayRentItem(region, false);
+            case RENT_CONFIRMATION -> createRentItem(region);
+            case UNRENT_CONFIRMATION -> createUnrentItem(region);
+
+        });
         for (int slot = PRIMARY_SLOT + 1; slot < SECONDARY_SLOT; slot++) {
 
             inventory.setItem(slot,
@@ -121,8 +134,14 @@ public class RentOptionsGui implements Listener {
 
         }
 
-        inventory.setItem(SECONDARY_SLOT, screen == Screen.OPTIONS ? createSellBackItem(region)
-                : screen == Screen.UNRENT_CONFIRMATION ? createKeepRentingItem() : createDoNotPayItem());
+        inventory.setItem(SECONDARY_SLOT, switch (screen) {
+
+            case OPTIONS -> createSellBackItem(region);
+            case PAY_RENT_CONFIRMATION -> createDoNotPayItem();
+            case RENT_CONFIRMATION -> createDoNotRentItem();
+            case UNRENT_CONFIRMATION -> createKeepRentingItem();
+
+        });
         player.openInventory(inventory);
 
     }
@@ -150,17 +169,12 @@ public class RentOptionsGui implements Listener {
 
         }
 
-        if (holder.screen() == Screen.OPTIONS) {
+        switch (holder.screen()) {
 
-            handleOptionsClick(player, holder.region(), rawSlot);
-
-        } else if (holder.screen() == Screen.PAY_RENT_CONFIRMATION) {
-
-            handlePayRentConfirmationClick(player, holder.region(), rawSlot);
-
-        } else {
-
-            handleUnrentConfirmationClick(player, holder.region(), rawSlot);
+            case OPTIONS -> handleOptionsClick(player, holder.region(), rawSlot);
+            case PAY_RENT_CONFIRMATION -> handlePayRentConfirmationClick(player, holder.region(), rawSlot);
+            case RENT_CONFIRMATION -> handleRentConfirmationClick(player, holder.region(), rawSlot);
+            case UNRENT_CONFIRMATION -> handleUnrentConfirmationClick(player, holder.region(), rawSlot);
 
         }
 
@@ -226,6 +240,24 @@ public class RentOptionsGui implements Listener {
 
     }
 
+    private void handleRentConfirmationClick(Player player, RentRegion region, int rawSlot) {
+
+        if (rawSlot == SECONDARY_SLOT) {
+
+            player.closeInventory();
+            return;
+
+        }
+
+        if (rawSlot == PRIMARY_SLOT) {
+
+            player.closeInventory();
+            region.rent(player);
+
+        }
+
+    }
+
     private void handleUnrentConfirmationClick(Player player, RentRegion region, int rawSlot) {
 
         if (rawSlot == SECONDARY_SLOT) {
@@ -260,6 +292,41 @@ public class RentOptionsGui implements Listener {
 
         lore.add(Utils.applyColors(requiresConfirmation ? "&8Click to continue" : "&8Click to pay"));
         meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+
+    }
+
+    private ItemStack createRentItem(RentRegion region) {
+
+        // The first rent is charged during the jubilee too, but it immediately
+        // grants the maximum rent time instead of a single period
+        boolean jubilee = plugin.isJubilee() && region.getMaxRentTime() > 0;
+        String period = jubilee ? Utils.millisToHumanFormat(region.getMaxRentTime()) : region.getDurationString();
+        ItemStack item = new ItemStack(Material.DIAMOND);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(Utils.applyColors("&aYes, rent this shop"));
+        List<String> lore = new ArrayList<>(List.of(Utils.applyColors("&7Rent &6" + region.getName()),
+                Utils.applyColors("&7Cost: " + region.getFormattedPrice() + " &7for " + period)));
+        if (jubilee) {
+
+            lore.add(Utils.applyColors("&8The jubilee includes all extensions"));
+
+        }
+
+        lore.add(Utils.applyColors("&8Click to confirm"));
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+
+    }
+
+    private ItemStack createDoNotRentItem() {
+
+        ItemStack item = new ItemStack(Material.REDSTONE_BLOCK);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(Utils.applyColors("&cNo, do not rent"));
+        meta.setLore(List.of(Utils.applyColors("&7Leave this shop for someone else")));
         item.setItemMeta(meta);
         return item;
 
@@ -341,7 +408,7 @@ public class RentOptionsGui implements Listener {
 
     private enum Screen {
 
-        OPTIONS("&2Rent options"), PAY_RENT_CONFIRMATION("&2Pay rent?"),
+        OPTIONS("&2Rent options"), PAY_RENT_CONFIRMATION("&2Pay rent?"), RENT_CONFIRMATION("&2Rent this shop?"),
         UNRENT_CONFIRMATION("&4Stop renting this shop?");
 
         private final String title;

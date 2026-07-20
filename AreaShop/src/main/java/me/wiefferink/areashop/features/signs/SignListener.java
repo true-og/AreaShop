@@ -240,7 +240,8 @@ public class SignListener implements Listener {
 
         }
 
-        // Clicking the sign highlights the region volume for 30 seconds
+        // Clicking the sign highlights the region volume for 30 seconds, but only
+        // for the shopkeeper that owns it
         highlightRegion(player, regionSign.getRegion());
 
         boolean ran = regionSign.runSignCommands(player, clickType);
@@ -262,6 +263,14 @@ public class SignListener implements Listener {
         if (previous != null) {
 
             previous.removeBorder();
+
+        }
+
+        // Only the shopkeeper gets to see the outline of their own shop, so the
+        // particles do not clutter the view of everyone walking past a sign
+        if (!region.isOwner(player)) {
+
+            return;
 
         }
 

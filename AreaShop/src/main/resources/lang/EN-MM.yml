@@ -36,8 +36,10 @@ landlord: |-
   <click:run_command:'/areashop info player %landlord%'><hover:show_text:'Landlord %landlord%
   %lang:action|Regions of %landlord%|%'><bold>%landlord%
 
-total-maximum: You can't rent and buy more than %0% region(s) in total (you already
-  have %1% in group '%2%').
+total-maximum: You already own %1% of the %0% shop(s) your rank allows (limit group
+  '%2%'), sell or unrent one before taking another.
+group-maximum: You already own %1% of the %0% '%3%' shop(s) your rank allows (limit
+  group '%2%'), give one up before taking another.
 
 confirm-yes: ' <gray>Click to %lang:command|Confirm|%0%|%</gray><gray>, or repeat
     the command.'
@@ -115,13 +117,13 @@ help-quickdelete: '%lang:helpCommand|/as quickdelete|% Delete an AreaShop region
 
 rent-help: /as rent [region], the region you stand in will be used if not specified.
 rent-noPermission: You don't have permission to rent a region.
-rent-maximum: You can't rent more than %0% region(s) (you already have %1% in group
-  '%2%').
-rent-maximumExtend: You can't extend this rent because you have more than %0% region(s)
-  (you already have %1% in group '%2%').
+rent-maximum: You already rent %1% of the %0% shop(s) your rank allows (limit group
+  '%2%'), unrent one before renting another.
+rent-maximumExtend: You can't extend this rent, you have %1% shop(s) while your rank
+  allows %0% (limit group '%2%').
 rent-payError: Something went wrong with paying, try again later.
-rent-rented: You rented %lang:region% until %until%, you can extend your rent by rightclicking
-  the sign again or using /as rent.
+rent-rented: You rented %lang:region% until %until%, shift-click the sign again to
+  extend your rent or use /as rent.
 rent-extended: You extended your rent of %lang:region% until %until%.
 rent-extendedToMax: You extended your rent of %lang:region% until %until% (which is
   the maximum rental time of %maxrenttime%).
@@ -153,8 +155,8 @@ buy-noPermissionNoResell: You don't have permission to buy a region that is not 
   resell mode.
 buy-notBuyable: Region '%0%' is not available for buying (not registered in AreaShop
   or it is a rental region).
-buy-maximum: You can't buy more than %0% region(s) (you already have %1% in group
-  '%2%').
+buy-maximum: You already own %1% of the %0% shop(s) your rank allows to buy (limit
+  group '%2%'), sell one before buying another.
 buy-payError: Something went wrong with paying, try again later.
 buy-succes: You successfully bought %lang:region%.
 buy-successResale: You successfully bought %lang:region% from %lang:tPlayer|%0%|%.

@@ -506,27 +506,8 @@ public class BuyRegion extends GeneralRegion {
         }
 
         // Check region limits
-        LimitResult limitResult = this.limitsAllow(RegionType.BUY, offlinePlayer);
-        AreaShop.debug("LimitResult: " + limitResult.toString());
-        if (!limitResult.actionAllowed()) {
+        if (!checkLimitsAndInform(offlinePlayer, RegionType.BUY, false)) {
 
-            if (limitResult.getLimitingFactor() == LimitType.TOTAL) {
-
-                message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
-                        limitResult.getLimitingGroup());
-                return false;
-
-            }
-
-            if (limitResult.getLimitingFactor() == LimitType.BUYS) {
-
-                message(offlinePlayer, "buy-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
-                        limitResult.getLimitingGroup());
-                return false;
-
-            }
-
-            // Should not be reached, but is safe like this
             return false;
 
         }

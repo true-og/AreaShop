@@ -56,6 +56,13 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class GeneralRegion implements GeneralRegionInterface, Comparable<GeneralRegion>, ReplacementProvider {
 
+    // Limit group that every player holds through 'areashop.limits.default'. It
+    // only describes players without a rank: as soon as a rank-specific limit
+    // group applies this one is dropped, otherwise its (usually unlimited)
+    // numbers would win the highest-limit-wins comparison and make every rank
+    // meaningless.
+    private static final String FALLBACK_LIMIT_GROUP = "default";
+
     protected final AreaShop plugin;
     protected final FeatureManager featureManager;
     protected final WorldEditInterface worldEditInterface;
@@ -163,7 +170,7 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
     // Enum for limit types
     public enum LimitType {
 
-        RENTS("rents"), BUYS("buys"), TOTAL("total"), EXTEND("extend");
+        RENTS("rents"), BUYS("buys"), TOTAL("total"), EXTEND("extend"), GROUP("group");
 
         private final String value;
 
@@ -1965,144 +1972,179 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
         }
 
         // Check all limitgroups the player has
-        List<String> groups = new ArrayList<>(plugin.getConfig().getConfigurationSection("limitGroups").getKeys(false));
+        List<String> groups = applicableLimitGroups(offlinePlayer);
         while (!groups.isEmpty()) {
 
             String group = groups.get(0);
-            if (hasLimitGroupPermission(offlinePlayer, group) && this.matchesLimitGroup(group)) {
+            String pathPrefix = "limitGroups." + group + ".";
+            if (!plugin.getConfig().isInt(pathPrefix + "total")) {
 
-                String pathPrefix = "limitGroups." + group + ".";
-                if (!plugin.getConfig().isInt(pathPrefix + "total")) {
+                AreaShop.warn("Limit group " + group
+                        + " in the config.yml file does not correctly specify the number of total regions (should be specified as total: <number>)");
 
-                    AreaShop.warn("Limit group " + group
-                            + " in the config.yml file does not correctly specify the number of total regions (should be specified as total: <number>)");
+            }
 
-                }
+            if (!plugin.getConfig().isInt(pathPrefix + typePath)) {
 
-                if (!plugin.getConfig().isInt(pathPrefix + typePath)) {
+                AreaShop.warn(
+                        "Limit group " + group + " in the config.yml file does not correctly specify the number of "
+                                + typePath + " regions (should be specified as " + typePath + ": <number>)");
 
-                    AreaShop.warn(
-                            "Limit group " + group + " in the config.yml file does not correctly specify the number of "
-                                    + typePath + " regions (should be specified as " + typePath + ": <number>)");
+            }
 
-                }
+            int totalLimit = plugin.getConfig().getInt("limitGroups." + group + ".total");
+            int typeLimit = plugin.getConfig().getInt("limitGroups." + group + "." + typePath);
+            int totalCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRegionsRef(),
+                    exclude);
+            int typeCurrent;
+            if (type == RegionType.RENT) {
 
-                int totalLimit = plugin.getConfig().getInt("limitGroups." + group + ".total");
-                int typeLimit = plugin.getConfig().getInt("limitGroups." + group + "." + typePath);
-                // AreaShop.debug("typeLimitOther="+typeLimit+", typePath="+typePath);
-                int totalCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRegionsRef(),
+                typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRentsRef(),
                         exclude);
-                int typeCurrent;
-                if (type == RegionType.RENT) {
 
-                    typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getRentsRef(),
-                            exclude);
+            } else {
 
-                } else {
+                typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getBuysRef(),
+                        exclude);
 
-                    typeCurrent = hasRegionsInLimitGroup(offlinePlayer, group, plugin.getFileManager().getBuysRef(),
-                            exclude);
+            }
+
+            if (totalLimit == -1) {
+
+                totalLimit = Integer.MAX_VALUE;
+
+            }
+
+            if (typeLimit == -1) {
+
+                typeLimit = Integer.MAX_VALUE;
+
+            }
+
+            String totalHighestGroup = group;
+            String typeHighestGroup = group;
+            groups.remove(group);
+            // Get the highest number from the groups of the same category
+            List<String> groupsCopy = new ArrayList<>(groups);
+            for (String checkGroup : groupsCopy) {
+
+                if (!limitGroupsOfSameCategory(group, checkGroup)) {
+
+                    continue;
 
                 }
 
-                if (totalLimit == -1) {
+                groups.remove(checkGroup);
+                int totalLimitOther = plugin.getConfig().getInt("limitGroups." + checkGroup + ".total");
+                int typeLimitOther = plugin.getConfig().getInt("limitGroups." + checkGroup + "." + typePath);
+                if (totalLimitOther == -1) {
 
                     totalLimit = Integer.MAX_VALUE;
+                    totalHighestGroup = checkGroup;
+
+                } else if (totalLimitOther > totalLimit) {
+
+                    totalLimit = totalLimitOther;
+                    totalHighestGroup = checkGroup;
 
                 }
 
-                if (typeLimit == -1) {
+                if (typeLimitOther == -1) {
 
                     typeLimit = Integer.MAX_VALUE;
+                    typeHighestGroup = checkGroup;
 
-                }
+                } else if (typeLimitOther > typeLimit) {
 
-                String totalHighestGroup = group;
-                String typeHighestGroup = group;
-                groups.remove(group);
-                // Get the highest number from the groups of the same category
-                List<String> groupsCopy = new ArrayList<>(groups);
-                for (String checkGroup : groupsCopy) {
-
-                    if (hasLimitGroupPermission(offlinePlayer, checkGroup) && this.matchesLimitGroup(checkGroup)) {
-
-                        if (limitGroupsOfSameCategory(group, checkGroup)) {
-
-                            groups.remove(checkGroup);
-                            int totalLimitOther = plugin.getConfig().getInt("limitGroups." + checkGroup + ".total");
-                            int typeLimitOther = plugin.getConfig()
-                                    .getInt("limitGroups." + checkGroup + "." + typePath);
-                            if (totalLimitOther > totalLimit) {
-
-                                totalLimit = totalLimitOther;
-                                totalHighestGroup = checkGroup;
-
-                            } else if (totalLimitOther == -1) {
-
-                                totalLimit = Integer.MAX_VALUE;
-
-                            }
-
-                            if (typeLimitOther > typeLimit) {
-
-                                typeLimit = typeLimitOther;
-                                typeHighestGroup = checkGroup;
-
-                            } else if (typeLimitOther == -1) {
-
-                                typeLimit = Integer.MAX_VALUE;
-
-                            }
-
-                        }
-
-                    } else {
-
-                        groups.remove(checkGroup);
-
-                    }
-
-                }
-
-                // Check if the limits stop the player from buying the region
-                if (typeCurrent >= typeLimit) {
-
-                    LimitType limitType;
-                    if (type == RegionType.RENT) {
-
-                        if (extend) {
-
-                            limitType = LimitType.EXTEND;
-
-                        } else {
-
-                            limitType = LimitType.RENTS;
-
-                        }
-
-                    } else {
-
-                        limitType = LimitType.BUYS;
-
-                    }
-
-                    return new LimitResult(false, limitType, typeLimit, typeCurrent, typeHighestGroup);
-
-                }
-
-                if (totalCurrent >= totalLimit) {
-
-                    return new LimitResult(false, LimitType.TOTAL, totalLimit, totalCurrent, totalHighestGroup);
+                    typeLimit = typeLimitOther;
+                    typeHighestGroup = checkGroup;
 
                 }
 
             }
 
-            groups.remove(group);
+            // Check if the limits stop the player from buying the region
+            if (typeCurrent >= typeLimit) {
+
+                LimitType limitType;
+                if (type == RegionType.RENT) {
+
+                    if (extend) {
+
+                        limitType = LimitType.EXTEND;
+
+                    } else {
+
+                        limitType = LimitType.RENTS;
+
+                    }
+
+                } else {
+
+                    limitType = LimitType.BUYS;
+
+                }
+
+                return new LimitResult(false, limitType, typeLimit, typeCurrent, typeHighestGroup);
+
+            }
+
+            if (totalCurrent >= totalLimit) {
+
+                return new LimitResult(false, LimitType.TOTAL, totalLimit, totalCurrent, totalHighestGroup);
+
+            }
 
         }
 
         return new LimitResult(true, null, 0, 0, null);
+
+    }
+
+    // Check the region limits for a player and tell them which limit blocks the
+    // action when one does. Used both before showing a confirmation screen and
+    // right before the actual rent/buy, so a player never gets as far as paying
+    // for a shop their rank does not allow. Returns true when the player is
+    // within their limits.
+    public boolean checkLimitsAndInform(OfflinePlayer offlinePlayer, RegionType type, boolean extend) {
+
+        LimitResult limitResult = limitsAllow(type, offlinePlayer, extend);
+        AreaShop.debug("LimitResult: " + limitResult.toString());
+        if (limitResult.actionAllowed()) {
+
+            return true;
+
+        }
+
+        LimitType limitingFactor = limitResult.getLimitingFactor();
+        if (limitingFactor == LimitType.GROUP) {
+
+            message(offlinePlayer, "group-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                    limitResult.getLimitingGroup(), limitResult.getLimitingRegionGroup());
+
+        } else if (limitingFactor == LimitType.TOTAL) {
+
+            message(offlinePlayer, "total-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                    limitResult.getLimitingGroup());
+
+        } else if (limitingFactor == LimitType.RENTS) {
+
+            message(offlinePlayer, "rent-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                    limitResult.getLimitingGroup());
+
+        } else if (limitingFactor == LimitType.BUYS) {
+
+            message(offlinePlayer, "buy-maximum", limitResult.getMaximum(), limitResult.getCurrent(),
+                    limitResult.getLimitingGroup());
+
+        } else if (limitingFactor == LimitType.EXTEND) {
+
+            message(offlinePlayer, "rent-maximumExtend", limitResult.getMaximum(), limitResult.getCurrent() + 1,
+                    limitResult.getLimitingGroup());
+
+        }
+
+        return false;
 
     }
 
@@ -2116,6 +2158,39 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
     }
 
+    // Get the limit groups from config.yml that the player holds and that apply
+    // to this region. The 'default' group is only returned when the player has no
+    // rank-specific group, so that ranks are not merged with the fallback.
+    private List<String> applicableLimitGroups(OfflinePlayer player) {
+
+        List<String> result = new ArrayList<>();
+        ConfigurationSection limitGroups = plugin.getConfig().getConfigurationSection("limitGroups");
+        if (limitGroups == null) {
+
+            return result;
+
+        }
+
+        for (String group : limitGroups.getKeys(false)) {
+
+            if (hasLimitGroupPermission(player, group) && matchesLimitGroup(group)) {
+
+                result.add(group);
+
+            }
+
+        }
+
+        if (result.size() > 1) {
+
+            result.remove(FALLBACK_LIMIT_GROUP);
+
+        }
+
+        return result;
+
+    }
+
     /**
      * Enforce ARM's per-region-kind limits using AreaShop region groups. The
      * highest applicable permission group wins, matching AreaShop's normal limit
@@ -2123,8 +2198,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
      */
     private LimitResult checkRegionGroupLimits(OfflinePlayer player, GeneralRegion exclude) {
 
-        ConfigurationSection limitGroups = plugin.getConfig().getConfigurationSection("limitGroups");
-        if (limitGroups == null) {
+        List<String> permissionGroups = applicableLimitGroups(player);
+        if (permissionGroups.isEmpty()) {
 
             return null;
 
@@ -2140,12 +2215,10 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
             int highestLimit = Integer.MIN_VALUE;
             String highestPermissionGroup = null;
-            for (String permissionGroup : limitGroups.getKeys(false)) {
+            for (String permissionGroup : permissionGroups) {
 
                 String path = "limitGroups." + permissionGroup + ".groupLimits." + regionGroup.getName();
-                if (hasLimitGroupPermission(player, permissionGroup) && matchesLimitGroup(permissionGroup)
-                        && plugin.getConfig().isInt(path))
-                {
+                if (plugin.getConfig().isInt(path)) {
 
                     int configuredLimit = plugin.getConfig().getInt(path);
                     if (configuredLimit == -1) {
@@ -2189,8 +2262,8 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
             if (current >= highestLimit) {
 
-                return new LimitResult(false, LimitType.TOTAL, highestLimit, current,
-                        highestPermissionGroup + "/" + regionGroup.getName());
+                return new LimitResult(false, LimitType.GROUP, highestLimit, current, highestPermissionGroup,
+                        regionGroup.getName());
 
             }
 
@@ -2210,10 +2283,11 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
         private final int maximum;
         private final int current;
         private final String limitingGroup;
+        private final String limitingRegionGroup;
 
         /**
          * Constructor.
-         * 
+         *
          * @param actionAllowed  has the action been allowed?
          * @param limitingFactor The LimitType that has prevented the action (if
          *                       actionAllowed is false)
@@ -2228,11 +2302,22 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
                 String limitingGroup)
         {
 
+            this(actionAllowed, limitingFactor, maximum, current, limitingGroup, null);
+
+        }
+
+        // Constructor for limits that apply to a single region group,
+        // limitingRegionGroup is null when the limit counts every region
+        public LimitResult(boolean actionAllowed, LimitType limitingFactor, int maximum, int current,
+                String limitingGroup, String limitingRegionGroup)
+        {
+
             this.actionAllowed = actionAllowed;
             this.limitingFactor = limitingFactor;
             this.maximum = maximum;
             this.current = current;
             this.limitingGroup = limitingGroup;
+            this.limitingRegionGroup = limitingRegionGroup;
 
         }
 
@@ -2295,11 +2380,20 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
 
         }
 
+        // Get the name of the region group this limit counts, assuming
+        // actionAllowed() is false. Null when the limit counts all regions.
+        public String getLimitingRegionGroup() {
+
+            return limitingRegionGroup;
+
+        }
+
         @Override
         public String toString() {
 
             return "actionAllowed=" + actionAllowed + ", limitingFactor=" + limitingFactor + ", maximum=" + maximum
-                    + ", current=" + current + ", limitingGroup=" + limitingGroup;
+                    + ", current=" + current + ", limitingGroup=" + limitingGroup + ", limitingRegionGroup="
+                    + limitingRegionGroup;
 
         }
 
