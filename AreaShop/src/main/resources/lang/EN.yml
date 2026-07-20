@@ -396,6 +396,13 @@ info-signSoldOwner: "[darkgreen][bold]►[reset] Sign: [gray]shift-right-click t
 info-signSoldOwnerJubilee: "[darkgreen][bold]►[reset] Sign: [gray]shift-right-click to give this shop up (no Diamonds back during the jubilee), or type [white]/as resell <price> %region%[gray] to offer it to other players."
 info-regionNotExisting: "The specified region is not registered: %0%."
 
+broadcast-rented: "%lang:player% rented shop %lang:region% for %price% [gray]per %duration%!"
+broadcast-rentedJubilee: "%lang:player% rented shop %lang:region% for %price% [gray]until %until% (jubilee)!"
+broadcast-bought: "%lang:player% bought shop %lang:region% for %price%[gray], no expiry!"
+broadcast-boughtJubilee: "%lang:player% claimed shop %lang:region% for free, no expiry (jubilee)!"
+broadcast-resold: "%lang:player% bought shop %lang:region% from %lang:tPlayer|%0%|% for %1%[gray], no expiry!"
+broadcast-resoldJubilee: "%lang:player% took over shop %lang:region% from %lang:tPlayer|%0%|% for free, no expiry (jubilee)!"
+
 setrestore-help: "/as setrestore <region> <true|false|general> [profile]."
 setrestore-noPermission: "You don't have permission to change the restore settings."
 setrestore-notRegistered: "The specified region is not registered: %0%."

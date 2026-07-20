@@ -9,6 +9,7 @@ import me.wiefferink.areashop.events.notify.UpdateRegionEvent;
 import me.wiefferink.areashop.features.FriendsFeature;
 import me.wiefferink.areashop.features.RegionFeature;
 import me.wiefferink.areashop.features.TeleportFeature;
+import me.wiefferink.areashop.features.signs.RegionSign;
 import me.wiefferink.areashop.features.signs.SignsFeature;
 import me.wiefferink.areashop.interfaces.GeneralRegionInterface;
 import me.wiefferink.areashop.interfaces.WorldEditInterface;
@@ -23,7 +24,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -40,6 +44,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -292,6 +297,71 @@ public abstract class GeneralRegion implements GeneralRegionInterface, Comparabl
     public TeleportFeature getTeleportFeature() {
 
         return getOrCreateFeature(TeleportFeature.class);
+
+    }
+
+    /**
+     * Celebrate a player becoming the new owner of this region: safely teleport
+     * them into the region facing away from the sign, with particles and a sound.
+     *
+     * @param player The player that became the owner
+     */
+    protected void celebrateNewOwner(Player player) {
+
+        if (!getTeleportFeature().teleportPlayer(player, false, false)) {
+
+            return;
+
+        }
+
+        // Turn the player the opposite way of the sign, so they look into the shop
+        Iterator<RegionSign> signs = getSignsFeature().signManager().allSigns().iterator();
+        if (signs.hasNext()) {
+
+            BlockFace facing = signs.next().getFacing();
+            if (facing != null && (facing.getModX() != 0 || facing.getModZ() != 0)) {
+
+                player.setRotation((float) Math.toDegrees(Math.atan2(facing.getModX(), -facing.getModZ())), 0);
+
+            }
+
+        }
+
+        playCelebration(player.getLocation());
+
+    }
+
+    /**
+     * Broadcast a message about this region to everyone in the worlds listed under
+     * 'announceWorlds' in config.yml.
+     *
+     * @param key    The language key to broadcast
+     * @param params Extra replacement parameters for the message
+     */
+    protected void broadcast(String key, Object... params) {
+
+        List<String> worlds = plugin.getConfig().getStringList("announceWorlds");
+        for (Player online : Bukkit.getOnlinePlayers()) {
+
+            if (worlds.contains(online.getWorld().getName())) {
+
+                message(online, key, params);
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Play the ownership celebration particles and sound at a location.
+     *
+     * @param location The location to celebrate at, usually the player's feet
+     */
+    protected void playCelebration(Location location) {
+
+        location.getWorld().spawnParticle(Particle.TOTEM, location.clone().add(0, 1, 0), 100, 0.5, 1, 0.5, 0.4);
+        location.getWorld().playSound(location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
 
     }
 

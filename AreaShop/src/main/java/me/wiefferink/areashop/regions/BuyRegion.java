@@ -796,6 +796,12 @@ public class BuyRegion extends GeneralRegion {
 
         }
 
+        // Announce the takeover to the configured worlds
+        broadcast(plugin.isJubilee() ? "broadcast-resoldJubilee" : "broadcast-resold", oldOwnerName,
+                Utils.formatCurrency(resellPrice));
+
+        celebrateNewOwner(offlinePlayer.getPlayer());
+
     }
 
     /**
@@ -818,6 +824,11 @@ public class BuyRegion extends GeneralRegion {
 
         // Notify about updates
         this.notifyAndUpdate(new BoughtRegionEvent(this));
+
+        // Announce the new owner to the configured worlds
+        broadcast(plugin.isJubilee() ? "broadcast-boughtJubilee" : "broadcast-bought");
+
+        celebrateNewOwner(offlinePlayer.getPlayer());
 
     }
 

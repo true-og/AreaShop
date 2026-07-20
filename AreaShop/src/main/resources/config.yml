@@ -47,6 +47,13 @@ signTags:
   # Add a sign to an existing region.
   add: '[as]'
 
+# Worlds in which a broadcast is sent to everyone when a player rents or buys a shop.
+# Players in worlds that are not listed do not see the announcement, an empty list disables it.
+announceWorlds:
+  - world
+  - world_nether
+  - world_the_end
+
 
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │ ECONOMY: Options to change the display of prices.                                                                          │

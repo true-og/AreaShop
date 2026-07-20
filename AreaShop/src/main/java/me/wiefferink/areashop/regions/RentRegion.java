@@ -1062,6 +1062,31 @@ public class RentRegion extends GeneralRegion {
         // Notify about updates
         this.notifyAndUpdate(new RentedRegionEvent(this, extend));
 
+        // Announce a new renter to the configured worlds
+        if (!extend) {
+
+            broadcast(plugin.isJubilee() ? "broadcast-rentedJubilee" : "broadcast-rented");
+
+        }
+
+        // Celebrate: a new renter gets brought to their shop, an extension only
+        // gets the effects at their current spot. The renter can be offline when
+        // someone else pays their rent, in that case there is nothing to show
+        if (extend) {
+
+            Player renter = offlinePlayer.getPlayer();
+            if (renter != null) {
+
+                playCelebration(renter.getLocation());
+
+            }
+
+        } else {
+
+            celebrateNewOwner(offlinePlayer.getPlayer());
+
+        }
+
     }
 
     /**
