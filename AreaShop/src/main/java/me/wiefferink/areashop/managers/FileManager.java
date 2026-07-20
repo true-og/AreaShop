@@ -1124,6 +1124,7 @@ public class FileManager extends Manager implements IFileManager {
             defaultConfig = YamlConfiguration.loadConfiguration(custom);
             migrateIncompleteArmDefaults(defaultFile);
             migrateJubileeGreeting(defaultFile);
+            migrateSignColors(defaultFile);
             if (defaultConfig.getKeys(false).isEmpty()) {
 
                 AreaShop.warn("File 'default.yml' is empty, check for errors in the log.");
@@ -1203,6 +1204,52 @@ public class FileManager extends Manager implements IFileManager {
         } catch (IOException e) {
 
             AreaShop.warn("Could not save the jubilee greeting to " + defaultFile.getAbsolutePath());
+
+        }
+
+    }
+
+    // Darken the white region name and yellow duration on signs, they are hard to
+    // read on light sign materials and older clients. The signatures are
+    // deliberately exact so user-customized sign profiles are untouched.
+    private void migrateSignColors(File defaultFile) {
+
+        boolean changed = false;
+        for (String state : new String[] { "forrent", "rented", "forsale", "resell", "sold" }) {
+
+            String path = "general.signProfile." + state + ".line2";
+            if ("&f&l%region%".equals(defaultConfig.getString(path))) {
+
+                defaultConfig.set(path, "&0&l%region%");
+                changed = true;
+
+            }
+
+        }
+
+        String durationPath = "general.signProfile.forrent.line3";
+        String duration = defaultConfig.getString(durationPath);
+        if ("&eTime: %durationshort%".equals(duration) || "&f%durationshort% (12x)".equals(duration)) {
+
+            defaultConfig.set(durationPath, "&3Time: %durationshort%");
+            changed = true;
+
+        }
+
+        if (!changed) {
+
+            return;
+
+        }
+
+        try {
+
+            defaultConfig.save(defaultFile);
+            AreaShop.info("Darkened the sign text colors in default.yml");
+
+        } catch (IOException e) {
+
+            AreaShop.warn("Could not save the darkened sign colors to " + defaultFile.getAbsolutePath());
 
         }
 

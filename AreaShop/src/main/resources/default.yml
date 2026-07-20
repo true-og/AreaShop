@@ -45,8 +45,8 @@ general:
   signProfile:
     forrent:
       line1: '&2For Rent:'
-      line2: '&f&l%region%'
-      line3: '&eTime: %durationshort%'
+      line2: '&0&l%region%'
+      line3: '&3Time: %durationshort%'
       line4: '%price%'
       rightClickPlayer:
         - 'areashop info region --region %region%'
@@ -56,7 +56,7 @@ general:
         - 'areashop info region --region %region%'
     rented:
       line1: '&2Rented:'
-      line2: '&f&l%region%'
+      line2: '&0&l%region%'
       line3: '&3&lShopkeeper:'
       line4: '&0%playercolor%%player%'
       rightClickPlayer:
@@ -72,7 +72,7 @@ general:
         - 'areashop rentoptions --region %region%'
     forsale:
       line1: '&2For Sale:'
-      line2: '&f&l%region%'
+      line2: '&0&l%region%'
       line3: '%price%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
@@ -85,7 +85,7 @@ general:
         - 'areashop confirmbuy --region %region%'
     resell:
       line1: '&2For Sale:'
-      line2: '&f&l%region%'
+      line2: '&0&l%region%'
       line3: '%resellprice%'
       line4: '&8%width%x%depth%x%height%'
       rightClickPlayer:
@@ -100,7 +100,7 @@ general:
         - 'areashop confirmbuy --region %region%'
     sold:
       line1: '&4Sold:'
-      line2: '&f&l%region%'
+      line2: '&0&l%region%'
       line3: '&0%playercolor%%player%'
       line4: '&2No Expiry'
       rightClickPlayer:

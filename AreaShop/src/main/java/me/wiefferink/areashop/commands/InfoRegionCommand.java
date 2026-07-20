@@ -15,6 +15,7 @@ import me.wiefferink.areashop.tools.SimpleMessageBridge;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.bean.CommandProperties;
 import org.incendo.cloud.context.CommandContext;
@@ -120,10 +121,26 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
                 messageBridge.messageNoPrefix(sender, "info-regionReselling", buy);
                 messageBridge.messageNoPrefix(sender, jubileeKey("info-regionReselPriceClick"), buy);
+                // Sign usage depends on who is looking: the seller can cancel the
+                // resale, everybody else can take the shop over
+                if (sender instanceof Player player && buy.isOwner(player)) {
+
+                    messageBridge.messageNoPrefix(sender, "info-signResellSeller", buy);
+
+                } else {
+
+                    messageBridge.messageNoPrefix(sender, jubileeKey("info-signResellBuyer"), buy);
+
+                }
 
             } else {
 
                 messageBridge.messageNoPrefix(sender, "info-regionBought", buy);
+                if (SellCommand.canUse(sender, buy)) {
+
+                    messageBridge.messageNoPrefix(sender, jubileeKey("info-signSoldOwner"), buy);
+
+                }
 
             }
 
@@ -160,6 +177,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
         } else {
 
             messageBridge.messageNoPrefix(sender, jubileeKey("info-regionCanBeBought"), buy);
+            messageBridge.messageNoPrefix(sender, jubileeKey("info-signForsale"), buy);
 
         }
 
@@ -219,6 +237,18 @@ public class InfoRegionCommand extends AreashopCommandBean {
 
             }
 
+            // Sign usage depends on who is looking: the renter gets the rent menu,
+            // everybody else can pay rent for the renter (disabled during jubilee)
+            if (sender instanceof Player player && rent.isRenter(player)) {
+
+                messageBridge.messageNoPrefix(sender, jubileeKey("info-signRentedRenter"), rent);
+
+            } else if (!plugin.isJubilee()) {
+
+                messageBridge.messageNoPrefix(sender, "info-signRentedOther", rent);
+
+            }
+
             // Friends
             if (!rent.getFriendsFeature().getFriendNames().isEmpty()) {
 
@@ -237,6 +267,7 @@ public class InfoRegionCommand extends AreashopCommandBean {
         } else {
 
             messageBridge.messageNoPrefix(sender, jubileeKey("info-regionCanBeRented"), rent);
+            messageBridge.messageNoPrefix(sender, "info-signForrent", rent);
 
         }
 

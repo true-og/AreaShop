@@ -286,10 +286,9 @@ public class RegionSign {
         Sign signState = (Sign) PaperLib.getBlockState(block, false).getState();
 
         // Old clients (via ViaBackwards/ViaRewind) lose per-line component colors
-        // and fall back to the sign's base dye color, which defaults to black.
-        // Dye the sign white so those clients match the &f lines; lines with
-        // explicit color codes are unaffected on modern clients.
-        signState.setColor(DyeColor.WHITE);
+        // and fall back to the sign's base dye color; keep the dye black so the
+        // fallback matches the dark line colors used by the sign profiles.
+        signState.setColor(DyeColor.BLACK);
 
         for (int i = 0; i < signLines.length; i++) {
 
