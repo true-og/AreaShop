@@ -46,7 +46,7 @@ general:
     forrent:
       line1: '&2For Rent:'
       line2: '&f&l%region%'
-      line3: '&f%durationshort% (12x)'
+      line3: '&eTime: %durationshort%'
       line4: '%price%'
       rightClickPlayer:
         - 'areashop info region --region %region%'

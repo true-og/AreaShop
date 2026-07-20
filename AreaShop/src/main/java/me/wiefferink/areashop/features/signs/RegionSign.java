@@ -14,6 +14,7 @@ import me.wiefferink.areashop.tools.SignUtils;
 import me.wiefferink.areashop.tools.Utils;
 import me.wiefferink.interactivemessenger.processing.Message;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -283,6 +284,13 @@ public class RegionSign {
 
         // Apply replacements and color and then set it on the sign
         Sign signState = (Sign) PaperLib.getBlockState(block, false).getState();
+
+        // Old clients (via ViaBackwards/ViaRewind) lose per-line component colors
+        // and fall back to the sign's base dye color, which defaults to black.
+        // Dye the sign white so those clients match the &f lines; lines with
+        // explicit color codes are unaffected on modern clients.
+        signState.setColor(DyeColor.WHITE);
+
         for (int i = 0; i < signLines.length; i++) {
 
             if (signLines[i] == null) {
