@@ -32,7 +32,7 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 .settings
-AreaShop/.settings
+AreaShop-OG/.settings
 adapters/.settings
 adapters/platform/.settings/
 adapters/platform/bukkit-modern/.settings/

@@ -1,5 +1,5 @@
-# How to release a version of AreaShop
-Below the steps to follow for releasing a version of AreaShop are listed.
+# How to release a version of AreaShop-OG
+Below the steps to follow for releasing a version of AreaShop-OG are listed.
 
 ## Pull the latest translations from Transifex
 **Setup:**
@@ -12,17 +12,17 @@ Below the steps to follow for releasing a version of AreaShop are listed.
 	- **`download`**
 	- **<transifex api key>**, get from Transifex
 	- **`areashop`**, project name
-	- **`enyml`**, name of the file to download, this is the name AreaShop uses on Transifex
-	- **`./AreaShop/src/main/resources/lang`**, path to the `lang` directory in your clone of the AreaShop repository
+	- **`enyml`**, name of the file to download, this is the name AreaShop-OG uses on Transifex
+	- **`./AreaShop-OG/src/main/resources/lang`**, path to the `lang` directory in your clone of the AreaShop-OG repository
 	- **`70`**, meaning only languages translated for at least 70% will get downloaded
 	- **`true`**, reformat the files to be suitable for using in the plugin
-	- **`./langHeader.yml`**, header to add to language file, this file is in the AreaShop repository
+	- **`./langHeader.yml`**, header to add to language file, this file is in the AreaShop-OG repository
 	- **`<version>`**, release version to put in the header
-2. Commit the changed files in the AreaShop repository
+2. Commit the changed files in the AreaShop-OG repository
 3. Push the commit to Github
 
 ## Update the version number
-1. In `./AreaShop/pom.xml` update the `<version>` tag with the new version (following semantic versioning)
+1. In `./AreaShop-OG/pom.xml` update the `<version>` tag with the new version (following semantic versioning)
 2. In `./changelog.md` add notes about the features/fixes of this new version
 3. Commit the updated files
 4. Push the commit to Github
@@ -39,7 +39,7 @@ The order is important, uploading to Github will trigger the update notification
 	- The file needs to be approved before it will be available for everyone
 3. Add a [new release on Github](https://github.com/NLthijs48/AreaShop/releases/new)
 	- Enter a tag like `v2.6.0`
-	- Enter a title like `AreaShop 2.6.0`
+	- Enter a title like `AreaShop-OG 2.6.0`
 	- Add the changelog
-	- Add the .jar file as `AreaShop.jar`
+	- Add the .jar file as `AreaShop-OG.jar`
 

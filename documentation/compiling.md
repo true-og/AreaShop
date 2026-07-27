@@ -1,15 +1,15 @@
 # Compiling
 
 ## Clone the repo <br/>
-`git clone https://github.com/md5sha256/AreaShop.git`
+`git clone https://github.com/true-og/AreaShop-OG.git`
 
 ## Compile a Jar
 This task may take a while as the dev environment for platform adapters in `adapters/platform` take a while to set up 
 <br/>
 <strong>Compilation command:</strong> `./gradlew build` (UNIX) or `gradlew build` (Windows)
 <br/>
-The plugin jar can be found under the `AreaShop` module in `AreaShop/build/libs/`<br/>
-There are three jars, use the one which has no suffix. Ex: `AreaShop-VERSION.jar`
+The plugin jar can be found under the `AreaShop-OG` module in `AreaShop-OG/build/libs/`<br/>
+There are three jars, use the one which has no suffix. Ex: `AreaShop-OG-VERSION.jar`
 
 ## Gradle Tasks
 The following is a simple table describing commands which may be useful for building the plugin. <br>

@@ -4,6 +4,6 @@ dependencies {
     compileOnly(projects.areashopNms)
 }
 
-description = "AreaShop NMS Helper 1-19"
+description = "AreaShop-OG NMS Helper 1-19"
 
 tasks {}

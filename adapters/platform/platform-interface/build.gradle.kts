@@ -1,3 +1,3 @@
-description = "AreaShop Platform Interface"
+description = "AreaShop-OG Platform Interface"
 
 dependencies { compileOnlyApi(libs.spigot) }

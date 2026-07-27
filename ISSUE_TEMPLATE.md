@@ -20,7 +20,7 @@
 <!--- Use '/version' for Platform version and '/version <plugin>' for plugin versions if unsure -->
 * Server platform (Bukkit, Spigot, etc.): 
 * Server version: 
-* AreaShop version: 
+* AreaShop-OG version: 
 * WorldEdit version: 
 * WorldGuard version: 
 * DiamondBank-OG version: 
@@ -28,4 +28,4 @@
 
 
 #### Your config files (for bugs)
-<!--- Attach a '.zip' file of the '/plugins/AreaShop' directory to show your configuration setup -->
+<!--- Attach a '.zip' file of the '/plugins/AreaShop-OG' directory to show your configuration setup -->

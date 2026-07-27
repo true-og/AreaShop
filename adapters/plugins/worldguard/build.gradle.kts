@@ -6,4 +6,4 @@ dependencies {
     compileOnly(libs.worldguardCore)
 }
 
-description = "AreaShop WorldGuard 7"
+description = "AreaShop-OG WorldGuard 7"

@@ -1,71 +1,110 @@
-![AreaShop logo](https://cloud.githubusercontent.com/assets/6951068/9471294/f016d8ee-4b4f-11e5-9bda-d61b1c423ebb.png)<br/>
-[![](https://jitpack.io/v/md5sha256/AreaShop.svg)](https://jitpack.io/#md5sha256/AreaShop)
-<br>
-**Usage and configuration:**
-[►Download (releases)](https://github.com/md5sha256/AreasShop/releases)&nbsp;&nbsp;
-[►Commands and Permissions](https://github.com/NLthijs48/AreaShop/wiki/Commands-and-Permissions)
-<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[►Basic regions setup](https://github.com/NLthijs48/AreaShop/wiki/Basic-regions-setup)&nbsp;&nbsp;
-[►Advanced regions setup](https://github.com/NLthijs48/AreaShop/wiki/Advanced-regions-setup)&nbsp;&nbsp;
-[►Configuration files](https://github.com/NLthijs48/AreaShop/wiki/The-config-system)<br/>
-**Advanced features:**
-[►Save/restore region blocks](https://github.com/NLthijs48/AreaShop/wiki/Region-blocks-save-restore)&nbsp;&nbsp;
-[►Change the language](https://github.com/NLthijs48/AreaShop/wiki/Language-support)&nbsp;&nbsp;
-[►Limitgroups](https://github.com/NLthijs48/AreaShop/wiki/Limitgroups-information-and-examples)<br/>
-**Troubleshooting:**
-[►Frequently Asked Questions](https://github.com/NLthijs48/AreaShop/wiki/Frequently-Asked-Questions)&nbsp;&nbsp;
-[►Common errors](https://github.com/NLthijs48/AreaShop/wiki/Common-errors)<br/>
-**Support:**
-[►Request a feature, report a bug or ask support](https://github.com/md5sha256/AreasShop/issues/new/choose)&nbsp;&nbsp;
-[►Open issues](https://github.com/md5sha256/AreasShop/issues)<br/>
-**Development:**
-[►Compiling](https://github.com/md5sha256/AreaShop/tree/dev/bleeding/documentation/compiling.md)&nbsp;&nbsp;
-[►Modules/classes overview](https://github.com/NLthijs48/AreaShop/wiki/Modules,-packages-and-classes-overview)
-[►Javadocs](https://wiefferink.me/AreaShop/javadocs/)
-[►Development builds](http://jenkins.wiefferink.me/job/AreaShop)<br/>
-**Connections:**
-[►AreaShop in Spigot Resources](http://www.spigotmc.org/resources/areashop.2991/)&nbsp;&nbsp;
-[►AreaShop on BukkitDev](http://dev.bukkit.org/bukkit-plugins/regionbuyandrent/)
+# AreaShop-OG
 
-### Required dependencies
+Fork of [AreaShop](https://github.com/NLthijs48/AreaShop) by NLThijs48 (continuing
+[md5sha256's](https://github.com/md5sha256/AreaShop) `dev/bleeding` line), maintained by the
+[TrueOG Network](https://true-og.net) for use on `true-og.net`.
+
+AreaShop rents and sells WorldGuard regions to players. Players interact with signs to rent, buy, extend and give up
+shops, and admins manage everything with `/as` commands. This fork keeps all of that and replaces the money, permission
+and shop-flow layers with the ones TrueOG runs, after migrating the network off AdvancedRegionMarket (ARM).
+
+The plugin display name, jar and data folder are now `AreaShop-OG`, but the commands (`/as`, `/areashop`) and the
+permission namespace (`areashop.*`) are unchanged.
+
+## Differences from upstream
+
+### Economy and permissions
+
+- **Diamonds instead of Vault money** — the Vault dependency is gone. Every rent, extend, buy, resell and refund goes
+  through [DiamondBank-OG](https://github.com/true-og/DiamondBank-OG), so shop payments come out of (and go back into)
+  a player's diamond bank and show up in their bank history. Prices are shown as `12.5 Diamonds`, where the fractional
+  digit is diamond shards (9 shards = 1 diamond).
+- **LuckPerms instead of Vault permissions** — rank and limit lookups talk to LuckPerms 5.5 directly.
+- **Jubilee mode** (`jubilee: true` in `config.yml`) — while it is on, the first rent of a shop costs Diamonds and
+  immediately grants the maximum rent time; extending, buying and reselling are free, and unrenting or selling pays
+  nothing back. Set it to `false` for the normal pay-per-period economy.
+- **Rank-based shop limits shipped in the config** — players without a rank cannot own a shop; the `og`, `og-pro` and
+  `og-master` ranks raise the totals and cap how many shops of one region group (for example `shop` or `union-shop`) a
+  player may hold. Ranks stack, the highest number wins, and the rules are documented inline in `config.yml`.
+
+### Playing with shops
+
+- **Shift-click sign menus** — shift-clicking a sign opens an in-game confirmation menu instead of firing the action
+  straight away. Renting, buying, selling back and reselling all confirm through a GUI, and the shop's renter gets a
+  rent menu with extend and sell-back options. New commands behind those menus: `/as confirmrent`, `/as confirmbuy`,
+  `/as confirmsell`, `/as rentoptions` and `/as payrent` (pay the rent of someone else's shop).
+- **Shop announcements** — renting, buying, reselling and claiming a shop is broadcast to everyone in the worlds listed
+  under `announceWorlds` in `config.yml`. An empty list turns broadcasts off.
+- **New-owner celebration** — a player who takes over a shop is teleported into it facing away from the sign, with
+  particles and a sound.
+- **ARM-style signs** — sign layouts, colors and click actions were carried over from AdvancedRegionMarket, including
+  the compact `%durationshort%` placeholder (`30d`, `1d 12h`, `45min`). Sign text was also darkened and given a dye
+  color fallback so it stays readable on light sign materials and on older clients.
+- **Reworded messages** — limit, sign and rent messages explain what to do next ("sell or unrent one before taking
+  another") instead of only stating the rule, and prices are colored.
+
+### Migration from AdvancedRegionMarket
+
+- ARM region files are converted to the AreaShop-OG format on startup, ARM region groups are merged into `groups.yml`,
+  and incomplete ARM migrations in `config.yml` and `default.yml` are repaired automatically.
+- The jar ships TrueOG's 89 migrated shop definitions, which are used to fill in the parts of an ARM region file that
+  ARM's own export left out.
+
+### Platform and build
+
+- Targets Paper/Spigot 1.19.4+ on Java 17. Versioning restarts at `1.0` for this fork.
+- **FastAsyncWorldEdit is not supported** — its adapter has been dropped, so region saving and restoring always goes
+  through plain WorldEdit.
+- Update checks are off by default (`checkForUpdates: false`) and point at this repository when enabled.
+- Gradle 8.14.3 build with Spotless and TrueOG's Eclipse formatter, DiamondBank-OG pulled in as a git submodule.
+
+## Upgrading an existing AreaShop install
+
+The plugin name changed, so the plugin now reads and writes `plugins/AreaShop-OG/` instead of `plugins/AreaShop/`.
+Rename (or copy) the old folder before the first start to keep your regions, groups and configs. The chat prefixes in
+an existing `config.yml` are rebranded automatically on startup, as long as they were left at their default values.
+
+## Required dependencies
+
 * Java 17 or higher (latest recommended)
 * Bukkit/Spigot 1.19.4 or newer (hybrids such as Mohist are not supported)
-* [WorldGuard](http://dev.bukkit.org/bukkit-plugins/worldguard/): 7.0.7 or newer
-* [WorldEdit](http://dev.bukkit.org/bukkit-plugins/worldedit/): 7.2.12 or newer
+* [WorldGuard](https://dev.bukkit.org/bukkit-plugins/worldguard/): 7.0.7 or newer
+* [WorldEdit](https://dev.bukkit.org/bukkit-plugins/worldedit/): 7.2.12 or newer
 * [DiamondBank-OG](https://github.com/true-og/DiamondBank-OG): diamond-based economy provider
-* [LuckPerms](https://luckperms.net/): 5.5 or higher (permissions)
+* [LuckPerms](https://luckperms.net/): 5.5 or newer
 
-AreaShop allows you selling and renting regions to players. It could be used to let them rent a jail in your prison server, a shop in the market of the survival server or a plot on a creative server. The player interacts with signs, making it easy to use. It also has a lot of commands to check the status of all regions, manage the renting and buying of a region and also features for admins. A lot of messages send to the player can be clicked, for immediately performing actions (buying the region, selling the region, etc.) or getting more information (for example clicking region name for region information). To setup the renting and selling of the regions exactly as you want AreaShop has a lot of options to custimize it to your liking.
+## Building
 
-### All features in a list
-* Rent and sell regions to players, and players can resell their bought regions to other players.
-* [Signs](https://github.com/NLthijs48/AreaShop/wiki/Basic-regions-setup) for easy interaction (rent/buy/unrent/sell/information) and current status (layout and actions customizable, multiple signs can be added).
-* ![rented-sign](https://cloud.githubusercontent.com/assets/6951068/21939029/3844896a-d9be-11e6-8492-7a23ec71fce2.png)
-* Messages that can be clicked for more information and actions ([language](https://github.com/NLthijs48/AreaShop/wiki/Language-support) can be changed, as well as click/hover actions).
-* ![region-information-message](https://cloud.githubusercontent.com/assets/6951068/21939161/bff2fe3c-d9be-11e6-802f-4a0bce073c64.png)
-* Change the  of the plugin or use of the already provided language files (check [here](https://github.com/md5sha256/AreasShop/tree/dev/bleeding/AreaShop/src/main/resources/lang))
-* Automatically restore the region to its original state when sold: [restore](https://github.com/NLthijs48/AreaShop/wiki/Region-blocks-save-restore) the region with schematics.
-* Change which [commands](https://github.com/NLthijs48/AreaShop/wiki/Commands-and-Permissions) players can use with [permissions](https://github.com/NLthijs48/AreaShop/wiki/Commands-and-Permissions).
-* Customize the plugin by changing the [config files](https://github.com/NLthijs48/AreaShop/wiki/The-config-system).
-* Use any WorldGuard flags on regions: disable building in the region, deny entry to others, etc.
-* Teleport to regions (while making sure the location is safe for the player) and changing the teleport location.
-* Adding friends to regions (which also can teleport to it).
-* Automatic unrent/sell for regions of which the owner is offline for a certain time.
-* Warning to players when their rent is about to run out (at login and while they are online).
-* [Group system](https://github.com/NLthijs48/AreaShop/wiki/The-config-system) to set options for a couple of regions instead of all of them (all settings in `default.yml` can also be used for groups and individual regions).
-* High performance: All heavy tasks are spread over time (each tick a part is executed until done), so the plugin should not cause any lag.
-* Limit number of regions a player can have: limits can be different per permission node (player group), world or group of regions (possible situation: Normal players can buy 1 market region in survival + 1 build region in survival and 2 plots in creative, while VIPs have double limits for all those), [check these examples](https://github.com/NLthijs48/AreaShop/wiki/Limitgroups-information-and-examples).
-* Supports name changes because of saving player info by UUID ([more details](https://github.com/NLthijs48/AreaShop/wiki/Frequently-Asked-Questions#what-happens-when-a-player-changes-his-name)).
+```
+git clone --recurse-submodules https://github.com/true-og/AreaShop-OG.git
+cd AreaShop-OG
+./gradlew build
+```
 
-### Preview
-For a preview join 'mc.go-craft.com' and go to the Survival server, the shops around the spawn use AreaShop.
+The usable jar is `AreaShop-OG/build/libs/AreaShop-OG-<version>.jar` (the `-original` and `-sources` jars are not the
+plugin). More detail in [documentation/compiling.md](documentation/compiling.md).
 
-### Tutorial & Feature overview (AreaShop V2.0.1)
-**Made by [Koz4Christ](https://www.youtube.com/user/koz4christ)**<br/>
-[![Tutorial Video](https://cloud.githubusercontent.com/assets/6951068/9532789/152c33f8-4d0e-11e5-8d1c-9e80c19ceab8.png)](https://www.youtube.com/watch?v=328WrStVkzs)
+## Documentation
 
-### Prison cell setup tutorial (AreaShop V2.1.0)
-**Made by [PerkulatorTime](https://www.youtube.com/user/PerkulatorTime)**<br/>
-[![Tutorial Video](https://cloud.githubusercontent.com/assets/6951068/9532788/147526cc-4d0e-11e5-9672-1274faae280a.png)](https://www.youtube.com/watch?v=OQOsOG-EdNc)
+The upstream wiki still describes the region setup, config system and command reference, minus the changes listed
+above:
 
-Old video for AreaShop v1.0: [Tutorial by VariationVault](https://www.youtube.com/watch?v=k2HMCxCCOYo)
+* [Commands and permissions](https://github.com/NLthijs48/AreaShop/wiki/Commands-and-Permissions)
+* [Basic regions setup](https://github.com/NLthijs48/AreaShop/wiki/Basic-regions-setup) &
+  [advanced regions setup](https://github.com/NLthijs48/AreaShop/wiki/Advanced-regions-setup)
+* [Configuration files](https://github.com/NLthijs48/AreaShop/wiki/The-config-system)
+* [Limit groups](https://github.com/NLthijs48/AreaShop/wiki/Limitgroups-information-and-examples)
+* [Save/restore region blocks](https://github.com/NLthijs48/AreaShop/wiki/Region-blocks-save-restore)
+* [Language support](https://github.com/NLthijs48/AreaShop/wiki/Language-support)
+* [Frequently asked questions](https://github.com/NLthijs48/AreaShop/wiki/Frequently-Asked-Questions) &
+  [common errors](https://github.com/NLthijs48/AreaShop/wiki/Common-errors)
+
+## Upstream links
+
+* [Original repository](https://github.com/NLthijs48/AreaShop) by NLThijs48
+* [Fork this branch continues](https://github.com/md5sha256/AreaShop) by md5sha256
+* [Spigot resource page](https://www.spigotmc.org/resources/areashop.2991/)
+
+## License
+
+GPL-3.0, same as upstream. See [LICENSE](LICENSE).

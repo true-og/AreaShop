@@ -8,7 +8,7 @@ plugins {
 
 buildCache { local { directory = File(rootDir, "build-cache") } }
 
-rootProject.name = "AreaShop"
+rootProject.name = "AreaShop-OG"
 
 // Interfaces
 include(":areashop-interface")
@@ -24,8 +24,6 @@ include(":adapters:plugins:worldedit")
 
 include(":adapters:plugins:worldguard")
 
-include(":adapters:plugins:fastasyncworldedit")
-
 include(":adapters:plugins:essentials")
 
 include(":adapters:platform:bukkit-modern")
@@ -38,6 +36,6 @@ project(":libs:DiamondBank-OG").projectDir = file("libs/DiamondBank-OG")
 // Main project
 include(":areashop")
 
-project(":areashop").projectDir = file("AreaShop")
+project(":areashop").projectDir = file("AreaShop-OG")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

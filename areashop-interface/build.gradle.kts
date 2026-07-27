@@ -6,4 +6,4 @@ dependencies {
     compileOnly(libs.worldguardBukkit)
 }
 
-description = "AreaShop Interface"
+description = "AreaShop-OG Interface"

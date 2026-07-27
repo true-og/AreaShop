@@ -11,7 +11,7 @@ plugins {
 
 group = "me.wiefferink"
 
-version = "2.8.0"
+version = "1.0"
 
 val targetJavaVersion = 17
 val encoding = Charsets.UTF_8
@@ -102,14 +102,14 @@ subprojects {
                 from(components["java"])
                 pom {
                     scm {
-                        connection.set("scm:git:git://github.com/md5sha256/AreaShop.git")
-                        developerConnection.set("scm:git:ssh://github.com/md5sha256/AreaShop.git")
-                        url.set("https://github.com/md5sha256/AreaShop/tree/dev/bleeding")
+                        connection.set("scm:git:git://github.com/true-og/AreaShop-OG.git")
+                        developerConnection.set("scm:git:ssh://github.com/true-og/AreaShop-OG.git")
+                        url.set("https://github.com/true-og/AreaShop-OG/tree/dev/bleeding")
                     }
                     licenses {
                         license {
                             name.set("GNU General Public License v3.0")
-                            url.set("https://github.com/md5sha256/AreaShop/blob/dev/bleeding/LICENSE")
+                            url.set("https://github.com/true-og/AreaShop-OG/blob/dev/bleeding/LICENSE")
                         }
                     }
                 }

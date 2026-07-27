@@ -1,4 +1,4 @@
-description = "AreaShop Paper Helper"
+description = "AreaShop-OG Paper Helper"
 
 dependencies {
     compileOnlyApi(libs.paper)
