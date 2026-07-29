@@ -139,7 +139,12 @@ general:
       block-break: 'allow g:members'
       block-place: 'allow g:members'
       chest-access: 'allow g:members'
+      # Scoped to members so the market region's prio 5 use-anvil deny applies to everyone else.
+      use-anvil: 'allow g:members'
       can-flippy: allow
+      # QuickShop-OG compat tests these flags bare, with no membership fallback, so every plot must carry them.
+      quickshop-og-trade: allow
+      quickshop-og-create: 'allow g:members'
     forrent:
       greeting: '%lang:wgPrefix%&6This shop can be rented for %price% &6per &2%duration%%jubilee% &7(shift-click the sign)'
       interact: 'allow g:all'
@@ -147,8 +152,10 @@ general:
     rented:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
-      interact: 'deny g:non_members'
-      use: 'allow g:members'
+      # Fence gates resolve as combine(INTERACT, USE) and combine is deny-wins, so any interact deny locks customers out.
+      interact: ''
+      # Containers stay protected by the chest-access member scope above, which never consults interact.
+      use: 'allow g:all'
     forsale:
       greeting: '%lang:wgPrefix%&6This shop can be purchased for %price% &7(shift-click the sign)'
       interact: 'allow g:all'
@@ -156,13 +163,17 @@ general:
     sold:
       members: '%uuid%, %friendsuuid%'
       greeting: ''
-      interact: 'deny g:non_members'
-      use: 'allow g:members'
+      # Fence gates resolve as combine(INTERACT, USE) and combine is deny-wins, so any interact deny locks customers out.
+      interact: ''
+      # Containers stay protected by the chest-access member scope above, which never consults interact.
+      use: 'allow g:all'
     resell:
       members: '%uuid%, %friendsuuid%'
       greeting: '%lang:wgPrefix%&6This shop can be purchased for %resellprice% &7(shift-left-click the sign)'
-      interact: 'deny g:non_members'
-      use: 'allow g:members'
+      # Fence gates resolve as combine(INTERACT, USE) and combine is deny-wins, so any interact deny locks customers out.
+      interact: ''
+      # Containers stay protected by the chest-access member scope above, which never consults interact.
+      use: 'allow g:all'
 
   ##### Save and restore schematics to clean up regions.
   # After 'save:' or 'restore:' you enter the name of the file to restore from/to (.schematic is added automatically).
