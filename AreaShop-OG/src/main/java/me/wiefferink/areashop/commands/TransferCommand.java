@@ -8,8 +8,10 @@ import me.wiefferink.areashop.commands.util.AreashopCommandBean;
 import me.wiefferink.areashop.commands.util.GeneralRegionParser;
 import me.wiefferink.areashop.commands.util.RegionParseUtil;
 import me.wiefferink.areashop.commands.util.ValidatedOfflinePlayerParser;
+import me.wiefferink.areashop.events.notify.TransferredRegionEvent;
 import me.wiefferink.areashop.managers.IFileManager;
 import me.wiefferink.areashop.regions.GeneralRegion;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -119,16 +121,20 @@ public class TransferCommand extends AreashopCommandBean {
 
         }
 
+        // Captured before the swap, listeners need the player losing the region.
+        UUID previousOwner = region.getOwner();
+        UUID newOwner = targetPlayer.getUniqueId();
         if (region.isLandlord(sender.getUniqueId())) {
 
             // Transfer ownership if same as landlord
-            region.getFriendsFeature().deleteFriend(region.getOwner(), null);
-            region.setOwner(targetPlayer.getUniqueId());
-            region.setLandlord(targetPlayer.getUniqueId(), targetPlayerName);
+            removeOwnerFromFriends(region, previousOwner);
+            region.setOwner(newOwner);
+            region.setLandlord(newOwner, targetPlayerName);
             this.messageBridge.message(sender, "transfer-transferred-owner", targetPlayerName, region);
             this.messageBridge.messagePersistent(targetPlayer, "transfer-transferred-owner", targetPlayerName, region);
             region.update();
             region.saveRequired();
+            announceTransfer(region, previousOwner, newOwner, true);
             return;
 
         }
@@ -140,14 +146,35 @@ public class TransferCommand extends AreashopCommandBean {
 
         }
 
-        region.getFriendsFeature().deleteFriend(region.getOwner(), null);
+        removeOwnerFromFriends(region, previousOwner);
         // Swap the owner/occupant (renter or buyer)
-        region.setOwner(targetPlayer.getUniqueId());
+        region.setOwner(newOwner);
 
         this.messageBridge.message(sender, "transfer-transferred-tenant", targetPlayerName, region);
         this.messageBridge.messagePersistent(targetPlayer, "transfer-transferred-tenant", targetPlayerName, region);
         region.update();
         region.saveRequired();
+        announceTransfer(region, previousOwner, newOwner, false);
+
+    }
+
+    // A landlord can transfer an unoccupied region, which has no owner to drop.
+    private void removeOwnerFromFriends(@Nonnull GeneralRegion region, UUID owner) {
+
+        if (owner == null) {
+
+            return;
+
+        }
+
+        region.getFriendsFeature().deleteFriend(owner, null);
+
+    }
+
+    // Fired after the region is updated and saved, so listeners see final state.
+    private void announceTransfer(@Nonnull GeneralRegion region, UUID from, UUID to, boolean landlordTransfer) {
+
+        Bukkit.getPluginManager().callEvent(new TransferredRegionEvent(region, from, to, landlordTransfer));
 
     }
 

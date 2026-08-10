@@ -62,6 +62,8 @@ permissions:
       areashop.linksigns: true
       areashop.message: true
       areashop.import: true
+      areashop.transfer: true
+      areashop.settransfer: true
   areashop.landlord.*:
     description: Give access to all landlord features
     children:
@@ -274,4 +276,10 @@ permissions:
     default: op
   areashop.import:
     description: Allows importing regions from other plugins
+    default: op
+  areashop.transfer:
+    description: Allows you to transfer a region you own to another player
+    default: true
+  areashop.settransfer:
+    description: Allows you to change whether a region may be transferred
     default: op
